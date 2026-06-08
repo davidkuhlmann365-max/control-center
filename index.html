@@ -1,22 +1,16 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Security Tablet</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Tablet V6</title>
 
 <style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Arial;
-}
-
 body{
+  margin:0;
+  font-family:Arial;
   background:#0a0f14;
   color:white;
-  height:100vh;
   overflow:hidden;
 }
 
@@ -27,43 +21,38 @@ body{
   display:flex;
   justify-content:center;
   align-items:center;
-  background:radial-gradient(circle at top,#1c2a3a,#05070a);
+  background:radial-gradient(circle,#1a2a3a,#05070a);
 }
 
 .box{
-  width:min(90vw,320px);
   background:#111824;
-  padding:25px;
-  border-radius:12px;
+  padding:20px;
+  border-radius:10px;
+  width:300px;
   text-align:center;
 }
 
-input{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border-radius:6px;
-  border:none;
-  text-align:center;
-}
-
-button{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border:none;
-  border-radius:6px;
-  background:#1f6feb;
-  color:white;
-}
-
-/* TOP */
-.topbar{
-  display:flex;
-  justify-content:space-between;
+#display{
+  font-size:26px;
+  letter-spacing:4px;
+  background:black;
   padding:10px;
-  background:#111824;
-  align-items:center;
+  margin:10px 0;
+}
+
+/* KEYPAD */
+.keypad{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:5px;
+}
+
+.keypad button{
+  padding:12px;
+  background:#1f6feb;
+  border:none;
+  color:white;
+  border-radius:6px;
 }
 
 /* APP */
@@ -73,33 +62,31 @@ button{
   flex-direction:column;
 }
 
+/* TOPBAR */
+.topbar{
+  background:#111824;
+  padding:10px;
+  display:flex;
+  justify-content:space-between;
+}
+
 /* GRID */
 .grid{
   flex:1;
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
   gap:10px;
   padding:10px;
   overflow:auto;
 }
 
-/* CARD */
 .card{
   background:#121a26;
   border-radius:10px;
   padding:10px;
 }
 
-/* ZONES */
-.zone{
-  background:#1b2635;
-  padding:6px;
-  margin-top:5px;
-  border-radius:6px;
-  font-size:12px;
-}
-
-/* CAM GRID */
+/* CAM */
 .camGrid{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -110,98 +97,86 @@ button{
   background:black;
   height:90px;
   border-radius:6px;
-  overflow:hidden;
-  position:relative;
 }
 
-.cam video,
-.cam canvas{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
+/* STATUS */
+.green{color:#7ee787}
+.yellow{color:orange}
+.red{color:red}
 
-/* LOG */
-#log{
-  font-size:12px;
-  max-height:180px;
-  overflow:auto;
-}
-
-/* ALERT STATE */
+/* ALARM */
 .alarm{
   animation:flash .2s infinite;
 }
-
 @keyframes flash{
   0%{background:red}
   50%{background:black}
   100%{background:red}
 }
 
-/* LOCKDOWN */
 .lockdown{
-  filter:contrast(2) saturate(0);
-}
-
-/* BANNER */
-#banner{
-  position:absolute;
-  top:10px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#1f6feb;
-  padding:8px 12px;
-  border-radius:8px;
-  display:none;
-  font-size:13px;
+  filter:grayscale(1);
 }
 </style>
 </head>
 
 <body>
 
-<div id="banner"></div>
-
-<!-- LOGIN -->
 <div id="login">
   <div class="box">
-    <h3>SECURITY LOGIN</h3>
-    <input type="password" id="pin" placeholder="PIN">
-    <button onclick="login()">ENTER</button>
+    <h3>SECURITY PANEL</h3>
+
+    <div id="display">----</div>
+
+    <div class="keypad">
+      <button onclick="press(1)">1</button>
+      <button onclick="press(2)">2</button>
+      <button onclick="press(3)">3</button>
+      <button onclick="press(4)">4</button>
+      <button onclick="press(5)">5</button>
+      <button onclick="press(6)">6</button>
+      <button onclick="press(7)">7</button>
+      <button onclick="press(8)">8</button>
+      <button onclick="press(9)">9</button>
+      <button onclick="clearPin()">C</button>
+      <button onclick="press(0)">0</button>
+      <button onclick="submit()">OK</button>
+    </div>
+
+    <div id="status"></div>
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
 
   <div class="topbar">
-    <div>🟢 SYSTEM</div>
-    <button onclick="startFullscreen()">Fullscreen</button>
+    <div id="state">🟢 SYSTEM READY</div>
   </div>
 
   <div class="grid">
 
-    <!-- ZONES -->
     <div class="card">
-      <h3>ZONES</h3>
-      <div class="zone">Door: OK</div>
-      <div class="zone">Window: OK</div>
-      <div class="zone">Motion: <span id="motionState">idle</span></div>
+      <h3>THREAT LEVEL</h3>
+      <div id="threat">GREEN</div>
     </div>
 
-    <!-- CAMERAS -->
+    <div class="card">
+      <h3>ZONES</h3>
+      <div>Door: OK</div>
+      <div>Motion: OK</div>
+      <div>Window: OK</div>
+    </div>
+
     <div class="card">
       <h3>CAMERAS</h3>
       <div class="camGrid">
-        <div class="cam"><video id="cam0" autoplay muted playsinline></video></div>
-        <div class="cam"><canvas id="fake1"></canvas></div>
-        <div class="cam"><canvas id="fake2"></canvas></div>
-        <div class="cam"><canvas id="motionCam"></canvas></div>
+        <video id="cam" autoplay muted playsinline></video>
+        <canvas id="fake"></canvas>
+        <canvas></canvas>
+        <canvas></canvas>
       </div>
     </div>
 
-    <!-- LOG -->
     <div class="card">
       <h3>LOG</h3>
       <div id="log"></div>
@@ -213,140 +188,90 @@ button{
 <script>
 
 const PIN="1234";
-let fail=0;
+let input="";
+let attempts=0;
 let audio;
-let alarmRunning=false;
+let alarm=false;
 
-/* AUDIO ENGINE */
+let threat="GREEN";
+
+/* AUDIO */
 function initAudio(){
-  audio = audio || new (window.AudioContext||window.webkitAudioContext)();
+  audio=audio||new AudioContext();
   if(audio.state==="suspended") audio.resume();
 }
 
-/* UI */
-function banner(msg){
-  const b=document.getElementById("banner");
-  b.innerText=msg;
-  b.style.display="block";
-  setTimeout(()=>b.style.display="none",1500);
+/* KEYPAD */
+function press(n){
+  if(input.length<4) input+=n;
+  update();
 }
 
+function clearPin(){
+  input="";
+  update();
+}
+
+function update(){
+  document.getElementById("display").innerText=input.padEnd(4,"-");
+}
+
+function submit(){
+  initAudio();
+
+  if(input===PIN){
+    start();
+  }else{
+    attempts++;
+    input="";
+    update();
+
+    if(attempts>=3){
+      lockdown();
+    }else{
+      alarmStart();
+    }
+  }
+}
+
+/* START */
+function start(){
+  document.getElementById("login").style.display="none";
+  document.getElementById("app").style.display="flex";
+  log("SYSTEM ARMED");
+  camera();
+}
+
+/* LOG */
 function log(msg){
   document.getElementById("log").innerHTML=
   `[${new Date().toLocaleTimeString()}] ${msg}<br>`+
   document.getElementById("log").innerHTML;
 }
 
-/* LOGIN */
-function login(){
-  initAudio();
-
-  const p=document.getElementById("pin").value;
-
-  if(p===PIN){
-    document.getElementById("login").style.display="none";
-    document.getElementById("app").style.display="flex";
-    banner("ACCESS GRANTED");
-    startCam();
-    fakeCams();
-    motionDetect();
-  }else{
-    fail++;
-    banner("ACCESS DENIED");
-
-    if(fail>=3){
-      lockdown();
-    }else{
-      startAlarm();
-    }
-  }
-}
-
-/* FULLSCREEN */
-function startFullscreen(){
-  document.documentElement.requestFullscreen?.();
-}
-
 /* CAMERA */
-async function startCam(){
+async function camera(){
   try{
-    const stream=await navigator.mediaDevices.getUserMedia({video:true});
-    document.getElementById("cam0").srcObject=stream;
-    log("Live camera active");
+    const s=await navigator.mediaDevices.getUserMedia({video:true});
+    document.getElementById("cam").srcObject=s;
+    log("CAM ONLINE");
+    threat="GREEN";
   }catch(e){
-    log("Camera blocked");
+    log("CAM OFFLINE");
+    threat="RED";
+    alarmStart();
   }
 }
 
-/* FAKE CAMS */
-function fakeCams(){
-  ["fake1","fake2","motionCam"].forEach(id=>{
-    const c=document.getElementById(id);
-    const ctx=c.getContext("2d");
-
-    function draw(){
-      ctx.fillStyle="black";
-      ctx.fillRect(0,0,c.width,c.height);
-
-      for(let i=0;i<80;i++){
-        ctx.fillStyle=`rgb(${Math.random()*255},${Math.random()*255},${Math.random()*255})`;
-        ctx.fillRect(Math.random()*200,Math.random()*100,2,2);
-      }
-
-      requestAnimationFrame(draw);
-    }
-    draw();
-  });
+/* THREAT SYSTEM */
+function setThreat(level){
+  document.getElementById("threat").innerText=level;
 }
 
-/* MOTION DETECTION */
-function motionDetect(){
-  const v=document.getElementById("cam0");
-  const canvas=document.getElementById("motionCam");
-  const ctx=canvas.getContext("2d");
-
-  const tmp=document.createElement("canvas");
-  const tctx=tmp.getContext("2d");
-
-  let last=null;
-
-  function loop(){
-    if(v.readyState>=2){
-      tmp.width=canvas.width=160;
-      tmp.height=canvas.height=120;
-
-      tctx.drawImage(v,0,0,160,120);
-      let frame=tctx.getImageData(0,0,160,120);
-
-      if(last){
-        let diff=0;
-        for(let i=0;i<frame.data.length;i+=40){
-          diff+=Math.abs(frame.data[i]-last.data[i]);
-        }
-
-        if(diff>5000){
-          document.getElementById("motionState").innerText="MOTION!";
-          log("Motion detected");
-          startAlarm();
-        }else{
-          document.getElementById("motionState").innerText="idle";
-        }
-      }
-
-      last=frame;
-      ctx.putImageData(frame,0,0);
-    }
-
-    requestAnimationFrame(loop);
-  }
-
-  loop();
-}
-
-/* ALARM LOOP */
-function startAlarm(){
-  if(alarmRunning) return;
-  alarmRunning=true;
+/* ALARM (ANTI THEFT STYLE) */
+function alarmStart(){
+  if(alarm)return;
+  alarm=true;
 
   document.body.classList.add("alarm");
 
@@ -354,35 +279,29 @@ function startAlarm(){
   const gain=audio.createGain();
 
   osc.type="sawtooth";
-  osc.frequency.value=880;
-  gain.gain.value=0.25;
+  gain.gain.value=0.2;
 
   osc.connect(gain);
   gain.connect(audio.destination);
 
   osc.start();
 
-  function loop(){
-    if(!alarmRunning) return;
-    osc.frequency.value=800+Math.random()*300;
-    setTimeout(loop,200);
-  }
-  loop();
-
-  window.stopAlarm=function(){
-    alarmRunning=false;
-    osc.stop();
-    document.body.classList.remove("alarm");
-  }
+  let t=0;
+  const loop=setInterval(()=>{
+    if(!alarm){clearInterval(loop);return;}
+    osc.frequency.value=500+Math.sin(t)*300;
+    t+=0.3;
+  },100);
 }
 
 /* LOCKDOWN */
 function lockdown(){
   document.body.classList.add("lockdown");
-  banner("LOCKDOWN MODE");
-  log("SYSTEM LOCKED");
-  startAlarm();
+  setThreat("CRITICAL");
+  log("LOCKDOWN ACTIVE");
+  alarmStart();
 }
+
 </script>
 
 </body>
