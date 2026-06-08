@@ -74,7 +74,7 @@
       padding: 5px;
     }
 
-    /* Hidden Exit Box */
+    /* Exit Box (hidden) */
     #exitBox {
       display: none;
       position: fixed;
@@ -84,7 +84,7 @@
       background: #000;
       border: 2px solid #00ff9c;
       padding: 20px;
-      z-index: 10000;
+      z-index: 1000;
       text-align: center;
     }
   </style>
@@ -133,109 +133,3 @@
   <h3>EXIT CODE</h3>
   <input type="password" id="exitPin" placeholder="PIN">
   <button onclick="checkExit()">EXIT</button>
-</div>
-
-<script>
-  let armed = false;
-  let zones = {};
-  
-  function log(msg){
-    const l = document.getElementById("log");
-    l.innerHTML = "[" + new Date().toLocaleTimeString() + "] " + msg + "<br>" + l.innerHTML;
-  }
-
-  // Login Logic
-  function checkPin(){
-    const pin = document.getElementById("pin").value;
-    if(pin === "1234"){
-      document.getElementById("login").style.display = "none";
-      document.getElementById("panel").style.display = "block";
-      log("SYSTEM UNLOCKED");
-    } else {
-      alert("WRONG PIN");
-    }
-  }
-
-  // Arm/Disarm
-  function arm(){
-    armed = true;
-    document.getElementById("status").innerText = "ARMED";
-    log("SYSTEM ARMED");
-  }
-
-  function disarm(){
-    armed = false;
-    document.getElementById("status").innerText = "DISARMED";
-    log("SYSTEM DISARMED");
-  }
-
-  // Toggle Zones
-  function toggle(z){
-    zones[z] = !zones[z];
-    log(z + " " + (zones[z] ? "TRIGGERED" : "NORMAL"));
-    if(armed && zones[z]) alarm();
-  }
-
-  // Alarm Sound
-  function alarm(){
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    let i = 0;
-    const interval = setInterval(() => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = "sawtooth";
-      osc.frequency.value = 200 + (i * 50);
-      gain.gain.value = 0.08;
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.15);
-      i++;
-      if(i > 10) clearInterval(interval);
-    }, 150);
-  }
-
-  // Manual Alert
-  function triggerAlarm(){
-    log("MANUAL ALERT");
-    alarm();
-  }
-
-  // Fullscreen Toggle
-  function toggleFS(){
-    const el = document.documentElement;
-    if (!document.fullscreenElement) {
-      el.requestFullscreen();
-    } else {
-      document.exitFullscreen();
-    }
-  }
-
-  // Exit Logic (PIN)
-  let exitClicks = 0;
-  document.addEventListener("keydown", (e) => {
-    // Beispiel: Escape-Taste zum Öffnen
-    if (e.key === "Escape") {
-      document.getElementById("exitBox").style.display = "block";
-    }
-  });
-
-  function checkExit(){
-    const pin = document.getElementById("exitPin").value;
-    if(pin === "0000"){
-      if(document.fullscreenElement){
-        document.exitFullscreen();
-      }
-      log("EXITED SYSTEM");
-      document.getElementById("exitBox").style.display = "none";
-    } else {
-      alert("WRONG EXIT CODE");
-    }
-  }
-
-  // Initial log
-  log("System started");
-</script>
-
-</body>
-</html>
