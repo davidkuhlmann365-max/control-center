@@ -1,73 +1,189 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Security Panel</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#070b10;
-  color:#00ff9c;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
 }
 
-/* LOGIN */
-#login{
-  position:fixed;
-  inset:0;
-  background:black;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
+body {
+  background: #0b0f14;
+  color: #fff;
+  height: 100vh;
+  overflow: hidden;
 }
 
-/* PANEL */
-#panel{
-  display:none;
+/* LOGIN SCREEN */
+#loginScreen {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at top, #1b2a3a, #05070a);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-header{
-  display:flex;
-  justify-content:space-between;
-  padding:12px;
-  background:#111;
-  border-bottom:2px solid #00ff9c;
+.loginBox {
+  background: #111824;
+  padding: 30px;
+  border-radius: 12px;
+  width: min(90vw, 320px);
+  text-align: center;
+  box-shadow: 0 0 30px rgba(0,0,0,0.6);
 }
 
-.container{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  padding:10px;
+.loginBox h1 {
+  margin-bottom: 15px;
+  font-size: 20px;
 }
 
-.box{
-  background:#111a24;
-  padding:10px;
-  border-radius:10px;
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 18px;
 }
 
-button{
-  background:#00ff9c;
-  border:none;
-  padding:10px;
-  margin:5px;
-  font-weight:bold;
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  background: #1f6feb;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-size: 16px;
+}
+
+/* MAIN PANEL */
+#panel {
+  display: none;
+  height: 100vh;
+  width: 100vw;
+  flex-direction: column;
+}
+
+/* TOP BAR */
+.topbar {
+  background: #111824;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.status {
+  font-size: 14px;
+  color: #7ee787;
+}
+
+/* GRID LAYOUT */
+.grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+/* CARD */
+.card {
+  background: #121a26;
+  border-radius: 10px;
+  padding: 10px;
+  min-height: 120px;
+}
+
+.card h3 {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #58a6ff;
+}
+
+/* ZONES */
+.zone {
+  padding: 8px;
+  margin: 5px 0;
+  border-radius: 6px;
+  background: #1b2635;
+  font-size: 13px;
+}
+
+/* CCTV */
+.cctv {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5px;
+}
+
+.cam {
+  background: #000;
+  height: 70px;
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+}
+
+.cam video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* LOG */
+.log {
+  font-size: 12px;
+  max-height: 160px;
+  overflow-y: auto;
 }
 
 /* EXIT OVERLAY */
-#exitBox{
-  position:fixed;
-  inset:0;
-  background:black;
-  display:none;
-  justify-content:center;
-  align-items:center;
-  flex-direction:column;
-  z-index:9999;
+#exitOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.exitBox {
+  background: #111824;
+  padding: 20px;
+  border-radius: 10px;
+  width: min(90vw, 300px);
+  text-align: center;
+}
+
+/* ALARM FLASH */
+.alarm {
+  animation: flash 0.2s infinite;
+}
+
+@keyframes flash {
+  0% { background: red; }
+  50% { background: black; }
+  100% { background: red; }
+}
+
+/* MOBILE FIX */
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
 </head>
@@ -75,129 +191,130 @@ button{
 <body>
 
 <!-- LOGIN -->
-<div id="login">
-  <h2>ENTER PIN</h2>
-  <input id="pin" type="password">
-  <button onclick="checkPin()">UNLOCK</button>
+<div id="loginScreen">
+  <div class="loginBox">
+    <h1>SECURITY LOGIN</h1>
+    <input type="password" id="pin" placeholder="PIN">
+    <button onclick="login()">ENTER</button>
+  </div>
 </div>
 
 <!-- PANEL -->
 <div id="panel">
-
-<header>
-  <div>🟢 SECURITY SYSTEM</div>
-  <button onclick="triggerAlarm()">ALERT</button>
-</header>
-
-<div class="container">
-
-  <div class="box">
-    <h3>STATUS</h3>
-    <p id="status">DISARMED</p>
-    <button onclick="arm()">ARM</button>
-    <button onclick="disarm()">DISARM</button>
+  <div class="topbar">
+    <div class="status">🟢 SYSTEM ARMED</div>
+    <button onclick="goFullscreen()">Fullscreen</button>
   </div>
 
-  <div class="box">
-    <h3>ZONES</h3>
-    <button onclick="trigger('Door')">Door</button>
-    <button onclick="trigger('Motion')">Motion</button>
+  <div class="grid">
+
+    <div class="card">
+      <h3>ZONES</h3>
+      <div class="zone">🚪 Door: CLOSED</div>
+      <div class="zone">👁 Motion: ACTIVE</div>
+      <div class="zone">🪟 Window: SECURE</div>
+    </div>
+
+    <div class="card">
+      <h3>CCTV</h3>
+      <div class="cctv">
+        <div class="cam"><video autoplay muted playsinline id="cam1"></video></div>
+        <div class="cam"></div>
+        <div class="cam"></div>
+        <div class="cam"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>EVENT LOG</h3>
+      <div class="log" id="log"></div>
+    </div>
+
   </div>
-
 </div>
 
-</div>
-
-<!-- EXIT SCREEN -->
-<div id="exitBox">
-  <h2>EXIT CODE REQUIRED</h2>
-  <input id="exitPin" type="password">
-  <button onclick="checkExit()">UNLOCK</button>
+<!-- EXIT PIN -->
+<div id="exitOverlay">
+  <div class="exitBox">
+    <h3>EXIT SECURITY MODE</h3>
+    <input type="password" id="exitPin" placeholder="EXIT PIN">
+    <button onclick="checkExit()">CONFIRM</button>
+  </div>
 </div>
 
 <script>
+const LOGIN_PIN = "1234";
+const EXIT_PIN = "0000";
 
-let armed=false;
+function log(msg){
+  const el = document.getElementById("log");
+  const time = new Date().toLocaleTimeString();
+  el.innerHTML = `[${time}] ${msg}<br>` + el.innerHTML;
+}
 
-/* LOGIN */
-function checkPin(){
-  if(document.getElementById("pin").value==="1234"){
-    document.getElementById("login").style.display="none";
-    document.getElementById("panel").style.display="block";
+function login(){
+  const pin = document.getElementById("pin").value;
+  if(pin === LOGIN_PIN){
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("panel").style.display = "flex";
+    log("System armed");
+    startCamera();
   } else {
-    alert("FALSCH");
+    alert("Wrong PIN");
   }
 }
 
-/* ARM */
-function arm(){
-  armed=true;
-  document.getElementById("status").innerText="ARMED";
+function goFullscreen(){
+  document.documentElement.requestFullscreen?.();
+  log("Fullscreen enabled");
 }
 
-function disarm(){
-  armed=false;
-  document.getElementById("status").innerText="DISARMED";
-}
-
-/* ZONES */
-function trigger(name){
-  alert(name+" TRIGGERED");
-  if(armed) alarm();
-}
-
-/* ESC → EXIT SCREEN */
-document.addEventListener("keydown",(e)=>{
-  if(e.key==="Escape"){
-    document.getElementById("exitBox").style.display="flex";
+/* ESC EXIT */
+document.addEventListener("keydown", (e) => {
+  if(e.key === "Escape"){
+    document.getElementById("exitOverlay").style.display = "flex";
   }
 });
 
-/* EXIT CHECK */
 function checkExit(){
-  const pin=document.getElementById("exitPin").value;
-
-  if(pin==="0000"){
-
-    document.getElementById("exitBox").style.display="none";
-
+  const pin = document.getElementById("exitPin").value;
+  if(pin === EXIT_PIN){
+    location.reload();
   } else {
+    triggerAlarm();
+  }
+}
 
-    // ❗ FALSE PIN → ALARM
-    alarm();
-    alert("WRONG CODE - ALARM TRIGGERED");
+/* CAMERA */
+async function startCamera(){
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    document.getElementById("cam1").srcObject = stream;
+    log("Camera online");
+  } catch(e){
+    log("Camera access denied");
   }
 }
 
 /* ALARM */
-function alarm(){
-  const ctx=new (window.AudioContext||webkitAudioContext)();
-  let i=0;
-
-  const loop=setInterval(()=>{
-    const osc=ctx.createOscillator();
-    const gain=ctx.createGain();
-
-    osc.type="sawtooth";
-    osc.frequency.value=200+i*30;
-    gain.gain.value=0.1;
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    osc.start();
-    osc.stop(ctx.currentTime+0.2);
-
-    i++;
-    if(i>12) clearInterval(loop);
-  },120);
-}
-
-/* MANUAL ALERT */
 function triggerAlarm(){
-  alarm();
-}
+  document.body.classList.add("alarm");
+  log("ALARM TRIGGERED");
 
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = ctx.createOscillator();
+  osc.type = "sawtooth";
+  osc.frequency.value = 900;
+  osc.connect(ctx.destination);
+  osc.start();
+
+  setTimeout(() => {
+    osc.stop();
+    document.body.classList.remove("alarm");
+  }, 3000);
+
+  alert("ALARM! Wrong PIN");
+}
 </script>
 
 </body>
