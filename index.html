@@ -38,6 +38,7 @@ body{
   background:black;
   padding:10px;
   margin:10px 0;
+  border-radius:6px;
 }
 
 /* KEYPAD */
@@ -53,6 +54,7 @@ body{
   border:none;
   color:white;
   border-radius:6px;
+  font-size:16px;
 }
 
 /* APP */
@@ -68,6 +70,7 @@ body{
   padding:10px;
   display:flex;
   justify-content:space-between;
+  align-items:center;
 }
 
 /* GRID */
@@ -86,19 +89,6 @@ body{
   padding:10px;
 }
 
-/* CAM */
-.camGrid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:5px;
-}
-
-.cam{
-  background:black;
-  height:90px;
-  border-radius:6px;
-}
-
 /* STATUS */
 .green{color:#7ee787}
 .yellow{color:orange}
@@ -106,8 +96,9 @@ body{
 
 /* ALARM */
 .alarm{
-  animation:flash .2s infinite;
+  animation:flash .25s infinite;
 }
+
 @keyframes flash{
   0%{background:red}
   50%{background:black}
@@ -117,11 +108,18 @@ body{
 .lockdown{
   filter:grayscale(1);
 }
+
+/* CAM */
+video{
+  width:100%;
+  border-radius:6px;
+}
 </style>
 </head>
 
 <body>
 
+<!-- LOGIN -->
 <div id="login">
   <div class="box">
     <h3>SECURITY PANEL</h3>
@@ -147,6 +145,7 @@ body{
   </div>
 </div>
 
+<!-- APP -->
 <div id="app">
 
   <div class="topbar">
@@ -168,13 +167,8 @@ body{
     </div>
 
     <div class="card">
-      <h3>CAMERAS</h3>
-      <div class="camGrid">
-        <video id="cam" autoplay muted playsinline></video>
-        <canvas id="fake"></canvas>
-        <canvas></canvas>
-        <canvas></canvas>
-      </div>
+      <h3>CAMERA</h3>
+      <video id="cam" autoplay muted playsinline></video>
     </div>
 
     <div class="card">
@@ -187,118 +181,121 @@ body{
 
 <script>
 
-const PIN="1234";
-let input="";
-let attempts=0;
+const PIN = "1234";
+
+let input = "";
+let attempts = 0;
+
 let audio;
-let alarm=false;
+let alarm = false;
 
-let threat="GREEN";
-
-/* AUDIO */
+/* AUDIO INIT */
 function initAudio(){
-  audio=audio||new AudioContext();
-  if(audio.state==="suspended") audio.resume();
+  audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+  if(audio.state === "suspended") audio.resume();
 }
 
 /* KEYPAD */
 function press(n){
-  if(input.length<4) input+=n;
+  if(input.length < 4) input += n;
   update();
 }
 
 function clearPin(){
-  input="";
+  input = "";
   update();
 }
 
 function update(){
-  document.getElementById("display").innerText=input.padEnd(4,"-");
+  document.getElementById("display").innerText =
+    input.padEnd(4, "-");
 }
 
+/* LOGIN CHECK */
 function submit(){
   initAudio();
 
-  if(input===PIN){
+  if(input === PIN){
     start();
-  }else{
+  } else {
     attempts++;
-    input="";
+    input = "";
     update();
 
-    if(attempts>=3){
+    if(attempts >= 3){
       lockdown();
-    }else{
+    } else {
       alarmStart();
     }
   }
 }
 
-/* START */
+/* START SYSTEM */
 function start(){
-  document.getElementById("login").style.display="none";
-  document.getElementById("app").style.display="flex";
+  document.getElementById("login").style.display = "none";
+  document.getElementById("app").style.display = "flex";
   log("SYSTEM ARMED");
   camera();
 }
 
 /* LOG */
 function log(msg){
-  document.getElementById("log").innerHTML=
-  `[${new Date().toLocaleTimeString()}] ${msg}<br>`+
-  document.getElementById("log").innerHTML;
+  document.getElementById("log").innerHTML =
+    `[${new Date().toLocaleTimeString()}] ${msg}<br>` +
+    document.getElementById("log").innerHTML;
 }
 
 /* CAMERA */
 async function camera(){
   try{
-    const s=await navigator.mediaDevices.getUserMedia({video:true});
-    document.getElementById("cam").srcObject=s;
+    const stream = await navigator.mediaDevices.getUserMedia({video:true});
+    document.getElementById("cam").srcObject = stream;
     log("CAM ONLINE");
-    threat="GREEN";
-  }catch(e){
-    log("CAM OFFLINE");
-    threat="RED";
+  } catch(e){
+    log("CAM BLOCKED");
     alarmStart();
   }
 }
 
-/* THREAT SYSTEM */
-function setThreat(level){
-  document.getElementById("threat").innerText=level;
-}
-
-/* ALARM (ANTI THEFT STYLE) */
+/* 🔊 IMPROVED ALARM (ruhiger, Anti-Theft Style) */
 function alarmStart(){
-  if(alarm)return;
-  alarm=true;
+  if(alarm) return;
+  alarm = true;
 
   document.body.classList.add("alarm");
 
-  const osc=audio.createOscillator();
-  const gain=audio.createGain();
+  const osc = audio.createOscillator();
+  const gain = audio.createGain();
 
-  osc.type="sawtooth";
-  gain.gain.value=0.2;
+  osc.type = "triangle";   // 🔥 softer sound
+  gain.gain.value = 0.15;  // 🔥 quieter
 
   osc.connect(gain);
   gain.connect(audio.destination);
 
   osc.start();
 
-  let t=0;
-  const loop=setInterval(()=>{
-    if(!alarm){clearInterval(loop);return;}
-    osc.frequency.value=500+Math.sin(t)*300;
-    t+=0.3;
-  },100);
+  let t = 0;
+
+  const loop = setInterval(() => {
+    if(!alarm){
+      clearInterval(loop);
+      return;
+    }
+
+    // 🔊 slow siren sweep (less annoying, more realistic)
+    const freq = 220 + Math.sin(t) * 120;
+    osc.frequency.setValueAtTime(freq, audio.currentTime);
+
+    t += 0.25;
+  }, 120);
 }
 
 /* LOCKDOWN */
 function lockdown(){
   document.body.classList.add("lockdown");
-  setThreat("CRITICAL");
-  log("LOCKDOWN ACTIVE");
+  document.getElementById("threat").innerText = "CRITICAL";
+  log("LOCKDOWN ACTIVATED");
   alarmStart();
 }
 
