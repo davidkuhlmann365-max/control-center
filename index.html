@@ -3,317 +3,385 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Security Panel</title>
+<title>Security Tablet</title>
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial;
 }
 
-body {
-  background: #0b0f14;
-  color: #fff;
-  height: 100vh;
-  overflow: hidden;
+body{
+  background:#0a0f14;
+  color:white;
+  height:100vh;
+  overflow:hidden;
 }
 
-/* LOGIN SCREEN */
-#loginScreen {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at top, #1b2a3a, #05070a);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* LOGIN */
+#login{
+  position:absolute;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:radial-gradient(circle at top,#1c2a3a,#05070a);
 }
 
-.loginBox {
-  background: #111824;
-  padding: 30px;
-  border-radius: 12px;
-  width: min(90vw, 320px);
-  text-align: center;
-  box-shadow: 0 0 30px rgba(0,0,0,0.6);
+.box{
+  width:min(90vw,320px);
+  background:#111824;
+  padding:25px;
+  border-radius:12px;
+  text-align:center;
 }
 
-.loginBox h1 {
-  margin-bottom: 15px;
-  font-size: 20px;
+input{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:6px;
+  border:none;
+  text-align:center;
 }
 
-input {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border: none;
-  border-radius: 6px;
-  text-align: center;
-  font-size: 18px;
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:6px;
+  background:#1f6feb;
+  color:white;
 }
 
-button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 12px;
-  background: #1f6feb;
-  border: none;
-  border-radius: 6px;
-  color: white;
-  font-size: 16px;
+/* TOP */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  padding:10px;
+  background:#111824;
+  align-items:center;
 }
 
-/* MAIN PANEL */
-#panel {
-  display: none;
-  height: 100vh;
-  width: 100vw;
-  flex-direction: column;
+/* APP */
+#app{
+  display:none;
+  height:100vh;
+  flex-direction:column;
 }
 
-/* TOP BAR */
-.topbar {
-  background: #111824;
-  padding: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.status {
-  font-size: 14px;
-  color: #7ee787;
-}
-
-/* GRID LAYOUT */
-.grid {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 10px;
-  padding: 10px;
-  overflow-y: auto;
+/* GRID */
+.grid{
+  flex:1;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:10px;
+  padding:10px;
+  overflow:auto;
 }
 
 /* CARD */
-.card {
-  background: #121a26;
-  border-radius: 10px;
-  padding: 10px;
-  min-height: 120px;
-}
-
-.card h3 {
-  font-size: 14px;
-  margin-bottom: 8px;
-  color: #58a6ff;
+.card{
+  background:#121a26;
+  border-radius:10px;
+  padding:10px;
 }
 
 /* ZONES */
-.zone {
-  padding: 8px;
-  margin: 5px 0;
-  border-radius: 6px;
-  background: #1b2635;
-  font-size: 13px;
+.zone{
+  background:#1b2635;
+  padding:6px;
+  margin-top:5px;
+  border-radius:6px;
+  font-size:12px;
 }
 
-/* CCTV */
-.cctv {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 5px;
+/* CAM GRID */
+.camGrid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:5px;
 }
 
-.cam {
-  background: #000;
-  height: 70px;
-  border-radius: 6px;
-  position: relative;
-  overflow: hidden;
+.cam{
+  background:black;
+  height:90px;
+  border-radius:6px;
+  overflow:hidden;
+  position:relative;
 }
 
-.cam video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.cam video,
+.cam canvas{
+  width:100%;
+  height:100%;
+  object-fit:cover;
 }
 
 /* LOG */
-.log {
-  font-size: 12px;
-  max-height: 160px;
-  overflow-y: auto;
+#log{
+  font-size:12px;
+  max-height:180px;
+  overflow:auto;
 }
 
-/* EXIT OVERLAY */
-#exitOverlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.85);
-  display: none;
-  justify-content: center;
-  align-items: center;
+/* ALERT STATE */
+.alarm{
+  animation:flash .2s infinite;
 }
 
-.exitBox {
-  background: #111824;
-  padding: 20px;
-  border-radius: 10px;
-  width: min(90vw, 300px);
-  text-align: center;
+@keyframes flash{
+  0%{background:red}
+  50%{background:black}
+  100%{background:red}
 }
 
-/* ALARM FLASH */
-.alarm {
-  animation: flash 0.2s infinite;
+/* LOCKDOWN */
+.lockdown{
+  filter:contrast(2) saturate(0);
 }
 
-@keyframes flash {
-  0% { background: red; }
-  50% { background: black; }
-  100% { background: red; }
-}
-
-/* MOBILE FIX */
-@media (max-width: 600px) {
-  .grid {
-    grid-template-columns: 1fr;
-  }
+/* BANNER */
+#banner{
+  position:absolute;
+  top:10px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#1f6feb;
+  padding:8px 12px;
+  border-radius:8px;
+  display:none;
+  font-size:13px;
 }
 </style>
 </head>
 
 <body>
 
+<div id="banner"></div>
+
 <!-- LOGIN -->
-<div id="loginScreen">
-  <div class="loginBox">
-    <h1>SECURITY LOGIN</h1>
+<div id="login">
+  <div class="box">
+    <h3>SECURITY LOGIN</h3>
     <input type="password" id="pin" placeholder="PIN">
     <button onclick="login()">ENTER</button>
   </div>
 </div>
 
-<!-- PANEL -->
-<div id="panel">
+<!-- APP -->
+<div id="app">
+
   <div class="topbar">
-    <div class="status">🟢 SYSTEM ARMED</div>
-    <button onclick="goFullscreen()">Fullscreen</button>
+    <div>🟢 SYSTEM</div>
+    <button onclick="startFullscreen()">Fullscreen</button>
   </div>
 
   <div class="grid">
 
+    <!-- ZONES -->
     <div class="card">
       <h3>ZONES</h3>
-      <div class="zone">🚪 Door: CLOSED</div>
-      <div class="zone">👁 Motion: ACTIVE</div>
-      <div class="zone">🪟 Window: SECURE</div>
+      <div class="zone">Door: OK</div>
+      <div class="zone">Window: OK</div>
+      <div class="zone">Motion: <span id="motionState">idle</span></div>
     </div>
 
+    <!-- CAMERAS -->
     <div class="card">
-      <h3>CCTV</h3>
-      <div class="cctv">
-        <div class="cam"><video autoplay muted playsinline id="cam1"></video></div>
-        <div class="cam"></div>
-        <div class="cam"></div>
-        <div class="cam"></div>
+      <h3>CAMERAS</h3>
+      <div class="camGrid">
+        <div class="cam"><video id="cam0" autoplay muted playsinline></video></div>
+        <div class="cam"><canvas id="fake1"></canvas></div>
+        <div class="cam"><canvas id="fake2"></canvas></div>
+        <div class="cam"><canvas id="motionCam"></canvas></div>
       </div>
     </div>
 
+    <!-- LOG -->
     <div class="card">
-      <h3>EVENT LOG</h3>
-      <div class="log" id="log"></div>
+      <h3>LOG</h3>
+      <div id="log"></div>
     </div>
 
-  </div>
-</div>
-
-<!-- EXIT PIN -->
-<div id="exitOverlay">
-  <div class="exitBox">
-    <h3>EXIT SECURITY MODE</h3>
-    <input type="password" id="exitPin" placeholder="EXIT PIN">
-    <button onclick="checkExit()">CONFIRM</button>
   </div>
 </div>
 
 <script>
-const LOGIN_PIN = "1234";
-const EXIT_PIN = "0000";
+
+const PIN="1234";
+let fail=0;
+let audio;
+let alarmRunning=false;
+
+/* AUDIO ENGINE */
+function initAudio(){
+  audio = audio || new (window.AudioContext||window.webkitAudioContext)();
+  if(audio.state==="suspended") audio.resume();
+}
+
+/* UI */
+function banner(msg){
+  const b=document.getElementById("banner");
+  b.innerText=msg;
+  b.style.display="block";
+  setTimeout(()=>b.style.display="none",1500);
+}
 
 function log(msg){
-  const el = document.getElementById("log");
-  const time = new Date().toLocaleTimeString();
-  el.innerHTML = `[${time}] ${msg}<br>` + el.innerHTML;
+  document.getElementById("log").innerHTML=
+  `[${new Date().toLocaleTimeString()}] ${msg}<br>`+
+  document.getElementById("log").innerHTML;
 }
 
+/* LOGIN */
 function login(){
-  const pin = document.getElementById("pin").value;
-  if(pin === LOGIN_PIN){
-    document.getElementById("loginScreen").style.display = "none";
-    document.getElementById("panel").style.display = "flex";
-    log("System armed");
-    startCamera();
-  } else {
-    alert("Wrong PIN");
+  initAudio();
+
+  const p=document.getElementById("pin").value;
+
+  if(p===PIN){
+    document.getElementById("login").style.display="none";
+    document.getElementById("app").style.display="flex";
+    banner("ACCESS GRANTED");
+    startCam();
+    fakeCams();
+    motionDetect();
+  }else{
+    fail++;
+    banner("ACCESS DENIED");
+
+    if(fail>=3){
+      lockdown();
+    }else{
+      startAlarm();
+    }
   }
 }
 
-function goFullscreen(){
+/* FULLSCREEN */
+function startFullscreen(){
   document.documentElement.requestFullscreen?.();
-  log("Fullscreen enabled");
-}
-
-/* ESC EXIT */
-document.addEventListener("keydown", (e) => {
-  if(e.key === "Escape"){
-    document.getElementById("exitOverlay").style.display = "flex";
-  }
-});
-
-function checkExit(){
-  const pin = document.getElementById("exitPin").value;
-  if(pin === EXIT_PIN){
-    location.reload();
-  } else {
-    triggerAlarm();
-  }
 }
 
 /* CAMERA */
-async function startCamera(){
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    document.getElementById("cam1").srcObject = stream;
-    log("Camera online");
-  } catch(e){
-    log("Camera access denied");
+async function startCam(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:true});
+    document.getElementById("cam0").srcObject=stream;
+    log("Live camera active");
+  }catch(e){
+    log("Camera blocked");
   }
 }
 
-/* ALARM */
-function triggerAlarm(){
-  document.body.classList.add("alarm");
-  log("ALARM TRIGGERED");
+/* FAKE CAMS */
+function fakeCams(){
+  ["fake1","fake2","motionCam"].forEach(id=>{
+    const c=document.getElementById(id);
+    const ctx=c.getContext("2d");
 
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const osc = ctx.createOscillator();
-  osc.type = "sawtooth";
-  osc.frequency.value = 900;
-  osc.connect(ctx.destination);
+    function draw(){
+      ctx.fillStyle="black";
+      ctx.fillRect(0,0,c.width,c.height);
+
+      for(let i=0;i<80;i++){
+        ctx.fillStyle=`rgb(${Math.random()*255},${Math.random()*255},${Math.random()*255})`;
+        ctx.fillRect(Math.random()*200,Math.random()*100,2,2);
+      }
+
+      requestAnimationFrame(draw);
+    }
+    draw();
+  });
+}
+
+/* MOTION DETECTION */
+function motionDetect(){
+  const v=document.getElementById("cam0");
+  const canvas=document.getElementById("motionCam");
+  const ctx=canvas.getContext("2d");
+
+  const tmp=document.createElement("canvas");
+  const tctx=tmp.getContext("2d");
+
+  let last=null;
+
+  function loop(){
+    if(v.readyState>=2){
+      tmp.width=canvas.width=160;
+      tmp.height=canvas.height=120;
+
+      tctx.drawImage(v,0,0,160,120);
+      let frame=tctx.getImageData(0,0,160,120);
+
+      if(last){
+        let diff=0;
+        for(let i=0;i<frame.data.length;i+=40){
+          diff+=Math.abs(frame.data[i]-last.data[i]);
+        }
+
+        if(diff>5000){
+          document.getElementById("motionState").innerText="MOTION!";
+          log("Motion detected");
+          startAlarm();
+        }else{
+          document.getElementById("motionState").innerText="idle";
+        }
+      }
+
+      last=frame;
+      ctx.putImageData(frame,0,0);
+    }
+
+    requestAnimationFrame(loop);
+  }
+
+  loop();
+}
+
+/* ALARM LOOP */
+function startAlarm(){
+  if(alarmRunning) return;
+  alarmRunning=true;
+
+  document.body.classList.add("alarm");
+
+  const osc=audio.createOscillator();
+  const gain=audio.createGain();
+
+  osc.type="sawtooth";
+  osc.frequency.value=880;
+  gain.gain.value=0.25;
+
+  osc.connect(gain);
+  gain.connect(audio.destination);
+
   osc.start();
 
-  setTimeout(() => {
+  function loop(){
+    if(!alarmRunning) return;
+    osc.frequency.value=800+Math.random()*300;
+    setTimeout(loop,200);
+  }
+  loop();
+
+  window.stopAlarm=function(){
+    alarmRunning=false;
     osc.stop();
     document.body.classList.remove("alarm");
-  }, 3000);
+  }
+}
 
-  alert("ALARM! Wrong PIN");
+/* LOCKDOWN */
+function lockdown(){
+  document.body.classList.add("lockdown");
+  banner("LOCKDOWN MODE");
+  log("SYSTEM LOCKED");
+  startAlarm();
 }
 </script>
 
