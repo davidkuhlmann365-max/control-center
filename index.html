@@ -1,135 +1,30 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Security Panel</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #070b10;
-      color: #00ff9c;
-    }
+<script>
+function checkPin(){
+  const pin = document.getElementById("pin");
 
-    /* Login */
-    #login {
-      position: fixed;
-      inset: 0;
-      background: #000;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
+  if(!pin){
+    alert("PIN Feld fehlt!");
+    return;
+  }
 
-    input {
-      padding: 10px;
-      font-size: 18px;
-      text-align: center;
-    }
+  if(pin.value.trim() === "1234"){
+    document.getElementById("login").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+  } else {
+    alert("Falscher PIN");
+  }
+}
 
-    /* Panel */
-    #panel {
-      display: none;
-    }
+function toggleFS(){
+  const el=document.documentElement;
+  if(!document.fullscreenElement){
+    el.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+}
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px;
-      background: #111;
-      border-bottom: 2px solid #00ff9c;
-    }
-
-    .container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      padding: 10px;
-    }
-
-    .box {
-      background: #111a24;
-      padding: 10px;
-      border-radius: 10px;
-    }
-
-    button {
-      background: #00ff9c;
-      border: none;
-      padding: 8px;
-      margin: 5px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .red { background: #ff3b3b; color: white; }
-
-    #log {
-      height: 150px;
-      overflow: auto;
-      font-size: 12px;
-      background: #000;
-      padding: 5px;
-    }
-
-    /* Exit Box (hidden) */
-    #exitBox {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #000;
-      border: 2px solid #00ff9c;
-      padding: 20px;
-      z-index: 1000;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-
-<!-- Login Screen -->
-<div id="login">
-  <h2>ENTER PIN</h2>
-  <input type="password" id="pin" placeholder="****">
-  <button onclick="checkPin()">UNLOCK</button>
-</div>
-
-<!-- Main Panel -->
-<div id="panel">
-  <header>
-    <div>🟢 SECURITY SYSTEM</div>
-    <div>
-      <button onclick="toggleFS()">FULLSCREEN</button>
-      <button class="red" onclick="triggerAlarm()">ALERT</button>
-    </div>
-  </header>
-
-  <div class="container">
-    <div class="box">
-      <h3>ZONES</h3>
-      <button onclick="toggle('Door')">Door</button>
-      <button onclick="toggle('Window')">Window</button>
-      <button onclick="toggle('Motion')">Motion</button>
-    </div>
-    <div class="box">
-      <h3>STATUS</h3>
-      <p id="status">DISARMED</p>
-      <button onclick="arm()">ARM</button>
-      <button onclick="disarm()" class="red">DISARM</button>
-    </div>
-    <div class="box" style="grid-column: span 2;">
-      <h3>📜 LOG</h3>
-      <div id="log"></div>
-    </div>
-  </div>
-</div>
-
-<!-- Exit Box (Hidden PIN) -->
-<div id="exitBox">
-  <h3>EXIT CODE</h3>
-  <input type="password" id="exitPin" placeholder="PIN">
-  <button onclick="checkExit()">EXIT</button>
+function triggerAlarm(){
+  alert("ALARM TEST");
+}
+</script>
