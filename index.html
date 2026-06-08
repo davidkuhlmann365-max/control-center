@@ -2,35 +2,202 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Fix Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Panel</title>
+
 <style>
-body{background:black;color:lime;font-family:Arial;}
-#panel{display:none;}
+body{
+  margin:0;
+  font-family:Arial;
+  background:#070b10;
+  color:#00ff9c;
+}
+
+/* LOGIN */
+#login{
+  position:fixed;
+  inset:0;
+  background:black;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+
+/* PANEL */
+#panel{
+  display:none;
+}
+
+header{
+  display:flex;
+  justify-content:space-between;
+  padding:12px;
+  background:#111;
+  border-bottom:2px solid #00ff9c;
+}
+
+.container{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  padding:10px;
+}
+
+.box{
+  background:#111a24;
+  padding:10px;
+  border-radius:10px;
+}
+
+button{
+  background:#00ff9c;
+  border:none;
+  padding:10px;
+  margin:5px;
+  font-weight:bold;
+}
+
+/* EXIT OVERLAY */
+#exitBox{
+  position:fixed;
+  inset:0;
+  background:black;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  z-index:9999;
+}
 </style>
 </head>
+
 <body>
 
+<!-- LOGIN -->
 <div id="login">
-  <h2>LOGIN</h2>
+  <h2>ENTER PIN</h2>
   <input id="pin" type="password">
   <button onclick="checkPin()">UNLOCK</button>
 </div>
 
+<!-- PANEL -->
 <div id="panel">
-  <h1>OK - SYSTEM LÄUFT</h1>
+
+<header>
+  <div>🟢 SECURITY SYSTEM</div>
+  <button onclick="triggerAlarm()">ALERT</button>
+</header>
+
+<div class="container">
+
+  <div class="box">
+    <h3>STATUS</h3>
+    <p id="status">DISARMED</p>
+    <button onclick="arm()">ARM</button>
+    <button onclick="disarm()">DISARM</button>
+  </div>
+
+  <div class="box">
+    <h3>ZONES</h3>
+    <button onclick="trigger('Door')">Door</button>
+    <button onclick="trigger('Motion')">Motion</button>
+  </div>
+
+</div>
+
+</div>
+
+<!-- EXIT SCREEN -->
+<div id="exitBox">
+  <h2>EXIT CODE REQUIRED</h2>
+  <input id="exitPin" type="password">
+  <button onclick="checkExit()">UNLOCK</button>
 </div>
 
 <script>
-function checkPin(){
-  const pin=document.getElementById("pin").value;
 
-  if(pin==="1234"){
+let armed=false;
+
+/* LOGIN */
+function checkPin(){
+  if(document.getElementById("pin").value==="1234"){
     document.getElementById("login").style.display="none";
     document.getElementById("panel").style.display="block";
   } else {
     alert("FALSCH");
   }
 }
+
+/* ARM */
+function arm(){
+  armed=true;
+  document.getElementById("status").innerText="ARMED";
+}
+
+function disarm(){
+  armed=false;
+  document.getElementById("status").innerText="DISARMED";
+}
+
+/* ZONES */
+function trigger(name){
+  alert(name+" TRIGGERED");
+  if(armed) alarm();
+}
+
+/* ESC → EXIT SCREEN */
+document.addEventListener("keydown",(e)=>{
+  if(e.key==="Escape"){
+    document.getElementById("exitBox").style.display="flex";
+  }
+});
+
+/* EXIT CHECK */
+function checkExit(){
+  const pin=document.getElementById("exitPin").value;
+
+  if(pin==="0000"){
+
+    document.getElementById("exitBox").style.display="none";
+
+  } else {
+
+    // ❗ FALSE PIN → ALARM
+    alarm();
+    alert("WRONG CODE - ALARM TRIGGERED");
+  }
+}
+
+/* ALARM */
+function alarm(){
+  const ctx=new (window.AudioContext||webkitAudioContext)();
+  let i=0;
+
+  const loop=setInterval(()=>{
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+
+    osc.type="sawtooth";
+    osc.frequency.value=200+i*30;
+    gain.gain.value=0.1;
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime+0.2);
+
+    i++;
+    if(i>12) clearInterval(loop);
+  },120);
+}
+
+/* MANUAL ALERT */
+function triggerAlarm(){
+  alarm();
+}
+
 </script>
 
 </body>
