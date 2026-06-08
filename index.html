@@ -1,22 +1,160 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Security Panel</title>
+
+<style>
+body {
+  margin:0;
+  font-family: Arial, sans-serif;
+  background:#070b10;
+  color:#00ff9c;
+}
+
+/* LOGIN */
+#login {
+  position:fixed;
+  inset:0;
+  background:#000;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+}
+
+input {
+  padding:10px;
+  font-size:18px;
+  text-align:center;
+}
+
+/* PANEL */
+#panel {
+  display:none;
+}
+
+header {
+  display:flex;
+  justify-content:space-between;
+  padding:10px;
+  background:#111;
+  border-bottom:2px solid #00ff9c;
+}
+
+.container {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  padding:10px;
+}
+
+.box {
+  background:#111a24;
+  padding:10px;
+  border-radius:10px;
+}
+
+button {
+  background:#00ff9c;
+  border:none;
+  padding:8px;
+  margin:5px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.red { background:#ff3b3b; color:white; }
+
+#log {
+  height:150px;
+  overflow:auto;
+  font-size:12px;
+  background:#000;
+  padding:5px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <h2>ENTER PIN</h2>
+  <input id="pin" type="password" placeholder="****">
+  <button onclick="checkPin()">UNLOCK</button>
+</div>
+
+<!-- PANEL -->
+<div id="panel">
+
+<header>
+  <div>🟢 SECURITY SYSTEM</div>
+  <div>
+    <button onclick="toggleFS()">FULLSCREEN</button>
+    <button class="red" onclick="triggerAlarm()">ALERT</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="box">
+    <h3>STATUS</h3>
+    <p id="status">DISARMED</p>
+  </div>
+
+  <div class="box">
+    <h3>ZONES</h3>
+    <button onclick="toggleZone('Door')">Door</button>
+    <button onclick="toggleZone('Window')">Window</button>
+    <button onclick="toggleZone('Motion')">Motion</button>
+  </div>
+
+  <div class="box" style="grid-column:span 2;">
+    <h3>LOG</h3>
+    <div id="log"></div>
+  </div>
+
+</div>
+
+</div>
+
 <script>
+console.log("SCRIPT OK");
+
+let armed = false;
+let zones = {};
+
+/* LOGIN */
 function checkPin(){
-  const pin = document.getElementById("pin");
+  const pin = document.getElementById("pin").value.trim();
 
-  if(!pin){
-    alert("PIN Feld fehlt!");
-    return;
-  }
-
-  if(pin.value.trim() === "1234"){
+  if(pin === "1234"){
     document.getElementById("login").style.display = "none";
     document.getElementById("panel").style.display = "block";
+    log("SYSTEM UNLOCKED");
   } else {
-    alert("Falscher PIN");
+    alert("FALSCHER PIN");
   }
 }
 
+/* LOG */
+function log(msg){
+  const l = document.getElementById("log");
+  if(!l) return;
+  l.innerHTML = "["+new Date().toLocaleTimeString()+"] "+msg+"<br>" + l.innerHTML;
+}
+
+/* ZONES */
+function toggleZone(z){
+  zones[z] = !zones[z];
+  log(z + " " + (zones[z] ? "TRIGGERED" : "NORMAL"));
+}
+
+/* FULLSCREEN */
 function toggleFS(){
-  const el=document.documentElement;
+  const el = document.documentElement;
   if(!document.fullscreenElement){
     el.requestFullscreen();
   } else {
@@ -24,7 +162,11 @@ function toggleFS(){
   }
 }
 
+/* ALARM (safe test) */
 function triggerAlarm(){
   alert("ALARM TEST");
 }
 </script>
+
+</body>
+</html>
