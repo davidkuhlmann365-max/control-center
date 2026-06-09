@@ -1,92 +1,282 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Security Panel</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0b0f14;
-      color: #00ff9d;
-    }
-    header {
-      padding: 20px;
-      background: #111822;
-      text-align: center;
-      font-size: 24px;
-      border-bottom: 2px solid #00ff9d;
-    }
-    .container {
-      padding: 20px;
-    }
-    #alarm-banner {
-      display: none;
-      background: red;
-      color: white;
-      font-size: 28px;
-      text-align: center;
-      padding: 20px;
-      margin-top: 20px;
-      border-radius: 5px;
-      animation: blink 1s infinite;
-    }
-    @keyframes blink {
-      0% { opacity: 1; }
-      50% { opacity: 0.2; }
-      100% { opacity: 1; }
-    }
-    button {
-      background: black;
-      color: #00ff9d;
-      border: 1px solid #00ff9d;
-      padding: 15px 20px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 20px;
-    }
-    button:hover {
-      background: #00ff9d;
-      color: black;
-    }
-    #log {
-      height: 150px;
-      overflow-y: auto;
-      background: black;
-      color: white;
-      padding: 10px;
-      margin-top: 20px;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Security Panel</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0b0f14;
+    color: #00ff9d;
+    overflow: hidden;
+}
+
+/* TOP BAR */
+#topbar {
+    background: #111;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+}
+
+/* PANEL */
+#panel {
+    display: flex;
+    height: 100vh;
+}
+
+/* LEFT */
+#left {
+    width: 300px;
+    background: #0f1720;
+    padding: 10px;
+}
+
+/* BUTTONS */
+button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    background: #111;
+    border: 1px solid #00ff9d;
+    color: #00ff9d;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #00ff9d;
+    color: #000;
+}
+
+/* LOG */
+#log {
+    margin-top: 10px;
+    height: 200px;
+    overflow-y: auto;
+    font-size: 12px;
+    background: #000;
+    padding: 5px;
+}
+
+/* KEY PAD */
+#keypad {
+    position: absolute;
+    right: 20px;
+    top: 80px;
+    background: #111;
+    padding: 10px;
+    border: 1px solid #00ff9d;
+}
+
+.keyrow button {
+    width: 60px;
+}
+
+/* STATUS */
+#status {
+    padding: 10px;
+}
+</style>
 </head>
+
 <body>
-  <header>🔒 SECURITY CONTROL PANEL</header>
-  <div class="container">
-    <button onclick="triggerSmokeAlarm()">🚨 Rauchalarm auslösen</button>
 
-    <div id="alarm-banner">
-      🔥 Rauchalarm! Bitte sofort überprüfen!
+<div id="topbar">
+    <div>SECURITY PANEL</div>
+    <div id="status">STATUS: ARMED</div>
+</div>
+
+<div id="panel">
+
+<div id="left">
+    <h3>Alarms</h3>
+
+    <button onclick="startAlarm('smoke')">Smoke Alarm</button>
+    <button onclick="startAlarm('door')">Door Alarm</button>
+    <button onclick="startAlarm('motion')">Motion Alarm</button>
+
+    <button onclick="enablePanicMode()">Panic Mode</button>
+    <button onclick="stopAlarm()">STOP</button>
+
+    <div id="log"></div>
+</div>
+
+</div>
+
+<!-- KEYPAD -->
+<div id="keypad">
+    <div id="display">----</div>
+    <div class="keyrow">
+        <button onclick="press(1)">1</button>
+        <button onclick="press(2)">2</button>
+        <button onclick="press(3)">3</button>
     </div>
-
-    <div id="log">
-      <!-- Ereignisse werden hier angezeigt -->
+    <div class="keyrow">
+        <button onclick="press(4)">4</button>
+        <button onclick="press(5)">5</button>
+        <button onclick="press(6)">6</button>
     </div>
-  </div>
+    <div class="keyrow">
+        <button onclick="press(7)">7</button>
+        <button onclick="press(8)">8</button>
+        <button onclick="press(9)">9</button>
+    </div>
+    <div class="keyrow">
+        <button onclick="clearPin()">C</button>
+        <button onclick="press(0)">0</button>
+        <button onclick="submitPin()">OK</button>
+    </div>
+</div>
 
-  <script>
-    function triggerSmokeAlarm() {
-      const banner = document.getElementById("alarm-banner");
-      banner.style.display = "block";
-      logEvent("Rauchalarm ausgelöst");
+<script>
+let audioCtx;
+let alarmActive = false;
+let panicMode = false;
+
+let pin = "";
+const correctPin = "1234";
+let locked = true;
+let attempts = 0;
+
+// ---------------- LOG ----------------
+function log(msg) {
+    const el = document.getElementById("log");
+    el.innerHTML += msg + "<br>";
+    el.scrollTop = el.scrollHeight;
+}
+
+// ---------------- SCREEN FLASH ----------------
+function flash(intensity="normal") {
+    let color = "rgba(255,0,0,0.3)";
+    let time = 150;
+
+    if (intensity === "high") {
+        color = "rgba(255,0,0,0.7)";
+        time = 80;
     }
 
-    function logEvent(message) {
-      const logBox = document.getElementById("log");
-      const time = new Date().toLocaleTimeString();
-      logBox.innerHTML += `[${time}] ${message}<br>`;
-      logBox.scrollTop = logBox.scrollHeight;
+    document.body.style.background = color;
+    setTimeout(() => document.body.style.background = "#0b0f14", time);
+}
+
+// ---------------- BEEP ----------------
+function beep(freq=3200, dur=0.15) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.frequency.value = freq;
+    osc.type = "square";
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start();
+    setTimeout(() => osc.stop(), dur*1000);
+}
+
+// ---------------- PATTERNS ----------------
+function smoke() {
+    beep(); setTimeout(beep,250); setTimeout(beep,500);
+    flash();
+
+    setTimeout(() => {
+        if (alarmActive) setTimeout(smoke, panicMode ? 1200 : 2000);
+    }, 800);
+}
+
+function door() {
+    beep(1800,0.2);
+    flash();
+
+    setTimeout(() => {
+        if (alarmActive) setTimeout(door, panicMode ? 700 : 1500);
+    }, 500);
+}
+
+function motion() {
+    beep(2800,0.1);
+    setTimeout(() => beep(2800,0.1),200);
+    flash();
+
+    setTimeout(() => {
+        if (alarmActive) setTimeout(motion, panicMode ? 900 : 1800);
+    }, 600);
+}
+
+// ---------------- START ----------------
+function startAlarm(type) {
+    if (!audioCtx) audioCtx = new AudioContext();
+    alarmActive = true;
+    panicMode = false;
+
+    log("Alarm: " + type);
+
+    if (type === "smoke") smoke();
+    if (type === "door") door();
+    if (type === "motion") motion();
+}
+
+// ---------------- PANIC ----------------
+function enablePanicMode() {
+    panicMode = true;
+    log("PANIC MODE ACTIVATED");
+
+    let i = 0;
+    function strobe() {
+        if (!alarmActive || !panicMode) return;
+
+        document.body.style.background = "rgba(255,0,0,0.8)";
+        setTimeout(() => document.body.style.background = "#0b0f14", 60);
+
+        if (i++ < 25) setTimeout(strobe, 100);
     }
-  </script>
+    strobe();
+}
+
+// ---------------- STOP ----------------
+function stopAlarm() {
+    alarmActive = false;
+    panicMode = false;
+
+    if (audioCtx) {
+        audioCtx.close();
+        audioCtx = null;
+    }
+
+    log("Alarm stopped");
+}
+
+// ---------------- KEYPAD ----------------
+function press(n) {
+    if (locked) return;
+    if (pin.length < 4) pin += n;
+    document.getElementById("display").innerText = pin.padEnd(4,"-");
+}
+
+function clearPin() {
+    pin = "";
+    document.getElementById("display").innerText = "----";
+}
+
+function submitPin() {
+    if (pin === correctPin) {
+        locked = false;
+        log("PIN correct - unlocked");
+        document.getElementById("status").innerText = "STATUS: UNLOCKED";
+    } else {
+        attempts++;
+        log("Wrong PIN");
+
+        if (attempts >= 3) {
+            startAlarm("door");
+        }
+    }
+    clearPin();
+}
+</script>
+
 </body>
 </html>
