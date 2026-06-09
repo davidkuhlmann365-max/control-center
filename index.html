@@ -2,66 +2,64 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>SECURITY SYSTEM V3</title>
+<title>FIRE SYSTEM PRO V4</title>
 
 <style>
-body {
-    margin:0;
-    font-family:Arial;
-    background:#0b0f14;
-    color:#00ff9d;
+body{
+margin:0;
+font-family:Arial;
+background:#0b0f14;
+color:#00ff9d;
 }
 
-/* TOP */
-#top {
-    background:#111;
-    padding:10px;
-    display:flex;
-    justify-content:space-between;
+#top{
+background:#111;
+padding:10px;
+display:flex;
+justify-content:space-between;
 }
 
-/* MAIN */
-#wrap {
-    display:flex;
-    height:100vh;
+#wrap{
+display:flex;
+height:100vh;
 }
 
-#left {
-    width:340px;
-    background:#0f1720;
-    padding:10px;
+#left{
+width:360px;
+background:#0f1720;
+padding:10px;
 }
 
-button {
-    width:100%;
-    margin:5px 0;
-    padding:10px;
-    background:#111;
-    border:1px solid #00ff9d;
-    color:#00ff9d;
-    cursor:pointer;
+button{
+width:100%;
+margin:5px 0;
+padding:10px;
+background:#111;
+border:1px solid #00ff9d;
+color:#00ff9d;
+cursor:pointer;
 }
 
-button:hover {
-    background:#00ff9d;
-    color:#000;
+button:hover{
+background:#00ff9d;
+color:black;
 }
 
-.zone {
-    background:#000;
-    padding:6px;
-    margin-top:6px;
-    font-size:12px;
-    border:1px solid #222;
+#log{
+margin-top:10px;
+height:220px;
+overflow:auto;
+background:black;
+padding:5px;
+font-size:12px;
 }
 
-#log {
-    margin-top:10px;
-    height:220px;
-    overflow:auto;
-    font-size:12px;
-    background:#000;
-    padding:5px;
+.zone{
+background:black;
+padding:6px;
+margin-top:6px;
+font-size:12px;
+border:1px solid #222;
 }
 </style>
 </head>
@@ -69,32 +67,31 @@ button:hover {
 <body>
 
 <div id="top">
-    <div>SECURITY SYSTEM V3</div>
-    <div id="status">DISARMED</div>
+<div>🔥 FIRE SYSTEM PRO V4</div>
+<div id="status">DISARMED</div>
 </div>
 
 <div id="wrap">
 
 <div id="left">
 
-<h3>MODE</h3>
+<h3>MODES</h3>
 <button onclick="setMode('HOME')">HOME</button>
 <button onclick="setMode('AWAY')">AWAY</button>
-<button onclick="setMode('NIGHT')">NIGHT</button>
 <button onclick="setMode('DISARMED')">DISARM</button>
 
-<h3>ALARM TEST</h3>
-<button onclick="trigger('door')">Door</button>
-<button onclick="trigger('motion')">Motion</button>
-<button onclick="trigger('smoke')">Smoke</button>
+<h3>FIRE CONTROL</h3>
+<button onclick="trigger('smoke')">SMOKE</button>
+<button onclick="trigger('fire')">FIRE</button>
+<button onclick="trigger('motion')">MOTION</button>
 
-<button onclick="panicMode()">PANIC</button>
+<button onclick="triggerFire()">🔥 FIRE SYSTEM</button>
+<button onclick="panic()">🚨 PANIC</button>
 <button onclick="stopAll()">STOP</button>
 
-<h3>ZONES</h3>
-<div class="zone" id="z1">Door: OK</div>
-<div class="zone" id="z2">Window: OK</div>
-<div class="zone" id="z3">Motion: OK</div>
+<div class="zone">Door: OK</div>
+<div class="zone">Window: OK</div>
+<div class="zone">Motion: OK</div>
 
 <div id="log"></div>
 
@@ -104,170 +101,287 @@ button:hover {
 
 <script>
 
-/* =========================
-   🧠 STATE MACHINE CORE
-========================= */
+/* =====================
+   🧠 STATE ENGINE
+===================== */
 
 const STATE = {
-    mode: "DISARMED",
-    alarm: false,
-    panic: false,
-    token: 0
+mode:"DISARMED",
+alarm:false,
+panic:false,
+fire:"NONE",
+token:0
 };
 
 let audioCtx;
+let voiceOverride=false;
 
-/* =========================
-   🧾 LOG SYSTEM
-========================= */
+/* =====================
+   LOG
+===================== */
 
 function log(msg){
-    const t = new Date().toLocaleTimeString();
-    document.getElementById("log").innerHTML += `[${t}] ${msg}<br>`;
+const t=new Date().toLocaleTimeString();
+document.getElementById("log").innerHTML+=`[${t}] ${msg}<br>`;
 }
 
-/* =========================
-   📟 STATUS
-========================= */
+/* =====================
+   STATUS
+===================== */
 
 function setStatus(){
-    document.getElementById("status").innerText =
-        STATE.mode + (STATE.alarm ? " | ALARM" : "");
+document.getElementById("status").innerText =
+STATE.mode + (STATE.alarm ? " | ALARM":"") + (STATE.fire!=="NONE" ? " | FIRE":"");
 }
 
-/* =========================
-   🔊 AUDIO ENGINE
-========================= */
+/* =====================
+   AUDIO ENGINE
+===================== */
 
 function beep(f=3000,d=0.12){
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
+const o=audioCtx.createOscillator();
+const g=audioCtx.createGain();
 
-    o.frequency.value=f;
-    o.type="square";
+o.frequency.value=f;
+o.type="square";
 
-    o.connect(g);
-    g.connect(audioCtx.destination);
+o.connect(g);
+g.connect(audioCtx.destination);
 
-    o.start();
-    setTimeout(()=>o.stop(),d*1000);
+o.start();
+setTimeout(()=>o.stop(),d*1000);
 }
 
-/* =========================
-   🔴 FLASH
-========================= */
+/* =====================
+   FLASH
+===================== */
 
-function flash(){
-    document.body.style.background="rgba(255,0,0,0.5)";
-    setTimeout(()=>document.body.style.background="#0b0f14",100);
+function flash(c="rgba(255,0,0,0.4)"){
+document.body.style.background=c;
+setTimeout(()=>document.body.style.background="#0b0f14",100);
 }
 
-/* =========================
-   🚨 ALARM ENGINE (SAFE)
-========================= */
+/* =====================
+   PA SYSTEM (Echo)
+===================== */
 
-function runAlarm(type, t){
+function paSpeak(text, lang="en-US"){
 
-    if(!STATE.alarm || STATE.token !== t) return;
+if(voiceOverride) return;
 
-    if(type==="smoke"){
-        beep(); setTimeout(()=>beep(),200); setTimeout(()=>beep(),400);
-    }
+speechSynthesis.cancel();
 
-    if(type==="door"){
-        beep(1800,0.2);
-    }
+const msg=new SpeechSynthesisUtterance(text);
+msg.lang=lang;
+msg.rate=1;
+msg.pitch=0.85;
+msg.volume=1;
 
-    if(type==="motion"){
-        beep(2800,0.1);
-        setTimeout(()=>beep(2800,0.1),180);
-    }
+speechSynthesis.speak(msg);
 
-    flash();
+setTimeout(()=>{
+if(voiceOverride) return;
 
-    setTimeout(()=>{
-        if(STATE.alarm && STATE.token===t){
-            setTimeout(()=>runAlarm(type,t), STATE.panic?900:1800);
-        }
-    },600);
+const echo=new SpeechSynthesisUtterance(text);
+echo.lang=lang;
+echo.rate=0.9;
+echo.pitch=0.8;
+echo.volume=0.35;
+
+speechSynthesis.speak(echo);
+},600);
 }
 
-/* =========================
-   🚨 TRIGGER
-========================= */
+/* =====================
+   CONTROL CENTER VOICE
+===================== */
+
+function controlCenter(text){
+voiceOverride=true;
+speechSynthesis.cancel();
+
+const msg=new SpeechSynthesisUtterance(text);
+msg.lang="en-US";
+msg.rate=1;
+msg.pitch=0.8;
+
+msg.onend=()=>voiceOverride=false;
+
+speechSynthesis.speak(msg);
+}
+
+/* =====================
+   EVACUATION VOICE
+===================== */
+
+function evac(level){
+
+if(level==="SMOKE"){
+paSpeak("Smoke detected in the building.","en-US");
+setTimeout(()=>paSpeak("Rauch im Gebäude festgestellt.","de-DE"),1000);
+}
+
+if(level==="FIRE"){
+paSpeak("Fire detected. Prepare to evacuate.","en-US");
+setTimeout(()=>paSpeak("Feuer im Gebäude. Evakuierung vorbereiten.","de-DE"),1000);
+}
+
+if(level==="CRITICAL"){
+paSpeak("Leave the building immediately.","en-US");
+setTimeout(()=>paSpeak("Gebäude sofort verlassen.","de-DE"),1000);
+}
+}
+
+/* =====================
+   FIRE ENGINE
+===================== */
+
+function fireEngine(t){
+
+if(!STATE.alarm || STATE.token!==t) return;
+
+let freq=1800;
+
+if(STATE.fire==="SMOKE") freq=1500;
+if(STATE.fire==="FIRE") freq=2000;
+if(STATE.fire==="CRITICAL") freq=2600;
+
+const o=audioCtx.createOscillator();
+const g=audioCtx.createGain();
+
+o.frequency.value=freq;
+o.type="sawtooth";
+g.gain.value=0.3;
+
+o.connect(g);
+g.connect(audioCtx.destination);
+
+o.start();
+setTimeout(()=>o.stop(),500);
+
+flash(
+STATE.fire==="SMOKE"?"rgba(255,80,0,0.3)":
+STATE.fire==="FIRE"?"rgba(255,40,0,0.5)":
+"rgba(255,0,0,0.8)"
+);
+
+setTimeout(()=>{
+
+if(STATE.fire==="SMOKE") STATE.fire="FIRE";
+if(STATE.fire==="FIRE" && Math.random()>0.7) STATE.fire="CRITICAL";
+
+evac(STATE.fire);
+
+setTimeout(()=>fireEngine(t), STATE.fire==="CRITICAL"?600:1000);
+
+},800);
+}
+
+/* =====================
+   TRIGGER SYSTEM
+===================== */
 
 function trigger(type){
 
-    if(STATE.mode==="DISARMED") {
-        log("IGNORED (DISARMED)");
-        return;
-    }
+if(STATE.mode==="DISARMED") return;
 
-    if(!audioCtx) audioCtx = new AudioContext();
+if(!audioCtx) audioCtx=new AudioContext();
 
-    STATE.alarm = true;
-    STATE.token++;
+STATE.alarm=true;
+STATE.token++;
 
-    log("TRIGGER: "+type);
-
-    runAlarm(type, STATE.token);
-    setStatus();
+if(type==="smoke"){
+STATE.fire="SMOKE";
+log("SMOKE TRIGGER");
 }
 
-/* =========================
-   🧠 MODES
-========================= */
+if(type==="fire"){
+STATE.fire="FIRE";
+log("FIRE TRIGGER");
+}
+
+if(type==="motion"){
+log("MOTION TRIGGER");
+beep(2800,0.1);
+}
+
+fireEngine(STATE.token);
+setStatus();
+}
+
+/* =====================
+   FIRE START
+===================== */
+
+function triggerFire(){
+if(!audioCtx) audioCtx=new AudioContext();
+
+STATE.alarm=true;
+STATE.token++;
+STATE.fire="SMOKE";
+
+log("🔥 FIRE SYSTEM START");
+
+evac("SMOKE");
+fireEngine(STATE.token);
+
+setStatus();
+}
+
+/* =====================
+   PANIC
+===================== */
+
+function panic(){
+if(!audioCtx) audioCtx=new AudioContext();
+
+STATE.alarm=true;
+STATE.panic=true;
+STATE.token++;
+
+log("🚨 PANIC");
+
+let i=0;
+function st(){
+flash("rgba(255,0,0,0.9)");
+if(i++<40) setTimeout(st,80);
+}
+st();
+
+fireEngine(STATE.token);
+}
+
+/* =====================
+   MODE
+===================== */
 
 function setMode(m){
-    STATE.mode = m;
-    STATE.alarm = false;
-    STATE.panic = false;
-    STATE.token++;
+STATE.mode=m;
+STATE.token++;
+STATE.alarm=false;
+STATE.fire="NONE";
 
-    log("MODE: "+m);
-    setStatus();
+log("MODE "+m);
+setStatus();
 }
 
-/* =========================
-   🧨 PANIC
-========================= */
-
-function panicMode(){
-
-    if(!audioCtx) audioCtx = new AudioContext();
-
-    STATE.panic = true;
-    STATE.alarm = true;
-    STATE.token++;
-
-    log("PANIC ACTIVATED");
-
-    let i=0;
-    function strobe(){
-        document.body.style.background="rgba(255,0,0,0.9)";
-        setTimeout(()=>document.body.style.background="#0b0f14",60);
-
-        if(i++<35) setTimeout(strobe,90);
-    }
-    strobe();
-
-    runAlarm("motion", STATE.token);
-    setStatus();
-}
-
-/* =========================
-   ⛔ STOP
-========================= */
+/* =====================
+   STOP
+===================== */
 
 function stopAll(){
-    STATE.alarm = false;
-    STATE.panic = false;
-    STATE.token++;
 
-    log("STOP ALL");
-    setStatus();
+STATE.alarm=false;
+STATE.panic=false;
+STATE.fire="NONE";
+STATE.token++;
 
-    document.body.style.background="#0b0f14";
+speechSynthesis.cancel();
+
+document.body.style.background="#0b0f14";
+
+log("STOP");
+setStatus();
 }
 
 setStatus();
