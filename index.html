@@ -1,6 +1,97 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Security Panel</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b0f14;
+      color: #00ff9d;
+    }
+    header {
+      padding: 20px;
+      background: #111822;
+      text-align: center;
+      font-size: 24px;
+      border-bottom: 2px solid #00ff9d;
+    }
+    .container {
+      padding: 20px;
+    }
+    #alarm-banner {
+      display: none;
+      background: red;
+      color: white;
+      font-size: 28px;
+      text-align: center;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 5px;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0.2; }
+      100% { opacity: 1; }
+    }
+    button {
+      background: black;
+      color: #00ff9d;
+      border: 1px solid #00ff9d;
+      padding: 15px 20px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #00ff9d;
+      color: black;
+    }
+    #log {
+      height: 150px;
+      overflow-y: auto;
+      background: black;
+      color: white;
+      padding: 10px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>🔒 SECURITY CONTROL PANEL</header>
+  <div class="container">
+    <button onclick="triggerSmokeAlarm()">🚨 Rauchalarm auslösen</button>
+
+    <div id="alarm-banner">
+      🔥 Rauchalarm! Bitte sofort überprüfen!
+    </div>
+
+    <div id="log">
+      <!-- Ereignisse werden hier angezeigt -->
+    </div>
+  </div>
+
+  <script>
+    function triggerSmokeAlarm() {
+      const banner = document.getElementById("alarm-banner");
+      banner.style.display = "block";
+      logEvent("Rauchalarm ausgelöst");
+    }
+
+    function logEvent(message) {
+      const logBox = document.getElementById("log");
+      const time = new Date().toLocaleTimeString();
+      logBox.innerHTML += `[${time}] ${message}<br>`;
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="de">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Security Tablet V6</title>
