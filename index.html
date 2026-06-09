@@ -2,15 +2,14 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Security Panel</title>
+<title>Security System PRO</title>
 
 <style>
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
+    font-family: Arial;
     background: #0b0f14;
     color: #00ff9d;
-    overflow: hidden;
 }
 
 /* TOP BAR */
@@ -22,24 +21,23 @@ body {
     font-weight: bold;
 }
 
-/* PANEL */
-#panel {
+/* LAYOUT */
+#container {
     display: flex;
     height: 100vh;
 }
 
-/* LEFT */
+/* LEFT PANEL */
 #left {
-    width: 300px;
+    width: 320px;
     background: #0f1720;
     padding: 10px;
 }
 
-/* BUTTONS */
 button {
     width: 100%;
+    margin-top: 6px;
     padding: 10px;
-    margin-top: 8px;
     background: #111;
     border: 1px solid #00ff9d;
     color: #00ff9d;
@@ -48,7 +46,16 @@ button {
 
 button:hover {
     background: #00ff9d;
-    color: #000;
+    color: black;
+}
+
+/* ZONES */
+.zone {
+    margin-top: 10px;
+    padding: 8px;
+    background: #000;
+    border: 1px solid #222;
+    font-size: 12px;
 }
 
 /* LOG */
@@ -57,11 +64,11 @@ button:hover {
     height: 200px;
     overflow-y: auto;
     font-size: 12px;
-    background: #000;
+    background: black;
     padding: 5px;
 }
 
-/* KEY PAD */
+/* KEYPAD */
 #keypad {
     position: absolute;
     right: 20px;
@@ -74,32 +81,37 @@ button:hover {
 .keyrow button {
     width: 60px;
 }
-
-/* STATUS */
-#status {
-    padding: 10px;
-}
 </style>
 </head>
 
 <body>
 
 <div id="topbar">
-    <div>SECURITY PANEL</div>
+    <div>SECURITY PANEL PRO</div>
     <div id="status">STATUS: ARMED</div>
 </div>
 
-<div id="panel">
+<div id="container">
 
 <div id="left">
-    <h3>Alarms</h3>
+    <h3>Controls</h3>
 
-    <button onclick="startAlarm('smoke')">Smoke Alarm</button>
+    <button onclick="setMode('HOME')">HOME MODE</button>
+    <button onclick="setMode('AWAY')">AWAY MODE</button>
+    <button onclick="setMode('DISARMED')">DISARM</button>
+
+    <h3>Manual Triggers</h3>
     <button onclick="startAlarm('door')">Door Alarm</button>
     <button onclick="startAlarm('motion')">Motion Alarm</button>
+    <button onclick="startAlarm('smoke')">Smoke Alarm</button>
 
-    <button onclick="enablePanicMode()">Panic Mode</button>
+    <button onclick="enablePanic()">PANIC</button>
     <button onclick="stopAlarm()">STOP</button>
+
+    <h3>ZONES</h3>
+    <div class="zone" id="doorZone">Door: OK</div>
+    <div class="zone" id="windowZone">Window: OK</div>
+    <div class="zone" id="motionZone">Motion: OK</div>
 
     <div id="log"></div>
 </div>
@@ -109,6 +121,7 @@ button:hover {
 <!-- KEYPAD -->
 <div id="keypad">
     <div id="display">----</div>
+
     <div class="keyrow">
         <button onclick="press(1)">1</button>
         <button onclick="press(2)">2</button>
@@ -134,12 +147,16 @@ button:hover {
 <script>
 let audioCtx;
 let alarmActive = false;
-let panicMode = false;
+let panic = false;
+
+let alarmToken = 0;
+
+let mode = "ARMED";
 
 let pin = "";
 const correctPin = "1234";
-let locked = true;
 let attempts = 0;
+let locked = true;
 
 // ---------------- LOG ----------------
 function log(msg) {
@@ -148,90 +165,99 @@ function log(msg) {
     el.scrollTop = el.scrollHeight;
 }
 
-// ---------------- SCREEN FLASH ----------------
-function flash(intensity="normal") {
-    let color = "rgba(255,0,0,0.3)";
-    let time = 150;
-
-    if (intensity === "high") {
-        color = "rgba(255,0,0,0.7)";
-        time = 80;
-    }
-
-    document.body.style.background = color;
-    setTimeout(() => document.body.style.background = "#0b0f14", time);
+// ---------------- STATUS ----------------
+function setMode(m) {
+    mode = m;
+    document.getElementById("status").innerText = "STATUS: " + m;
+    log("Mode: " + m);
 }
 
-// ---------------- BEEP ----------------
-function beep(freq=3200, dur=0.15) {
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
+// ---------------- AUDIO ----------------
+function beep(f=3000,d=0.15) {
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
 
-    osc.frequency.value = freq;
-    osc.type = "square";
+    o.frequency.value = f;
+    o.type = "square";
 
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
+    o.connect(g);
+    g.connect(audioCtx.destination);
 
-    osc.start();
-    setTimeout(() => osc.stop(), dur*1000);
+    o.start();
+    setTimeout(()=>o.stop(), d*1000);
+}
+
+// ---------------- FLASH ----------------
+function flash() {
+    document.body.style.background = "rgba(255,0,0,0.4)";
+    setTimeout(()=>document.body.style.background="#0b0f14",120);
 }
 
 // ---------------- PATTERNS ----------------
-function smoke() {
-    beep(); setTimeout(beep,250); setTimeout(beep,500);
+function smoke(t) {
+    if (!alarmActive || t !== alarmToken) return;
+
+    beep(); setTimeout(()=>beep(),250); setTimeout(()=>beep(),500);
     flash();
 
-    setTimeout(() => {
-        if (alarmActive) setTimeout(smoke, panicMode ? 1200 : 2000);
-    }, 800);
+    setTimeout(()=>{
+        if (alarmActive && t === alarmToken)
+            setTimeout(()=>smoke(t), panic ? 1000 : 2000);
+    },800);
 }
 
-function door() {
+function door(t) {
+    if (!alarmActive || t !== alarmToken) return;
+
     beep(1800,0.2);
     flash();
 
-    setTimeout(() => {
-        if (alarmActive) setTimeout(door, panicMode ? 700 : 1500);
-    }, 500);
+    setTimeout(()=>{
+        if (alarmActive && t === alarmToken)
+            setTimeout(()=>door(t), panic ? 600 : 1500);
+    },500);
 }
 
-function motion() {
+function motion(t) {
+    if (!alarmActive || t !== alarmToken) return;
+
     beep(2800,0.1);
-    setTimeout(() => beep(2800,0.1),200);
+    setTimeout(()=>beep(2800,0.1),200);
     flash();
 
-    setTimeout(() => {
-        if (alarmActive) setTimeout(motion, panicMode ? 900 : 1800);
-    }, 600);
+    setTimeout(()=>{
+        if (alarmActive && t === alarmToken)
+            setTimeout(()=>motion(t), panic ? 800 : 1800);
+    },600);
 }
 
-// ---------------- START ----------------
+// ---------------- START ALARM ----------------
 function startAlarm(type) {
-    if (!audioCtx) audioCtx = new AudioContext();
+    if (alarmActive) return;
+
+    audioCtx = new AudioContext();
     alarmActive = true;
-    panicMode = false;
+    alarmToken++;
 
-    log("Alarm: " + type);
+    log("ALARM: " + type);
 
-    if (type === "smoke") smoke();
-    if (type === "door") door();
-    if (type === "motion") motion();
+    if (type==="smoke") smoke(alarmToken);
+    if (type==="door") door(alarmToken);
+    if (type==="motion") motion(alarmToken);
 }
 
 // ---------------- PANIC ----------------
-function enablePanicMode() {
-    panicMode = true;
-    log("PANIC MODE ACTIVATED");
+function enablePanic() {
+    panic = true;
+    log("PANIC MODE");
 
-    let i = 0;
-    function strobe() {
-        if (!alarmActive || !panicMode) return;
+    let i=0;
+    function strobe(){
+        if (!alarmActive || !panic) return;
+        document.body.style.background="rgba(255,0,0,0.8)";
+        setTimeout(()=>document.body.style.background="#0b0f14",60);
 
-        document.body.style.background = "rgba(255,0,0,0.8)";
-        setTimeout(() => document.body.style.background = "#0b0f14", 60);
-
-        if (i++ < 25) setTimeout(strobe, 100);
+        if(i++<30) setTimeout(strobe,100);
     }
     strobe();
 }
@@ -239,38 +265,41 @@ function enablePanicMode() {
 // ---------------- STOP ----------------
 function stopAlarm() {
     alarmActive = false;
-    panicMode = false;
+    panic = false;
+    alarmToken++;
 
     if (audioCtx) {
         audioCtx.close();
-        audioCtx = null;
+        audioCtx=null;
     }
 
-    log("Alarm stopped");
+    log("ALARM STOPPED");
 }
 
-// ---------------- KEYPAD ----------------
-function press(n) {
+// ---------------- PIN ----------------
+function press(n){
     if (locked) return;
-    if (pin.length < 4) pin += n;
-    document.getElementById("display").innerText = pin.padEnd(4,"-");
+    if(pin.length<4) pin+=n;
+    document.getElementById("display").innerText=pin.padEnd(4,"-");
 }
 
-function clearPin() {
-    pin = "";
-    document.getElementById("display").innerText = "----";
+function clearPin(){
+    pin="";
+    document.getElementById("display").innerText="----";
 }
 
-function submitPin() {
-    if (pin === correctPin) {
-        locked = false;
-        log("PIN correct - unlocked");
-        document.getElementById("status").innerText = "STATUS: UNLOCKED";
+function submitPin(){
+    if(pin===correctPin){
+        locked=false;
+        attempts=0;
+        setMode("DISARMED");
+        log("PIN OK");
     } else {
         attempts++;
-        log("Wrong PIN");
+        log("WRONG PIN");
 
-        if (attempts >= 3) {
+        if(attempts>=3){
+            log("LOCKDOWN");
             startAlarm("door");
         }
     }
