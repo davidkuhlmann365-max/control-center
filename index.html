@@ -2,309 +2,276 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Security System PRO</title>
+<title>SECURITY SYSTEM V3</title>
 
 <style>
 body {
-    margin: 0;
-    font-family: Arial;
-    background: #0b0f14;
-    color: #00ff9d;
+    margin:0;
+    font-family:Arial;
+    background:#0b0f14;
+    color:#00ff9d;
 }
 
-/* TOP BAR */
-#topbar {
-    background: #111;
-    padding: 10px;
-    display: flex;
-    justify-content: space-between;
-    font-weight: bold;
+/* TOP */
+#top {
+    background:#111;
+    padding:10px;
+    display:flex;
+    justify-content:space-between;
 }
 
-/* LAYOUT */
-#container {
-    display: flex;
-    height: 100vh;
+/* MAIN */
+#wrap {
+    display:flex;
+    height:100vh;
 }
 
-/* LEFT PANEL */
 #left {
-    width: 320px;
-    background: #0f1720;
-    padding: 10px;
+    width:340px;
+    background:#0f1720;
+    padding:10px;
 }
 
 button {
-    width: 100%;
-    margin-top: 6px;
-    padding: 10px;
-    background: #111;
-    border: 1px solid #00ff9d;
-    color: #00ff9d;
-    cursor: pointer;
+    width:100%;
+    margin:5px 0;
+    padding:10px;
+    background:#111;
+    border:1px solid #00ff9d;
+    color:#00ff9d;
+    cursor:pointer;
 }
 
 button:hover {
-    background: #00ff9d;
-    color: black;
+    background:#00ff9d;
+    color:#000;
 }
 
-/* ZONES */
 .zone {
-    margin-top: 10px;
-    padding: 8px;
-    background: #000;
-    border: 1px solid #222;
-    font-size: 12px;
+    background:#000;
+    padding:6px;
+    margin-top:6px;
+    font-size:12px;
+    border:1px solid #222;
 }
 
-/* LOG */
 #log {
-    margin-top: 10px;
-    height: 200px;
-    overflow-y: auto;
-    font-size: 12px;
-    background: black;
-    padding: 5px;
-}
-
-/* KEYPAD */
-#keypad {
-    position: absolute;
-    right: 20px;
-    top: 80px;
-    background: #111;
-    padding: 10px;
-    border: 1px solid #00ff9d;
-}
-
-.keyrow button {
-    width: 60px;
+    margin-top:10px;
+    height:220px;
+    overflow:auto;
+    font-size:12px;
+    background:#000;
+    padding:5px;
 }
 </style>
 </head>
 
 <body>
 
-<div id="topbar">
-    <div>SECURITY PANEL PRO</div>
-    <div id="status">STATUS: ARMED</div>
+<div id="top">
+    <div>SECURITY SYSTEM V3</div>
+    <div id="status">DISARMED</div>
 </div>
 
-<div id="container">
+<div id="wrap">
 
 <div id="left">
-    <h3>Controls</h3>
 
-    <button onclick="setMode('HOME')">HOME MODE</button>
-    <button onclick="setMode('AWAY')">AWAY MODE</button>
-    <button onclick="setMode('DISARMED')">DISARM</button>
+<h3>MODE</h3>
+<button onclick="setMode('HOME')">HOME</button>
+<button onclick="setMode('AWAY')">AWAY</button>
+<button onclick="setMode('NIGHT')">NIGHT</button>
+<button onclick="setMode('DISARMED')">DISARM</button>
 
-    <h3>Manual Triggers</h3>
-    <button onclick="startAlarm('door')">Door Alarm</button>
-    <button onclick="startAlarm('motion')">Motion Alarm</button>
-    <button onclick="startAlarm('smoke')">Smoke Alarm</button>
+<h3>ALARM TEST</h3>
+<button onclick="trigger('door')">Door</button>
+<button onclick="trigger('motion')">Motion</button>
+<button onclick="trigger('smoke')">Smoke</button>
 
-    <button onclick="enablePanic()">PANIC</button>
-    <button onclick="stopAlarm()">STOP</button>
+<button onclick="panicMode()">PANIC</button>
+<button onclick="stopAll()">STOP</button>
 
-    <h3>ZONES</h3>
-    <div class="zone" id="doorZone">Door: OK</div>
-    <div class="zone" id="windowZone">Window: OK</div>
-    <div class="zone" id="motionZone">Motion: OK</div>
+<h3>ZONES</h3>
+<div class="zone" id="z1">Door: OK</div>
+<div class="zone" id="z2">Window: OK</div>
+<div class="zone" id="z3">Motion: OK</div>
 
-    <div id="log"></div>
+<div id="log"></div>
+
 </div>
 
-</div>
-
-<!-- KEYPAD -->
-<div id="keypad">
-    <div id="display">----</div>
-
-    <div class="keyrow">
-        <button onclick="press(1)">1</button>
-        <button onclick="press(2)">2</button>
-        <button onclick="press(3)">3</button>
-    </div>
-    <div class="keyrow">
-        <button onclick="press(4)">4</button>
-        <button onclick="press(5)">5</button>
-        <button onclick="press(6)">6</button>
-    </div>
-    <div class="keyrow">
-        <button onclick="press(7)">7</button>
-        <button onclick="press(8)">8</button>
-        <button onclick="press(9)">9</button>
-    </div>
-    <div class="keyrow">
-        <button onclick="clearPin()">C</button>
-        <button onclick="press(0)">0</button>
-        <button onclick="submitPin()">OK</button>
-    </div>
 </div>
 
 <script>
+
+/* =========================
+   🧠 STATE MACHINE CORE
+========================= */
+
+const STATE = {
+    mode: "DISARMED",
+    alarm: false,
+    panic: false,
+    token: 0
+};
+
 let audioCtx;
-let alarmActive = false;
-let panic = false;
 
-let alarmToken = 0;
+/* =========================
+   🧾 LOG SYSTEM
+========================= */
 
-let mode = "ARMED";
-
-let pin = "";
-const correctPin = "1234";
-let attempts = 0;
-let locked = true;
-
-// ---------------- LOG ----------------
-function log(msg) {
-    const el = document.getElementById("log");
-    el.innerHTML += msg + "<br>";
-    el.scrollTop = el.scrollHeight;
+function log(msg){
+    const t = new Date().toLocaleTimeString();
+    document.getElementById("log").innerHTML += `[${t}] ${msg}<br>`;
 }
 
-// ---------------- STATUS ----------------
-function setMode(m) {
-    mode = m;
-    document.getElementById("status").innerText = "STATUS: " + m;
-    log("Mode: " + m);
+/* =========================
+   📟 STATUS
+========================= */
+
+function setStatus(){
+    document.getElementById("status").innerText =
+        STATE.mode + (STATE.alarm ? " | ALARM" : "");
 }
 
-// ---------------- AUDIO ----------------
-function beep(f=3000,d=0.15) {
+/* =========================
+   🔊 AUDIO ENGINE
+========================= */
+
+function beep(f=3000,d=0.12){
     const o = audioCtx.createOscillator();
     const g = audioCtx.createGain();
 
-    o.frequency.value = f;
-    o.type = "square";
+    o.frequency.value=f;
+    o.type="square";
 
     o.connect(g);
     g.connect(audioCtx.destination);
 
     o.start();
-    setTimeout(()=>o.stop(), d*1000);
+    setTimeout(()=>o.stop(),d*1000);
 }
 
-// ---------------- FLASH ----------------
-function flash() {
-    document.body.style.background = "rgba(255,0,0,0.4)";
-    setTimeout(()=>document.body.style.background="#0b0f14",120);
+/* =========================
+   🔴 FLASH
+========================= */
+
+function flash(){
+    document.body.style.background="rgba(255,0,0,0.5)";
+    setTimeout(()=>document.body.style.background="#0b0f14",100);
 }
 
-// ---------------- PATTERNS ----------------
-function smoke(t) {
-    if (!alarmActive || t !== alarmToken) return;
+/* =========================
+   🚨 ALARM ENGINE (SAFE)
+========================= */
 
-    beep(); setTimeout(()=>beep(),250); setTimeout(()=>beep(),500);
+function runAlarm(type, t){
+
+    if(!STATE.alarm || STATE.token !== t) return;
+
+    if(type==="smoke"){
+        beep(); setTimeout(()=>beep(),200); setTimeout(()=>beep(),400);
+    }
+
+    if(type==="door"){
+        beep(1800,0.2);
+    }
+
+    if(type==="motion"){
+        beep(2800,0.1);
+        setTimeout(()=>beep(2800,0.1),180);
+    }
+
     flash();
 
     setTimeout(()=>{
-        if (alarmActive && t === alarmToken)
-            setTimeout(()=>smoke(t), panic ? 1000 : 2000);
-    },800);
-}
-
-function door(t) {
-    if (!alarmActive || t !== alarmToken) return;
-
-    beep(1800,0.2);
-    flash();
-
-    setTimeout(()=>{
-        if (alarmActive && t === alarmToken)
-            setTimeout(()=>door(t), panic ? 600 : 1500);
-    },500);
-}
-
-function motion(t) {
-    if (!alarmActive || t !== alarmToken) return;
-
-    beep(2800,0.1);
-    setTimeout(()=>beep(2800,0.1),200);
-    flash();
-
-    setTimeout(()=>{
-        if (alarmActive && t === alarmToken)
-            setTimeout(()=>motion(t), panic ? 800 : 1800);
+        if(STATE.alarm && STATE.token===t){
+            setTimeout(()=>runAlarm(type,t), STATE.panic?900:1800);
+        }
     },600);
 }
 
-// ---------------- START ALARM ----------------
-function startAlarm(type) {
-    if (alarmActive) return;
+/* =========================
+   🚨 TRIGGER
+========================= */
 
-    audioCtx = new AudioContext();
-    alarmActive = true;
-    alarmToken++;
+function trigger(type){
 
-    log("ALARM: " + type);
+    if(STATE.mode==="DISARMED") {
+        log("IGNORED (DISARMED)");
+        return;
+    }
 
-    if (type==="smoke") smoke(alarmToken);
-    if (type==="door") door(alarmToken);
-    if (type==="motion") motion(alarmToken);
+    if(!audioCtx) audioCtx = new AudioContext();
+
+    STATE.alarm = true;
+    STATE.token++;
+
+    log("TRIGGER: "+type);
+
+    runAlarm(type, STATE.token);
+    setStatus();
 }
 
-// ---------------- PANIC ----------------
-function enablePanic() {
-    panic = true;
-    log("PANIC MODE");
+/* =========================
+   🧠 MODES
+========================= */
+
+function setMode(m){
+    STATE.mode = m;
+    STATE.alarm = false;
+    STATE.panic = false;
+    STATE.token++;
+
+    log("MODE: "+m);
+    setStatus();
+}
+
+/* =========================
+   🧨 PANIC
+========================= */
+
+function panicMode(){
+
+    if(!audioCtx) audioCtx = new AudioContext();
+
+    STATE.panic = true;
+    STATE.alarm = true;
+    STATE.token++;
+
+    log("PANIC ACTIVATED");
 
     let i=0;
     function strobe(){
-        if (!alarmActive || !panic) return;
-        document.body.style.background="rgba(255,0,0,0.8)";
+        document.body.style.background="rgba(255,0,0,0.9)";
         setTimeout(()=>document.body.style.background="#0b0f14",60);
 
-        if(i++<30) setTimeout(strobe,100);
+        if(i++<35) setTimeout(strobe,90);
     }
     strobe();
+
+    runAlarm("motion", STATE.token);
+    setStatus();
 }
 
-// ---------------- STOP ----------------
-function stopAlarm() {
-    alarmActive = false;
-    panic = false;
-    alarmToken++;
+/* =========================
+   ⛔ STOP
+========================= */
 
-    if (audioCtx) {
-        audioCtx.close();
-        audioCtx=null;
-    }
+function stopAll(){
+    STATE.alarm = false;
+    STATE.panic = false;
+    STATE.token++;
 
-    log("ALARM STOPPED");
+    log("STOP ALL");
+    setStatus();
+
+    document.body.style.background="#0b0f14";
 }
 
-// ---------------- PIN ----------------
-function press(n){
-    if (locked) return;
-    if(pin.length<4) pin+=n;
-    document.getElementById("display").innerText=pin.padEnd(4,"-");
-}
+setStatus();
 
-function clearPin(){
-    pin="";
-    document.getElementById("display").innerText="----";
-}
-
-function submitPin(){
-    if(pin===correctPin){
-        locked=false;
-        attempts=0;
-        setMode("DISARMED");
-        log("PIN OK");
-    } else {
-        attempts++;
-        log("WRONG PIN");
-
-        if(attempts>=3){
-            log("LOCKDOWN");
-            startAlarm("door");
-        }
-    }
-    clearPin();
-}
 </script>
 
 </body>
