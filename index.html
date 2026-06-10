@@ -1,3 +1,110 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Panel</title>
+
+<style>
+body {
+    margin: 0;
+    background: #05070c;
+    font-family: "Courier New", monospace;
+    color: #00ffcc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.panel {
+    width: 420px;
+    background: #0b0f14;
+    border: 2px solid #1affc6;
+    box-shadow: 0 0 25px #00ffcc33;
+    display: flex;
+    flex-direction: column;
+}
+
+/* DISPLAY */
+.screen {
+    background: black;
+    color: #00ff88;
+    padding: 12px;
+    min-height: 60px;
+    border-bottom: 1px solid #1affc6;
+}
+
+/* STATUS */
+.status {
+    padding: 8px;
+    font-size: 14px;
+    border-bottom: 1px solid #1affc6;
+}
+
+/* BUTTONS */
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 10px;
+}
+
+button {
+    padding: 12px;
+    background: #111;
+    border: 1px solid #1affc6;
+    color: #a8ffda;
+    font-family: monospace;
+}
+
+/* LOG */
+.log {
+    height: 160px;
+    overflow-y: auto;
+    background: #000;
+    border-top: 1px solid #1affc6;
+    font-size: 11px;
+    padding: 6px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+
+<div class="screen" id="screen">SYSTEM READY</div>
+
+<div class="status" id="state">DISARMED</div>
+
+<div class="buttons">
+<button onclick="arm()">ARM</button>
+<button onclick="disarm()">DISARM</button>
+<button onclick="trigger()">TRIGGER</button>
+</div>
+
+<div class="log" id="log"></div>
+
+</div>
+
+<script>
+
+let state = "DISARMED";
+let pin = "1234";
+
+/* ---------------- STATE ---------------- */
+function setState(s) {
+    state = s;
+    document.getElementById("state").innerText = s;
+}
+
+/* ---------------- SCREEN ---------------- */
+function screen(t) {
+    document.getElementById("screen").innerText = t;
+}
+
+/* ---------------- LOG ---------------- */
 function log(msg, type="info") {
     let t = new Date().toLocaleTimeString();
 
@@ -7,22 +114,84 @@ function log(msg, type="info") {
     if (type === "blue") icon = "📘";
 
     let el = document.createElement("div");
+    el.style.padding = "4px";
+    el.style.borderBottom = "1px solid #111";
 
-    el.style.padding = "6px";
-    el.style.borderBottom = "1px solid #1affc622";
-    el.style.fontSize = "12px";
-
-    el.innerHTML = `
-        <span style="opacity:0.7">[${t}]</span>
-        <b style="margin-left:6px">${icon} ${msg}</b>
-    `;
+    el.innerHTML = `[${t}] ${icon} ${msg}`;
 
     document.getElementById("log").appendChild(el);
     document.getElementById("log").scrollTop = 999999;
-}.screen {
-    font-family: "Courier New", monospace;
-    letter-spacing: 1px;
-    background: black;
-    color: #00ff88;
-    padding: 10px;
 }
+
+/* ---------------- ARM ---------------- */
+function arm() {
+    setState("EXIT DELAY");
+    screen("LEAVE AREA...");
+
+    let t = 5;
+
+    let i = setInterval(() => {
+        screen("ARMING IN " + t);
+        t--;
+
+        if (t < 0) {
+            clearInterval(i);
+            setState("ARMED");
+            screen("SYSTEM ARMED");
+            log("SYSTEM ARMED");
+        }
+    }, 1000);
+}
+
+/* ---------------- DISARM ---------------- */
+function disarm() {
+    let input = prompt("PIN eingeben:");
+
+    if (input === pin) {
+        setState("DISARMED");
+        screen("SYSTEM OFF");
+        log("DISARMED");
+    } else {
+        setState("ALARM");
+        screen("WRONG PIN");
+        log("WRONG PIN", "red");
+    }
+}
+
+/* ---------------- TRIGGER ---------------- */
+function trigger() {
+    if (state === "ARMED") {
+        setState("ALARM");
+        screen("ALARM ACTIVE");
+        log("INTRUSION DETECTED", "red");
+
+        alarmSound();
+    }
+}
+
+/* ---------------- SOUND ---------------- */
+function alarmSound() {
+    let ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    let osc = ctx.createOscillator();
+    let gain = ctx.createGain();
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.frequency.value = 300;
+    osc.type = "square";
+
+    gain.gain.value = 0.05;
+
+    osc.start();
+
+    setInterval(() => {
+        osc.frequency.value = osc.frequency.value === 300 ? 600 : 300;
+    }, 400);
+}
+
+</script>
+
+</body>
+</html>
