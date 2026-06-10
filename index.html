@@ -3,78 +3,72 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PRO Security Panel</title>
+<title>PRO Security Panel Advanced</title>
 
 <style>
-body {
-    margin:0;
-    background:#05070c;
-    font-family:monospace;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-    color:#00ffcc;
+body{
+margin:0;
+background:#05070c;
+font-family:monospace;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+color:#00ffcc;
 }
 
-.panel {
-    width:430px;
-    background:#0b0f14;
-    border:2px solid #1affc6;
-    box-shadow:0 0 25px #00ffcc33;
-    display:flex;
-    flex-direction:column;
+.panel{
+width:440px;
+background:#0b0f14;
+border:2px solid #1affc6;
+box-shadow:0 0 25px #00ffcc33;
+display:flex;
+flex-direction:column;
 }
 
-.screen {
-    background:black;
-    color:#00ff88;
-    padding:12px;
-    min-height:80px;
-    border-bottom:1px solid #1affc6;
-    white-space:pre-line;
+.screen{
+background:black;
+color:#00ff88;
+padding:12px;
+min-height:90px;
+border-bottom:1px solid #1affc6;
+white-space:pre-line;
 }
 
-.ledbar {
-    display:flex;
-    justify-content:space-around;
-    padding:6px;
-    border-bottom:1px solid #1affc6;
+.ledbar{
+display:flex;
+justify-content:space-around;
+padding:6px;
+border-bottom:1px solid #1affc6;
 }
 
-.led {
-    width:10px;
-    height:10px;
-    border-radius:50%;
-    background:#222;
+.led{width:10px;height:10px;border-radius:50%;background:#222;}
+.g{background:#00ff88;}
+.y{background:#ffcc00;}
+.r{background:#ff3b3b;}
+
+.keypad{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:5px;
+padding:10px;
 }
 
-.on-g {background:#00ff88;}
-.on-y {background:#ffcc00;}
-.on-r {background:#ff3b3b;}
-
-.keypad {
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:5px;
-    padding:10px;
+button{
+padding:12px;
+background:#111;
+border:1px solid #1affc6;
+color:#a8ffda;
+cursor:pointer;
 }
 
-button {
-    padding:12px;
-    background:#111;
-    border:1px solid #1affc6;
-    color:#a8ffda;
-    cursor:pointer;
-}
-
-.log {
-    height:140px;
-    overflow:auto;
-    background:#000;
-    border-top:1px solid #1affc6;
-    font-size:11px;
-    padding:6px;
+.log{
+height:130px;
+overflow:auto;
+background:#000;
+border-top:1px solid #1affc6;
+font-size:11px;
+padding:6px;
 }
 </style>
 </head>
@@ -86,17 +80,17 @@ button {
 <div class="screen" id="screen">SYSTEM READY</div>
 
 <div class="ledbar">
-<div class="led" id="ready"></div>
-<div class="led" id="armed"></div>
-<div class="led" id="trouble"></div>
-<div class="led" id="alarm"></div>
+<div class="led" id="r"></div>
+<div class="led" id="g"></div>
+<div class="led" id="y"></div>
+<div class="led" id="a"></div>
 </div>
 
 <div class="keypad">
-<button onclick="k(1)">1</button><button onclick="k(2)">2</button><button onclick="k(3)">3</button>
-<button onclick="k(4)">4</button><button onclick="k(5)">5</button><button onclick="k(6)">6</button>
-<button onclick="k(7)">7</button><button onclick="k(8)">8</button><button onclick="k(9)">9</button>
-<button onclick="clr()">CLR</button><button onclick="k(0)">0</button><button onclick="ok()">OK</button>
+<button onclick="key(1)">1</button><button onclick="key(2)">2</button><button onclick="key(3)">3</button>
+<button onclick="key(4)">4</button><button onclick="key(5)">5</button><button onclick="key(6)">6</button>
+<button onclick="key(7)">7</button><button onclick="key(8)">8</button><button onclick="key(9)">9</button>
+<button onclick="clr()">CLR</button><button onclick="key(0)">0</button><button onclick="ok()">OK</button>
 </div>
 
 <div class="log" id="log"></div>
@@ -105,33 +99,23 @@ button {
 
 <script>
 
-/* ---------------- STATE ---------------- */
+/* ---------------- CORE ---------------- */
 let pin="";
-let masterPIN="1234";
-let installerPIN="9999";
+let master="1234";
+let installer="9999";
 
-let mode="USER"; 
-// USER | INSTALLER
-
+let mode="USER";
 let state="READY";
-// READY | EXIT | ARMED | ENTRY | ALARM | TROUBLE
 
 /* ---------------- ZONES ---------------- */
 let zones={
- door:"NORMAL",
- window:"NORMAL",
- motion:"NORMAL",
- smoke:"NORMAL"
+ door:{state:"CLOSED",battery:100,signal:100,online:true},
+ window:{state:"CLOSED",battery:100,signal:100,online:true},
+ motion:{state:"CLOSED",battery:100,signal:100,online:true},
+ smoke:{state:"CLOSED",battery:100,signal:100,online:true}
 };
 
-/* ---------------- TROUBLE ---------------- */
-let trouble={
- battery:false,
- signal:false,
- zone:false,
- power:false
-};
-
+/* ---------------- SYSTEM ---------------- */
 let ctx;
 let osc;
 let alarmLoop;
@@ -140,174 +124,208 @@ let troubleLoop;
 /* ---------------- UI ---------------- */
 function screen(t){document.getElementById("screen").innerText=t;}
 
-function log(msg){
- let t=new Date().toLocaleTimeString();
- let el=document.createElement("div");
- el.innerText=`[${t}] ${msg}`;
- document.getElementById("log").appendChild(el);
- document.getElementById("log").scrollTop=999999;
+function log(m){
+let t=new Date().toLocaleTimeString();
+let el=document.createElement("div");
+el.innerText=`[${t}] ${m}`;
+document.getElementById("log").appendChild(el);
+document.getElementById("log").scrollTop=999999;
 }
 
-/* ---------------- LEDS ---------------- */
+/* ---------------- LED ---------------- */
 function leds(r,g,y,a){
- document.getElementById("ready").className="led "+(r?"on-g":"");
- document.getElementById("armed").className="led "+(g?"on-g":"");
- document.getElementById("trouble").className="led "+(y?"on-y":"");
- document.getElementById("alarm").className="led "+(a?"on-r":"");
+document.getElementById("r").className="led "+(r?"g":"");
+document.getElementById("g").className="led "+(g?"g":"");
+document.getElementById("y").className="led "+(y?"y":"");
+document.getElementById("a").className="led "+(a?"r":"");
 }
 
 /* ---------------- STATE ---------------- */
 function setState(s){
- state=s;
-
- if(s==="READY") leds(1,0,0,0);
- if(s==="ARMED") leds(0,1,0,0);
- if(s==="EXIT") leds(0,1,0,0);
- if(s==="ENTRY") leds(0,0,0,0);
- if(s==="ALARM") leds(0,0,0,1);
- if(s==="TROUBLE") leds(0,0,1,0);
-
- log("STATE → "+s);
+state=s;
+if(s==="READY")leds(1,0,0,0);
+if(s==="ARMED")leds(0,1,0,0);
+if(s==="TROUBLE")leds(0,0,1,0);
+if(s==="ALARM")leds(0,0,0,1);
+log("STATE → "+s);
 }
 
-/* ---------------- ZONES ---------------- */
-function showZones(){
- screen(
- `ZONES:\n`+
- `DOOR: ${zones.door}\n`+
- `WINDOW: ${zones.window}\n`+
- `MOTION: ${zones.motion}\n`+
- `SMOKE: ${zones.smoke}`
- );
+/* ---------------- SENSOR SIMULATION ---------------- */
+function updateSensors(){
+
+for(let z in zones){
+
+// 🔋 battery decay
+zones[z].battery -= Math.random()*0.2;
+
+// 📡 signal fluctuation
+zones[z].signal += (Math.random()-0.5)*2;
+
+// clamp
+zones[z].battery=Math.max(0,zones[z].battery);
+zones[z].signal=Math.max(0,Math.min(100,zones[z].signal));
+
+// 📡 random disconnect
+if(Math.random()<0.02){
+zones[z].online=false;
+zones[z].state="FAULT";
+log(z.toUpperCase()+" OFFLINE");
 }
 
-/* ---------------- FAULT ---------------- */
-function setFault(type){
- trouble[type]=true;
- checkTrouble();
- log("FAULT: "+type);
+// 🔋 low battery fault
+if(zones[z].battery<20){
+zones[z].state="FAULT";
 }
 
-function clearFaults(){
- for(let k in trouble) trouble[k]=false;
- stopTrouble();
- setState("READY");
- screen("TROUBLE CLEARED");
- log("ALL TROUBLE CLEARED");
+// restore chance
+if(Math.random()<0.01){
+zones[z].online=true;
+zones[z].state="CLOSED";
+}
 }
 
+checkTrouble();
+}
+
+/* ---------------- TROUBLE ---------------- */
 function checkTrouble(){
- let active=Object.values(trouble).includes(true);
 
- if(active){
-  setState("TROUBLE");
-  screen("SYSTEM TROUBLE");
-  startTrouble();
- }
+let trouble=false;
+
+for(let z in zones){
+if(!zones[z].online) trouble=true;
+if(zones[z].state==="FAULT") trouble=true;
+if(zones[z].battery<20) trouble=true;
 }
 
-/* ---------------- INSTALLER MODE ---------------- */
-function enterInstaller(){
- let p=prompt("INSTALLER PIN:");
- if(p===installerPIN){
-  mode="INSTALLER";
-  screen("INSTALLER MODE ACTIVE\n1=ZONES 2=FAULT RESET 3=EXIT");
-  log("INSTALLER MODE ENTERED");
- }else{
-  log("INSTALLER DENIED");
- }
+if(trouble && state!=="ALARM"){
+setState("TROUBLE");
+screen(renderDiag());
+startTrouble();
 }
 
-function installerAction(n){
- if(mode!=="INSTALLER") return;
+if(!trouble && state==="TROUBLE"){
+setState("READY");
+screen("SYSTEM READY");
+stopTrouble();
+}
+}
 
- if(n===1) showZones();
- if(n===2) clearFaults();
- if(n===3){mode="USER";screen("EXIT INSTALLER");}
+/* ---------------- DIAGNOSTIC SCREEN ---------------- */
+function renderDiag(){
+let out="INSTALLER DIAGNOSTIC\n\n";
+for(let z in zones){
+out+=`${z.toUpperCase()}\n`;
+out+=`STATE: ${zones[z].state}\n`;
+out+=`BAT: ${zones[z].battery.toFixed(0)}%\n`;
+out+=`SIG: ${zones[z].signal.toFixed(0)}%\n`;
+out+=`ONLINE: ${zones[z].online}\n\n`;
+}
+return out;
+}
+
+/* ---------------- INSTALLER ---------------- */
+function installerMode(){
+let p=prompt("INSTALLER PIN:");
+if(p===installer){
+mode="INSTALLER";
+screen(renderDiag());
+log("INSTALLER MODE");
+}else log("DENIED");
 }
 
 /* ---------------- KEYPAD ---------------- */
-function k(n){
- if(n==="INST"){enterInstaller();return;}
-
- if(pin.length<6)pin+=n;
- screen("PIN: "+"*".repeat(pin.length));
-}
+function key(n){if(pin.length<6)pin+=n;screen("*".repeat(pin.length));}
 
 function clr(){pin="";screen("CLEARED");}
 
 function ok(){
 
- if(mode==="INSTALLER"){
-  installerAction(parseInt(pin));
-  pin="";
-  return;
- }
+if(mode==="INSTALLER"){
+if(pin==="1")screen(renderDiag());
+if(pin==="2")resetAll();
+pin="";
+return;
+}
 
- if(pin===masterPIN){
-  setState("READY");
-  screen("DISARMED");
-  stopAlarm();
- }else{
-  setState("ALARM");
-  screen("WRONG PIN");
-  startAlarm();
- }
+if(pin===master){
+setState("READY");
+screen("DISARMED");
+stopAlarm();
+}else{
+setState("ALARM");
+screen("WRONG PIN");
+startAlarm();
+}
+pin="";
+}
 
- pin="";
+/* ---------------- RESET ---------------- */
+function resetAll(){
+for(let z in zones){
+zones[z].state="CLOSED";
+zones[z].battery=100;
+zones[z].signal=100;
+zones[z].online=true;
+}
+setState("READY");
+screen("RESET DONE");
+log("SYSTEM RESET");
 }
 
 /* ---------------- ALARM ---------------- */
 function startAlarm(){
- if(!ctx) ctx=new AudioContext();
- stopAlarm();
+if(!ctx)ctx=new AudioContext();
+stopAlarm();
 
- osc=ctx.createOscillator();
- let g=ctx.createGain();
+osc=ctx.createOscillator();
+let g=ctx.createGain();
 
- osc.connect(g);g.connect(ctx.destination);
+osc.connect(g);g.connect(ctx.destination);
 
- osc.type="square";
- g.gain.value=0.05;
+osc.type="square";
+g.gain.value=0.05;
 
- osc.start();
+osc.start();
 
- let up=false;
- alarmLoop=setInterval(()=>{
-  osc.frequency.value=up?900:400;
-  up=!up;
- },250);
+let up=false;
+alarmLoop=setInterval(()=>{
+osc.frequency.value=up?900:400;
+up=!up;
+},250);
 }
 
 function stopAlarm(){
- if(osc){osc.stop();osc=null;}
- if(alarmLoop){clearInterval(alarmLoop);alarmLoop=null;}
+if(osc){osc.stop();osc=null;}
+clearInterval(alarmLoop);
 }
 
 /* ---------------- TROUBLE SOUND ---------------- */
 function startTrouble(){
- if(!ctx) ctx=new AudioContext();
- stopTrouble();
+if(!ctx)ctx=new AudioContext();
+stopTrouble();
 
- troubleLoop=setInterval(()=>{
-  let o=ctx.createOscillator();
-  let g=ctx.createGain();
+troubleLoop=setInterval(()=>{
+let o=ctx.createOscillator();
+let g=ctx.createGain();
 
-  o.connect(g);g.connect(ctx.destination);
+o.connect(g);g.connect(ctx.destination);
 
-  o.frequency.value=700;
-  o.type="square";
-  g.gain.value=0.02;
+o.frequency.value=700;
+o.type="square";
+g.gain.value=0.02;
 
-  o.start();
-  setTimeout(()=>o.stop(),120);
- },45000);
+o.start();
+setTimeout(()=>o.stop(),120);
+},45000);
 }
 
 function stopTrouble(){
- clearInterval(troubleLoop);
- troubleLoop=null;
+clearInterval(troubleLoop);
 }
+
+/* ---------------- SENSOR LOOP ---------------- */
+setInterval(updateSensors,3000);
 
 /* INIT */
 setState("READY");
