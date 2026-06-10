@@ -2,390 +2,263 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>FIRE SYSTEM PRO V4</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V3 Security Panel</title>
 
 <style>
-body{
-margin:0;
-font-family:Arial;
-background:#0b0f14;
-color:#00ff9d;
+body {
+    margin: 0;
+    background: #0a0f1a;
+    color: #00ff99;
+    font-family: monospace;
+    overflow: hidden;
 }
 
-#top{
-background:#111;
-padding:10px;
-display:flex;
-justify-content:space-between;
+#screen {
+    display: none;
+    height: 100vh;
+    padding: 20px;
 }
 
-#wrap{
-display:flex;
-height:100vh;
+#login {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 }
 
-#left{
-width:360px;
-background:#0f1720;
-padding:10px;
+input {
+    font-size: 24px;
+    padding: 10px;
+    text-align: center;
+    width: 200px;
 }
 
-button{
-width:100%;
-margin:5px 0;
-padding:10px;
-background:#111;
-border:1px solid #00ff9d;
-color:#00ff9d;
-cursor:pointer;
+button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 18px;
+    cursor: pointer;
 }
 
-button:hover{
-background:#00ff9d;
-color:black;
+.panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
 
-#log{
-margin-top:10px;
-height:220px;
-overflow:auto;
-background:black;
-padding:5px;
-font-size:12px;
+.box {
+    border: 1px solid #00ff99;
+    padding: 10px;
 }
 
-.zone{
-background:black;
-padding:6px;
-margin-top:6px;
-font-size:12px;
-border:1px solid #222;
+.danger {
+    color: red;
+    font-weight: bold;
 }
+
+.log {
+    height: 150px;
+    overflow-y: auto;
+    border: 1px solid #00ff99;
+    padding: 5px;
+    font-size: 12px;
+}
+
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.keypad button {
+    font-size: 20px;
+}
+
 </style>
 </head>
 
 <body>
 
-<div id="top">
-<div>🔥 FIRE SYSTEM PRO V4</div>
-<div id="status">DISARMED</div>
+<div id="login">
+    <h2>SECURITY PANEL LOGIN</h2>
+    <input id="pin" type="password" placeholder="PIN">
+    <button onclick="checkPin()">ENTER</button>
 </div>
 
-<div id="wrap">
+<div id="screen">
 
-<div id="left">
+    <h2>🔐 V3 SECURITY PANEL</h2>
 
-<h3>MODES</h3>
-<button onclick="setMode('HOME')">HOME</button>
-<button onclick="setMode('AWAY')">AWAY</button>
-<button onclick="setMode('DISARMED')">DISARM</button>
+    <div class="panel">
 
-<h3>FIRE CONTROL</h3>
-<button onclick="trigger('smoke')">SMOKE</button>
-<button onclick="trigger('fire')">FIRE</button>
-<button onclick="trigger('motion')">MOTION</button>
+        <div class="box">
+            <h3>STATUS</h3>
+            <p id="status">DISARMED</p>
+            <button onclick="armSystem()">ARM SYSTEM</button>
+            <button onclick="disarmSystem()">DISARM</button>
+        </div>
 
-<button onclick="triggerFire()">🔥 FIRE SYSTEM</button>
-<button onclick="panic()">🚨 PANIC</button>
-<button onclick="stopAll()">STOP</button>
+        <div class="box">
+            <h3>CAMERA</h3>
+            <video id="cam" autoplay playsinline width="100%"></video>
+        </div>
 
-<div class="zone">Door: OK</div>
-<div class="zone">Window: OK</div>
-<div class="zone">Motion: OK</div>
+        <div class="box">
+            <h3>KEYPAD DISARM</h3>
+            <input id="code" type="password" readonly>
+            <div class="keypad">
+                <button onclick="addNum(1)">1</button>
+                <button onclick="addNum(2)">2</button>
+                <button onclick="addNum(3)">3</button>
+                <button onclick="addNum(4)">4</button>
+                <button onclick="addNum(5)">5</button>
+                <button onclick="addNum(6)">6</button>
+                <button onclick="addNum(7)">7</button>
+                <button onclick="addNum(8)">8</button>
+                <button onclick="addNum(9)">9</button>
+                <button onclick="clearCode()">C</button>
+                <button onclick="addNum(0)">0</button>
+                <button onclick="submitCode()">OK</button>
+            </div>
+        </div>
 
-<div id="log"></div>
+        <div class="box">
+            <h3>LOG</h3>
+            <div class="log" id="log"></div>
+        </div>
+
+        <div class="box">
+            <h3>BATTERY</h3>
+            <p id="battery">100%</p>
+            <p id="batteryWarn"></p>
+        </div>
+
+    </div>
 
 </div>
 
-</div>
+<audio id="alarmSound" loop>
+    <source src="alarm.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="lowBatterySound" loop>
+    <source src="lowbattery.mp3" type="audio/mpeg">
+</audio>
 
 <script>
-
-/* =====================
-   🧠 STATE ENGINE
-===================== */
-
-const STATE = {
-mode:"DISARMED",
-alarm:false,
-panic:false,
-fire:"NONE",
-token:0
-};
-
-let audioCtx;
-let voiceOverride=false;
-
-/* =====================
-   LOG
-===================== */
+const MASTER_PIN = "1234";
+let armed = false;
+let alarmActive = false;
+let inputCode = "";
+let battery = 100;
 
 function log(msg){
-const t=new Date().toLocaleTimeString();
-document.getElementById("log").innerHTML+=`[${t}] ${msg}<br>`;
+    const l = document.getElementById("log");
+    l.innerHTML += "["+new Date().toLocaleTimeString()+"] "+msg+"<br>";
+    l.scrollTop = l.scrollHeight;
 }
 
-/* =====================
-   STATUS
-===================== */
-
-function setStatus(){
-document.getElementById("status").innerText =
-STATE.mode + (STATE.alarm ? " | ALARM":"") + (STATE.fire!=="NONE" ? " | FIRE":"");
+function checkPin(){
+    let p = document.getElementById("pin").value;
+    if(p === MASTER_PIN){
+        document.getElementById("login").style.display = "none";
+        document.getElementById("screen").style.display = "block";
+        startCamera();
+        log("Login success");
+    } else {
+        alert("Falscher PIN");
+    }
 }
 
-/* =====================
-   AUDIO ENGINE
-===================== */
-
-function beep(f=3000,d=0.12){
-const o=audioCtx.createOscillator();
-const g=audioCtx.createGain();
-
-o.frequency.value=f;
-o.type="square";
-
-o.connect(g);
-g.connect(audioCtx.destination);
-
-o.start();
-setTimeout(()=>o.stop(),d*1000);
+function armSystem(){
+    armed = true;
+    document.getElementById("status").innerText = "ARMED";
+    log("System armed");
 }
 
-/* =====================
-   FLASH
-===================== */
-
-function flash(c="rgba(255,0,0,0.4)"){
-document.body.style.background=c;
-setTimeout(()=>document.body.style.background="#0b0f14",100);
+function disarmSystem(){
+    armed = false;
+    stopAlarm();
+    document.getElementById("status").innerText = "DISARMED";
+    log("System disarmed");
 }
 
-/* =====================
-   PA SYSTEM (Echo)
-===================== */
-
-function paSpeak(text, lang="en-US"){
-
-if(voiceOverride) return;
-
-speechSynthesis.cancel();
-
-const msg=new SpeechSynthesisUtterance(text);
-msg.lang=lang;
-msg.rate=1;
-msg.pitch=0.85;
-msg.volume=1;
-
-speechSynthesis.speak(msg);
-
-setTimeout(()=>{
-if(voiceOverride) return;
-
-const echo=new SpeechSynthesisUtterance(text);
-echo.lang=lang;
-echo.rate=0.9;
-echo.pitch=0.8;
-echo.volume=0.35;
-
-speechSynthesis.speak(echo);
-},600);
+function triggerAlarm(){
+    if(!alarmActive){
+        alarmActive = true;
+        document.getElementById("status").innerHTML = "<span class='danger'>ALARM ACTIVE</span>";
+        document.getElementById("alarmSound").play();
+        log("ALARM TRIGGERED");
+    }
 }
 
-/* =====================
-   CONTROL CENTER VOICE
-===================== */
-
-function controlCenter(text){
-voiceOverride=true;
-speechSynthesis.cancel();
-
-const msg=new SpeechSynthesisUtterance(text);
-msg.lang="en-US";
-msg.rate=1;
-msg.pitch=0.8;
-
-msg.onend=()=>voiceOverride=false;
-
-speechSynthesis.speak(msg);
+function stopAlarm(){
+    alarmActive = false;
+    document.getElementById("alarmSound").pause();
+    document.getElementById("alarmSound").currentTime = 0;
+    log("Alarm stopped");
 }
 
-/* =====================
-   EVACUATION VOICE
-===================== */
-
-function evac(level){
-
-if(level==="SMOKE"){
-paSpeak("Smoke detected in the building.","en-US");
-setTimeout(()=>paSpeak("Rauch im Gebäude festgestellt.","de-DE"),1000);
+function addNum(n){
+    inputCode += n;
+    document.getElementById("code").value = inputCode;
 }
 
-if(level==="FIRE"){
-paSpeak("Fire detected. Prepare to evacuate.","en-US");
-setTimeout(()=>paSpeak("Feuer im Gebäude. Evakuierung vorbereiten.","de-DE"),1000);
+function clearCode(){
+    inputCode = "";
+    document.getElementById("code").value = "";
 }
 
-if(level==="CRITICAL"){
-paSpeak("Leave the building immediately.","en-US");
-setTimeout(()=>paSpeak("Gebäude sofort verlassen.","de-DE"),1000);
-}
-}
-
-/* =====================
-   FIRE ENGINE
-===================== */
-
-function fireEngine(t){
-
-if(!STATE.alarm || STATE.token!==t) return;
-
-let freq=1800;
-
-if(STATE.fire==="SMOKE") freq=1500;
-if(STATE.fire==="FIRE") freq=2000;
-if(STATE.fire==="CRITICAL") freq=2600;
-
-const o=audioCtx.createOscillator();
-const g=audioCtx.createGain();
-
-o.frequency.value=freq;
-o.type="sawtooth";
-g.gain.value=0.3;
-
-o.connect(g);
-g.connect(audioCtx.destination);
-
-o.start();
-setTimeout(()=>o.stop(),500);
-
-flash(
-STATE.fire==="SMOKE"?"rgba(255,80,0,0.3)":
-STATE.fire==="FIRE"?"rgba(255,40,0,0.5)":
-"rgba(255,0,0,0.8)"
-);
-
-setTimeout(()=>{
-
-if(STATE.fire==="SMOKE") STATE.fire="FIRE";
-if(STATE.fire==="FIRE" && Math.random()>0.7) STATE.fire="CRITICAL";
-
-evac(STATE.fire);
-
-setTimeout(()=>fireEngine(t), STATE.fire==="CRITICAL"?600:1000);
-
-},800);
+function submitCode(){
+    if(inputCode === MASTER_PIN){
+        disarmSystem();
+    } else {
+        log("Wrong code attempt!");
+        triggerAlarm();
+    }
+    clearCode();
 }
 
-/* =====================
-   TRIGGER SYSTEM
-===================== */
-
-function trigger(type){
-
-if(STATE.mode==="DISARMED") return;
-
-if(!audioCtx) audioCtx=new AudioContext();
-
-STATE.alarm=true;
-STATE.token++;
-
-if(type==="smoke"){
-STATE.fire="SMOKE";
-log("SMOKE TRIGGER");
+function startCamera(){
+    navigator.mediaDevices.getUserMedia({video:true})
+    .then(stream=>{
+        document.getElementById("cam").srcObject = stream;
+    });
 }
 
-if(type==="fire"){
-STATE.fire="FIRE";
-log("FIRE TRIGGER");
-}
+// Simulated sensor trigger
+setInterval(()=>{
+    if(armed && Math.random() < 0.03){
+        triggerAlarm();
+    }
+}, 3000);
 
-if(type==="motion"){
-log("MOTION TRIGGER");
-beep(2800,0.1);
-}
+// Battery drain system
+setInterval(()=>{
+    battery -= 0.2;
+    if(battery < 0) battery = 0;
 
-fireEngine(STATE.token);
-setStatus();
-}
+    document.getElementById("battery").innerText = battery.toFixed(1) + "%";
 
-/* =====================
-   FIRE START
-===================== */
+    if(battery < 20){
+        document.getElementById("batteryWarn").innerText = "LOW BATTERY";
+        document.getElementById("lowBatterySound").play();
+    }
 
-function triggerFire(){
-if(!audioCtx) audioCtx=new AudioContext();
+    if(battery <= 5){
+        triggerAlarm();
+    }
+}, 2000);
 
-STATE.alarm=true;
-STATE.token++;
-STATE.fire="SMOKE";
-
-log("🔥 FIRE SYSTEM START");
-
-evac("SMOKE");
-fireEngine(STATE.token);
-
-setStatus();
-}
-
-/* =====================
-   PANIC
-===================== */
-
-function panic(){
-if(!audioCtx) audioCtx=new AudioContext();
-
-STATE.alarm=true;
-STATE.panic=true;
-STATE.token++;
-
-log("🚨 PANIC");
-
-let i=0;
-function st(){
-flash("rgba(255,0,0,0.9)");
-if(i++<40) setTimeout(st,80);
-}
-st();
-
-fireEngine(STATE.token);
-}
-
-/* =====================
-   MODE
-===================== */
-
-function setMode(m){
-STATE.mode=m;
-STATE.token++;
-STATE.alarm=false;
-STATE.fire="NONE";
-
-log("MODE "+m);
-setStatus();
-}
-
-/* =====================
-   STOP
-===================== */
-
-function stopAll(){
-
-STATE.alarm=false;
-STATE.panic=false;
-STATE.fire="NONE";
-STATE.token++;
-
-speechSynthesis.cancel();
-
-document.body.style.background="#0b0f14";
-
-log("STOP");
-setStatus();
-}
-
-setStatus();
-
+// ESC = keypad forced open (like real panel behavior)
+document.addEventListener("keydown", (e)=>{
+    if(e.key === "Escape"){
+        log("ESC pressed - keypad forced active");
+    }
+});
 </script>
 
 </body>
