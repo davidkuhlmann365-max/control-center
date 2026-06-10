@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>V10 Security Panel + Camera</title>
+<title>V10+ Security System</title>
 
 <style>
 body{
@@ -26,7 +26,6 @@ display:flex;
 flex-direction:column;
 }
 
-/* TOP LAYOUT */
 .top{
 display:flex;
 }
@@ -46,57 +45,52 @@ padding:14px;
 text-align:center;
 cursor:pointer;
 background:#0d141d;
-font-size:12px;
 }
 
 .ok{background:#0d141d;}
 .open{background:#ff3b3b66;}
-.trouble{background:#ffcc0040;}
 .offline{background:#66666655;}
+.trouble{background:#ffcc0040;}
 
-/* CAMERA */
 .cam{
 width:50%;
-background:black;
+background:#000;
+border-left:1px solid #1affc6;
 display:flex;
 flex-direction:column;
 align-items:center;
-justify-content:center;
-border-left:1px solid #1affc6;
 }
 
 video{
 width:100%;
-height:260px;
+height:240px;
 object-fit:cover;
 }
 
 .snap{
 width:100%;
 height:120px;
-background:#000;
-border-top:1px solid #1affc6;
+overflow:auto;
 font-size:11px;
 color:#00ff88;
-overflow:auto;
 padding:6px;
+border-top:1px solid #1affc6;
 }
 
-/* BOTTOM */
 .bottom{
 border-top:1px solid #1affc6;
 padding:10px;
-background:black;
+background:#000;
 }
 
 .screen{
 color:#00ff88;
-min-height:60px;
+min-height:70px;
 white-space:pre-line;
 }
 
 .log{
-height:110px;
+height:120px;
 overflow:auto;
 font-size:11px;
 margin-top:5px;
@@ -110,20 +104,16 @@ margin-top:5px;
 
 <div class="top">
 
-<!-- FLOOR -->
 <div class="floor">
-
 <div class="room" id="door" onclick="trigger('door')">DOOR</div>
 <div class="room" id="window" onclick="trigger('window')">WINDOW</div>
 <div class="room" id="motion" onclick="trigger('motion')">MOTION</div>
 <div class="room" id="smoke" onclick="trigger('smoke')">SMOKE</div>
-
 </div>
 
-<!-- CAMERA -->
 <div class="cam">
 <video id="video" autoplay></video>
-<div class="snap" id="snap">SNAPSHOT LOG</div>
+<div class="snap" id="snap">SNAP LOG</div>
 </div>
 
 </div>
@@ -138,26 +128,20 @@ margin-top:5px;
 <script>
 
 /* ---------------- CAMERA ---------------- */
-const video=document.getElementById("video");
+navigator.mediaDevices.getUserMedia({video:true})
+.then(s=>document.getElementById("video").srcObject=s);
 
-navigator.mediaDevices.getUserMedia({video:true,audio:false})
-.then(stream=>{
-video.srcObject=stream;
-})
-.catch(e=>{
-console.log("Camera blocked");
-});
-
-/* ---------------- SYSTEM ---------------- */
+/* ---------------- ZONES ---------------- */
 let zones={
-door:{state:"CLOSED",battery:100,online:true},
-window:{state:"CLOSED",battery:100,online:true},
-motion:{state:"CLOSED",battery:100,online:true},
-smoke:{state:"CLOSED",battery:100,online:true}
+door:{state:"CLOSED",battery:100,signal:100,online:true},
+window:{state:"CLOSED",battery:100,signal:100,online:true},
+motion:{state:"CLOSED",battery:100,signal:100,online:true},
+smoke:{state:"CLOSED",battery:100,signal:100,online:true}
 };
 
+/* ---------------- STATES ---------------- */
 let alarm=false;
-let trouble=false;
+let troubleLevel=0;
 
 /* ---------------- AUDIO ---------------- */
 let ctx,osc,loop;
@@ -166,47 +150,78 @@ function initAudio(){
 if(!ctx)ctx=new AudioContext();
 }
 
+function beep(f=800,t=120,v=0.03){
+initAudio();
+let o=ctx.createOscillator();
+let g=ctx.createGain();
+o.connect(g);g.connect(ctx.destination);
+o.type="square";
+o.frequency.value=f;
+g.gain.value=v;
+o.start();
+setTimeout(()=>o.stop(),t);
+}
+
 function stopSound(){
-if(loop)clearInterval(loop);
+clearInterval(loop);
 if(osc){try{osc.stop();}catch(e){}}
 }
 
-/* ---------------- SOUND ---------------- */
+/* ---------------- SOUND SYSTEM ---------------- */
 function alarmSound(){
 stopSound();
 initAudio();
-
 osc=ctx.createOscillator();
 let g=ctx.createGain();
-
 osc.connect(g);g.connect(ctx.destination);
-
 osc.type="square";
 g.gain.value=0.05;
-
 osc.start();
 
 let up=false;
-
 loop=setInterval(()=>{
 osc.frequency.value=up?900:400;
 up=!up;
 },220);
 }
 
-/* ---------------- SNAPSHOT ---------------- */
-function snapshot(event){
-let time=new Date().toLocaleTimeString();
-let log=document.getElementById("snap");
+function troubleSound(level){
 
-log.innerText+=`\n[${time}] EVENT: ${event}`;
-log.scrollTop=999999;
+stopSound();
+
+if(level<=2){
+loop=setInterval(()=>beep(700,120,0.02),45000);
+}
+
+else if(level===3){
+loop=setInterval(()=>beep(750,80,0.03),8000);
+}
+
+else if(level>=4){
+initAudio();
+osc=ctx.createOscillator();
+let g=ctx.createGain();
+osc.connect(g);g.connect(ctx.destination);
+osc.type="square";
+g.gain.value=0.04;
+osc.start();
+
+let up=false;
+loop=setInterval(()=>{
+osc.frequency.value=up?1000:600;
+up=!up;
+},150);
+}
+}
+
+/* ---------------- SNAPSHOT ---------------- */
+function snap(e){
+let t=new Date().toLocaleTimeString();
+document.getElementById("snap").innerText+=`\n[${t}] ${e}`;
 }
 
 /* ---------------- UI ---------------- */
-function screen(t){
-document.getElementById("screen").innerText=t;
-}
+function screen(t){document.getElementById("screen").innerText=t;}
 
 function log(m){
 let t=new Date().toLocaleTimeString();
@@ -217,83 +232,91 @@ document.getElementById("log").appendChild(el);
 
 /* ---------------- FLOOR ---------------- */
 function updateFloor(){
-
 for(let z in zones){
 let el=document.getElementById(z);
 let r=zones[z];
-
 el.className="room ok";
 
-if(r.state==="OPEN") el.classList.add("open");
-if(!r.online) el.classList.add("trouble");
+if(r.state==="OPEN")el.classList.add("open");
+if(!r.online)el.classList.add("offline");
+if(r.battery<20)el.classList.add("trouble");
 
 el.innerText=`${z.toUpperCase()}\n${r.state}`;
 }
 }
 
-/* ---------------- SYSTEM ---------------- */
+/* ---------------- TROUBLE ENGINE ---------------- */
+function evaluateTrouble(){
+
+let score=0;
+
+for(let z in zones){
+zones[z].battery-=Math.random()*0.2;
+
+if(zones[z].battery<20)score+=1;
+if(zones[z].battery<10)score+=2;
+
+if(!zones[z].online)score+=2;
+
+if(Math.random()<0.01)zones[z].online=false;
+if(Math.random()<0.005)zones[z].state="OPEN";
+}
+
+let newLevel=0;
+
+if(score===0)newLevel=0;
+else if(score<=2)newLevel=1;
+else if(score<=4)newLevel=2;
+else if(score<=6)newLevel=3;
+else newLevel=4;
+
+if(newLevel!==troubleLevel){
+troubleLevel=newLevel;
+log("TROUBLE LEVEL → "+newLevel);
+
+if(newLevel===0){
+screen("SYSTEM READY");
+stopSound();
+}
+
+else{
+screen("TROUBLE LEVEL "+newLevel);
+troubleSound(newLevel);
+snap("TROUBLE EVENT");
+}
+}
+}
+
+/* ---------------- SYSTEM CHECK ---------------- */
 function checkSystem(){
 
 alarm=false;
-trouble=false;
 
 for(let z in zones){
-if(zones[z].state==="OPEN") alarm=true;
-if(!zones[z].online) trouble=true;
+if(zones[z].state==="OPEN")alarm=true;
 }
 
 if(alarm){
 screen("ALARM ACTIVE");
 alarmSound();
-snapshot("ALARM TRIGGERED");
-}
-
-else if(trouble){
-screen("SYSTEM TROUBLE");
-}
-
-else{
-screen("SYSTEM READY");
+snap("ALARM TRIGGERED");
 }
 }
 
-/* ---------------- SIMULATION ---------------- */
-function simulate(){
-
-for(let z in zones){
-
-if(Math.random()<0.01){
-zones[z].state="OPEN";
-snapshot(z+" OPEN");
-}
-
-if(Math.random()<0.005){
-zones[z].online=false;
-log(z+" OFFLINE");
-}
-
-if(Math.random()<0.01){
-zones[z].state="CLOSED";
-zones[z].online=true;
-}
-
-}
-
-updateFloor();
-checkSystem();
-}
-
-/* ---------------- TRIGGER ---------------- */
+/* ---------------- USER ACTION ---------------- */
 function trigger(z){
 zones[z].state="OPEN";
-snapshot(z+" MANUAL TRIGGER");
 log(z+" TRIGGERED");
+snap(z+" MANUAL");
 checkSystem();
-updateFloor();
 }
 
-/* LOOP */
-setInterval(simulate,4000);
+/* ---------------- LOOP ---------------- */
+setInterval(()=>{
+evaluateTrouble();
+checkSystem();
+updateFloor();
+},3000);
 
 updateFloor();
 
