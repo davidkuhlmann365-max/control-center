@@ -1,294 +1,103 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>V8 Security System</title>
+let faultState = {
+    battery: false,
+    signal: false,
+    zone: false,
+    power: false
+};
 
-<style>
-body {
-    margin: 0;
-    font-family: Arial;
-    background: #05070c;
-    color: #00ffcc;
-}
+let troubleAcknowledge = false;
+let troubleBeepTimer = null;
 
-header {
-    text-align: center;
-    padding: 10px;
-    border-bottom: 1px solid #00ffcc33;
-}
-
-.container {
-    display: flex;
-    height: 100vh;
-}
-
-.left {
-    width: 40%;
-    padding: 10px;
-    border-right: 1px solid #00ffcc22;
-}
-
-.right {
-    width: 60%;
-    display: flex;
-    flex-direction: column;
-}
-
-.status {
-    font-size: 18px;
-    margin: 10px 0;
-}
-
-input {
-    width: 90%;
-    padding: 6px;
-    text-align: center;
-    font-size: 16px;
-}
-
-button {
-    margin: 4px;
-    padding: 6px;
-    background: #00ffcc;
-    border: none;
-}
-
-button:hover { background: #00ccaa; }
-
-.floor {
-    margin-top: 10px;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 5px;
-}
-
-.room {
-    padding: 10px;
-    border: 1px solid #00ffcc33;
-    text-align: center;
-    cursor: pointer;
-}
-
-.room.active {
-    background: #003d33;
-}
-
-.log {
-    flex: 1;
-    overflow-y: auto;
-    font-size: 12px;
-    background: #0a0f18;
-    padding: 6px;
-}
-
-.red { color: #ff4d4d; }
-.yellow { color: #ffd24d; }
-.blue { color: #4da6ff; }
-</style>
-</head>
-
-<body>
-
-<header>📟 V8 PRO SECURITY SYSTEM</header>
-
-<div class="container">
-
-<!-- LEFT PANEL -->
-<div class="left">
-
-<div class="status" id="status">STATE: DISARMED</div>
-
-<input id="pin" placeholder="PIN">
-
-<div>
-<button onclick="armSystem()">ARM</button>
-<button onclick="disarmSystem()">DISARM</button>
-<button onclick="setRole('user')">USER</button>
-<button onclick="setRole('installer')">INSTALLER</button>
-<button onclick="setRole('owner')">OWNER</button>
-</div>
-
-<h4>🏠 FLOORPLAN</h4>
-
-<div class="floor">
-<div class="room" onclick="triggerZone('door')">DOOR</div>
-<div class="room" onclick="triggerZone('window')">WINDOW</div>
-<div class="room" onclick="triggerZone('motion')">MOTION</div>
-<div class="room" onclick="triggerSmoke()">SMOKE</div>
-</div>
-
-</div>
-
-<!-- RIGHT PANEL -->
-<div class="right">
-<div class="log" id="log"></div>
-</div>
-
-</div>
-
-<script>
-
-/* ---------------- ROLES ---------------- */
-let role = "user";
-
-function setRole(r) {
-    role = r;
-    log("ROLE SET: " + r, "yellow");
-}
-
-/* ---------------- STATE MACHINE ---------------- */
-let state = "DISARMED";
-// DISARMED | EXIT_DELAY | ARMED | ENTRY_DELAY | ALARM
-
-let correctPIN = "1234";
-let masterPIN = "9999";
-
-let entryTimer = null;
-let exitTimer = null;
-
-/* ---------------- ALARM ENGINE ---------------- */
-let audioCtx;
-let osc;
-
-function tone(freq) {
-    if (!audioCtx) audioCtx = new AudioContext();
-
-    stopTone();
-
-    osc = audioCtx.createOscillator();
-    let gain = audioCtx.createGain();
-
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-
-    osc.frequency.value = freq;
-    osc.type = "square";
-    gain.gain.value = 0.08;
-
-    osc.start();
-}
-
-function stopTone() {
-    if (osc) {
-        osc.stop();
-        osc.disconnect();
-        osc = null;
-    }
-}
-
-/* ---------------- LOG ---------------- */
+// ---------------- LOG ----------------
 function log(msg, type="") {
     let t = new Date().toLocaleTimeString();
     document.getElementById("log").innerHTML +=
     `<span class="${type}">[${t}] ${msg}</span><br>`;
 }
 
-/* ---------------- STATE ---------------- */
-function updateState(s) {
-    state = s;
-    document.getElementById("status").innerText = "STATE: " + s;
-    log("STATE → " + s, "blue");
-}
+// ---------------- TROUBLE CHECK ----------------
+function updateTroubleState() {
+    let active = Object.values(faultState).some(v => v === true);
 
-/* ---------------- ARMING SEQUENCE ---------------- */
-function armSystem() {
-    if (role === "user" || role === "owner") {
-        updateState("EXIT_DELAY");
+    if (active && !troubleAcknowledge) {
+        setSystemState("TROUBLE");
+        startTroubleBeep();
+        log("⚠ SYSTEM TROUBLE ACTIVE", "yellow");
+    }
 
-        let countdown = 5;
-        log("EXIT DELAY START (5s)");
-
-        exitTimer = setInterval(() => {
-            log("ARMING IN: " + countdown);
-            countdown--;
-
-            if (countdown < 0) {
-                clearInterval(exitTimer);
-                updateState("ARMED");
-                log("SYSTEM ARMED");
-            }
-        }, 1000);
-    } else {
-        log("NO PERMISSION", "red");
+    if (!active) {
+        stopTroubleBeep();
+        setSystemState("READY");
     }
 }
 
-/* ---------------- DISARM ---------------- */
-function disarmSystem() {
-    let pin = document.getElementById("pin").value;
+// ---------------- STATE ----------------
+function setSystemState(state) {
+    document.getElementById("state").innerText = state;
+}
 
-    if (pin === correctPIN || pin === masterPIN) {
+// ---------------- FAULT TRIGGERS ----------------
+function triggerBatteryFault(device) {
+    faultState.battery = true;
+    log("BATTERY LOW: " + device, "yellow");
+    updateTroubleState();
+}
 
-        if (state === "ENTRY_DELAY") {
-            clearTimeout(entryTimer);
-        }
+function triggerSignalFault(device) {
+    faultState.signal = true;
+    log("SIGNAL LOSS: " + device, "yellow");
+    updateTroubleState();
+}
 
-        updateState("DISARMED");
-        stopTone();
-        log("SYSTEM DISARMED");
+function triggerZoneFault(zone) {
+    faultState.zone = true;
+    log("ZONE FAULT: " + zone, "yellow");
+    updateTroubleState();
+}
 
-    } else {
-        log("WRONG PIN", "red");
-        securityAlarm("Unauthorized disarm attempt");
+function triggerPowerFault() {
+    faultState.power = true;
+    log("POWER FAILURE (backup active)", "yellow");
+    updateTroubleState();
+}
+
+// ---------------- ACKNOWLEDGE ----------------
+function acknowledgeTrouble() {
+    troubleAcknowledge = true;
+    stopTroubleBeep();
+    setSystemState("ACKNOWLEDGED TROUBLE");
+    log("TROUBLE ACKNOWLEDGED", "blue");
+}
+
+// ---------------- TROUBLE BEEP (REALISTIC) ----------------
+let audioCtx;
+
+function startTroubleBeep() {
+    if (troubleBeepTimer) return;
+
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function beep() {
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.frequency.value = 800; // typische fault frequency
+        osc.type = "square";
+        gain.gain.value = 0.03;
+
+        osc.start();
+        setTimeout(() => osc.stop(), 120);
     }
+
+    troubleBeepTimer = setInterval(() => {
+        beep();
+    }, 45000); // realistisch: selten
 }
 
-/* ---------------- ZONES ---------------- */
-function triggerZone(z) {
-    log("ZONE TRIGGER: " + z);
-
-    if (state === "ARMED") {
-        startEntryDelay();
-    }
+function stopTroubleBeep() {
+    clearInterval(troubleBeepTimer);
+    troubleBeepTimer = null;
 }
-
-/* ---------------- ENTRY DELAY ---------------- */
-function startEntryDelay() {
-    if (state !== "ARMED") return;
-
-    updateState("ENTRY_DELAY");
-    tone(300);
-
-    log("ENTRY DELAY (10s)");
-
-    entryTimer = setTimeout(() => {
-        alarm("INTRUSION");
-    }, 10000);
-}
-
-/* ---------------- FIRE SYSTEM ---------------- */
-function triggerSmoke() {
-    fireAlarm("SMOKE DETECTED");
-}
-
-function fireAlarm(reason) {
-    updateState("FIRE ALARM");
-    log("🔥 " + reason, "red");
-
-    tone(900);
-}
-
-/* ---------------- SECURITY ALARM ---------------- */
-function securityAlarm(reason) {
-    if (state === "FIRE ALARM") return;
-
-    updateState("ALARM");
-    log("🚨 " + reason, "red");
-
-    tone(200);
-}
-
-/* ---------------- FINAL ALARM ---------------- */
-function alarm(reason) {
-    updateState("ALARM");
-    log("🚨 ALARM: " + reason, "red");
-
-    tone(180);
-}
-
-</script>
-
-</body>
-</html>
