@@ -1,103 +1,28 @@
-let faultState = {
-    battery: false,
-    signal: false,
-    zone: false,
-    power: false
-};
-
-let troubleAcknowledge = false;
-let troubleBeepTimer = null;
-
-// ---------------- LOG ----------------
-function log(msg, type="") {
+function log(msg, type="info") {
     let t = new Date().toLocaleTimeString();
-    document.getElementById("log").innerHTML +=
-    `<span class="${type}">[${t}] ${msg}</span><br>`;
-}
 
-// ---------------- TROUBLE CHECK ----------------
-function updateTroubleState() {
-    let active = Object.values(faultState).some(v => v === true);
+    let icon = "ℹ️";
+    if (type === "red") icon = "🚨";
+    if (type === "yellow") icon = "⚠️";
+    if (type === "blue") icon = "📘";
 
-    if (active && !troubleAcknowledge) {
-        setSystemState("TROUBLE");
-        startTroubleBeep();
-        log("⚠ SYSTEM TROUBLE ACTIVE", "yellow");
-    }
+    let el = document.createElement("div");
 
-    if (!active) {
-        stopTroubleBeep();
-        setSystemState("READY");
-    }
-}
+    el.style.padding = "6px";
+    el.style.borderBottom = "1px solid #1affc622";
+    el.style.fontSize = "12px";
 
-// ---------------- STATE ----------------
-function setSystemState(state) {
-    document.getElementById("state").innerText = state;
-}
+    el.innerHTML = `
+        <span style="opacity:0.7">[${t}]</span>
+        <b style="margin-left:6px">${icon} ${msg}</b>
+    `;
 
-// ---------------- FAULT TRIGGERS ----------------
-function triggerBatteryFault(device) {
-    faultState.battery = true;
-    log("BATTERY LOW: " + device, "yellow");
-    updateTroubleState();
-}
-
-function triggerSignalFault(device) {
-    faultState.signal = true;
-    log("SIGNAL LOSS: " + device, "yellow");
-    updateTroubleState();
-}
-
-function triggerZoneFault(zone) {
-    faultState.zone = true;
-    log("ZONE FAULT: " + zone, "yellow");
-    updateTroubleState();
-}
-
-function triggerPowerFault() {
-    faultState.power = true;
-    log("POWER FAILURE (backup active)", "yellow");
-    updateTroubleState();
-}
-
-// ---------------- ACKNOWLEDGE ----------------
-function acknowledgeTrouble() {
-    troubleAcknowledge = true;
-    stopTroubleBeep();
-    setSystemState("ACKNOWLEDGED TROUBLE");
-    log("TROUBLE ACKNOWLEDGED", "blue");
-}
-
-// ---------------- TROUBLE BEEP (REALISTIC) ----------------
-let audioCtx;
-
-function startTroubleBeep() {
-    if (troubleBeepTimer) return;
-
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-    function beep() {
-        let osc = audioCtx.createOscillator();
-        let gain = audioCtx.createGain();
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.frequency.value = 800; // typische fault frequency
-        osc.type = "square";
-        gain.gain.value = 0.03;
-
-        osc.start();
-        setTimeout(() => osc.stop(), 120);
-    }
-
-    troubleBeepTimer = setInterval(() => {
-        beep();
-    }, 45000); // realistisch: selten
-}
-
-function stopTroubleBeep() {
-    clearInterval(troubleBeepTimer);
-    troubleBeepTimer = null;
+    document.getElementById("log").appendChild(el);
+    document.getElementById("log").scrollTop = 999999;
+}.screen {
+    font-family: "Courier New", monospace;
+    letter-spacing: 1px;
+    background: black;
+    color: #00ff88;
+    padding: 10px;
 }
