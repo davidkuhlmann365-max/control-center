@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Security Panel</title>
+<title>PRO Security Panel</title>
 
 <style>
 body {
     margin: 0;
     background: #05070c;
     font-family: "Courier New", monospace;
-    color: #00ffcc;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    color: #00ffcc;
 }
 
 .panel {
@@ -31,36 +31,50 @@ body {
     background: black;
     color: #00ff88;
     padding: 12px;
-    min-height: 60px;
+    min-height: 70px;
     border-bottom: 1px solid #1affc6;
-}
-
-/* STATUS */
-.status {
-    padding: 8px;
     font-size: 14px;
+    letter-spacing: 1px;
+}
+
+/* LED BAR */
+.ledbar {
+    display: flex;
+    justify-content: space-around;
+    padding: 6px;
     border-bottom: 1px solid #1affc6;
 }
 
-/* BUTTONS */
-.buttons {
+.led {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #222;
+}
+
+.on-green { background: #00ff88; }
+.on-yellow { background: #ffcc00; }
+.on-red { background: #ff3b3b; }
+
+/* KEYPAD */
+.keypad {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    gap: 5px;
     padding: 10px;
 }
 
 button {
-    padding: 12px;
+    padding: 14px;
     background: #111;
     border: 1px solid #1affc6;
     color: #a8ffda;
-    font-family: monospace;
+    cursor: pointer;
 }
 
 /* LOG */
 .log {
-    height: 160px;
+    height: 140px;
     overflow-y: auto;
     background: #000;
     border-top: 1px solid #1affc6;
@@ -76,12 +90,26 @@ button {
 
 <div class="screen" id="screen">SYSTEM READY</div>
 
-<div class="status" id="state">DISARMED</div>
+<div class="ledbar">
+<div class="led" id="ledReady"></div>
+<div class="led" id="ledArmed"></div>
+<div class="led" id="ledTrouble"></div>
+<div class="led" id="ledAlarm"></div>
+</div>
 
-<div class="buttons">
-<button onclick="arm()">ARM</button>
-<button onclick="disarm()">DISARM</button>
-<button onclick="trigger()">TRIGGER</button>
+<div class="keypad">
+<button onclick="key(1)">1</button>
+<button onclick="key(2)">2</button>
+<button onclick="key(3)">3</button>
+<button onclick="key(4)">4</button>
+<button onclick="key(5)">5</button>
+<button onclick="key(6)">6</button>
+<button onclick="key(7)">7</button>
+<button onclick="key(8)">8</button>
+<button onclick="key(9)">9</button>
+<button onclick="clearPIN()">CLR</button>
+<button onclick="key(0)">0</button>
+<button onclick="submitPIN()">OK</button>
 </div>
 
 <div class="log" id="log"></div>
@@ -90,106 +118,164 @@ button {
 
 <script>
 
-let state = "DISARMED";
-let pin = "1234";
+let pin = "";
+let correctPIN = "1234";
 
-/* ---------------- STATE ---------------- */
-function setState(s) {
-    state = s;
-    document.getElementById("state").innerText = s;
-}
+let state = "READY";
+// READY | EXIT | ARMED | ENTRY | ALARM
 
-/* ---------------- SCREEN ---------------- */
+let exitTimer;
+let entryTimer;
+
+/* ---------------- UI ---------------- */
 function screen(t) {
     document.getElementById("screen").innerText = t;
 }
 
-/* ---------------- LOG ---------------- */
-function log(msg, type="info") {
+function log(msg) {
     let t = new Date().toLocaleTimeString();
-
-    let icon = "ℹ️";
-    if (type === "red") icon = "🚨";
-    if (type === "yellow") icon = "⚠️";
-    if (type === "blue") icon = "📘";
-
     let el = document.createElement("div");
-    el.style.padding = "4px";
-    el.style.borderBottom = "1px solid #111";
-
-    el.innerHTML = `[${t}] ${icon} ${msg}`;
-
+    el.innerText = `[${t}] ${msg}`;
     document.getElementById("log").appendChild(el);
     document.getElementById("log").scrollTop = 999999;
 }
 
-/* ---------------- ARM ---------------- */
-function arm() {
-    setState("EXIT DELAY");
-    screen("LEAVE AREA...");
+/* ---------------- LEDS ---------------- */
+function leds(r,g,y,a) {
+    document.getElementById("ledReady").className = "led " + (r ? "on-green" : "");
+    document.getElementById("ledArmed").className = "led " + (g ? "on-green" : "");
+    document.getElementById("ledTrouble").className = "led " + (y ? "on-yellow" : "");
+    document.getElementById("ledAlarm").className = "led " + (a ? "on-red" : "");
+}
+
+/* ---------------- STATE ---------------- */
+function setState(s) {
+    state = s;
+
+    if (s === "READY") leds(true,false,false,false);
+    if (s === "EXIT") leds(false,true,false,false);
+    if (s === "ARMED") leds(false,true,false,false);
+    if (s === "ENTRY") leds(false,false,true,false);
+    if (s === "ALARM") leds(false,false,false,true);
+
+    log("STATE → " + s);
+}
+
+/* ---------------- KEYPAD ---------------- */
+function key(n) {
+    if (pin.length < 6) pin += n;
+    screen("PIN: " + "*".repeat(pin.length));
+}
+
+function clearPIN() {
+    pin = "";
+    screen("PIN CLEARED");
+}
+
+function submitPIN() {
+    if (state === "READY") {
+        startExit();
+        return;
+    }
+
+    if (pin === correctPIN) {
+        setState("READY");
+        screen("DISARMED");
+        stopAlarm();
+    } else {
+        setState("ALARM");
+        screen("WRONG PIN");
+        startAlarm();
+    }
+
+    pin = "";
+}
+
+/* ---------------- EXIT DELAY ---------------- */
+function startExit() {
+    setState("EXIT");
+    screen("EXIT DELAY 5");
 
     let t = 5;
 
-    let i = setInterval(() => {
-        screen("ARMING IN " + t);
+    exitTimer = setInterval(() => {
+        screen("EXIT DELAY " + t);
         t--;
 
         if (t < 0) {
-            clearInterval(i);
+            clearInterval(exitTimer);
             setState("ARMED");
             screen("SYSTEM ARMED");
-            log("SYSTEM ARMED");
         }
     }, 1000);
 }
 
-/* ---------------- DISARM ---------------- */
-function disarm() {
-    let input = prompt("PIN eingeben:");
+/* ---------------- ENTRY + TRIGGER ---------------- */
+function triggerZone() {
+    if (state !== "ARMED") return;
 
-    if (input === pin) {
-        setState("DISARMED");
-        screen("SYSTEM OFF");
-        log("DISARMED");
-    } else {
-        setState("ALARM");
-        screen("WRONG PIN");
-        log("WRONG PIN", "red");
-    }
+    setState("ENTRY");
+    screen("ENTRY DELAY 10");
+
+    let t = 10;
+
+    entryTimer = setInterval(() => {
+        screen("ENTRY " + t);
+        t--;
+
+        if (t < 0) {
+            clearInterval(entryTimer);
+            setState("ALARM");
+            screen("ALARM ACTIVE");
+            startAlarm();
+        }
+    }, 1000);
 }
 
-/* ---------------- TRIGGER ---------------- */
-function trigger() {
-    if (state === "ARMED") {
-        setState("ALARM");
-        screen("ALARM ACTIVE");
-        log("INTRUSION DETECTED", "red");
+/* ---------------- ALARM SOUND ---------------- */
+let ctx;
+let osc;
+let alarmLoop;
 
-        alarmSound();
-    }
-}
+function startAlarm() {
+    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
 
-/* ---------------- SOUND ---------------- */
-function alarmSound() {
-    let ctx = new (window.AudioContext || window.webkitAudioContext)();
+    stopAlarm();
 
-    let osc = ctx.createOscillator();
+    osc = ctx.createOscillator();
     let gain = ctx.createGain();
 
     osc.connect(gain);
     gain.connect(ctx.destination);
 
-    osc.frequency.value = 300;
     osc.type = "square";
-
     gain.gain.value = 0.05;
 
     osc.start();
 
-    setInterval(() => {
-        osc.frequency.value = osc.frequency.value === 300 ? 600 : 300;
-    }, 400);
+    let up = false;
+
+    alarmLoop = setInterval(() => {
+        osc.frequency.value = up ? 900 : 400;
+        up = !up;
+    }, 250);
 }
+
+function stopAlarm() {
+    if (osc) {
+        osc.stop();
+        osc.disconnect();
+        osc = null;
+    }
+
+    if (alarmLoop) {
+        clearInterval(alarmLoop);
+        alarmLoop = null;
+    }
+}
+
+/* INIT */
+setState("READY");
 
 </script>
 
