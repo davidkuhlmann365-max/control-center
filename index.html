@@ -1,89 +1,239 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>V7.2 Security Panel</title>
+
 <style>
-body{
-    margin:0;
-    background:#000;
-    color:#00ff99;
-    font-family: monospace;
-    overflow:hidden;
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0a0f1a;
+    color: #00ffcc;
+    overflow: hidden;
 }
 
-/* 🧠 Auto Scaling App Container */
-#app{
-    display:none;
-    height:100vh;
-    width:100vw;
-    padding:8px;
-    box-sizing:border-box;
-    overflow:hidden;
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    justify-content: space-between;
+    padding: 10px;
 }
 
-/* Login bleibt zentriert */
-#login{
-    height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
+.header {
+    text-align: center;
+    font-size: 20px;
+    padding: 10px;
+    border-bottom: 1px solid #00ffcc33;
 }
 
-/* 📱 Compact Grid */
-.panel{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:6px;
-    width:100%;
-    height:100%;
+.status {
+    text-align: center;
+    font-size: 18px;
+    margin: 10px;
 }
 
-/* smaller boxes */
-.box{
-    border:1px solid #00ff99;
-    padding:6px;
-    font-size:12px;
-    overflow:hidden;
+.locked {
+    color: red;
 }
 
-/* buttons smaller */
-button{
-    margin:2px;
-    padding:4px 6px;
-    font-size:12px;
+.panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-/* log smaller */
-.log{
-    height:80px;
-    overflow:auto;
-    font-size:10px;
-    border:1px solid #00ff99;
-    padding:4px;
+input {
+    font-size: 22px;
+    padding: 10px;
+    text-align: center;
+    width: 200px;
+    margin: 10px;
 }
 
-/* camera scaling fix */
-video{
-    width:100%;
-    max-height:120px;
-    border:1px solid #00ff99;
+button {
+    padding: 10px;
+    margin: 5px;
+    font-size: 16px;
+    background: #00ffcc;
+    border: none;
+    cursor: pointer;
 }
 
-/* house grid compact */
-.house{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:4px;
+button:hover {
+    background: #00ccaa;
 }
 
-.zone{
-    border:1px solid #00ff99;
-    padding:5px;
-    font-size:11px;
-    text-align:center;
-    cursor:pointer;
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 60px);
+    gap: 10px;
+    margin-top: 10px;
 }
 
-/* status text smaller */
-h2,h3,p{
-    margin:4px 0;
-    font-size:13px;
+.keypad button {
+    font-size: 20px;
+}
+
+.log {
+    height: 120px;
+    overflow-y: auto;
+    font-size: 12px;
+    background: #111;
+    padding: 5px;
+    border-top: 1px solid #00ffcc33;
 }
 </style>
+</head>
+
+<body>
+
+<div id="app">
+
+<div class="header">🔐 V7.2 SECURITY PANEL</div>
+
+<div class="status" id="status">Status: DISARMED</div>
+
+<div class="panel">
+    <input type="password" id="pin" placeholder="PIN">
+
+    <div>
+        <button onclick="armSystem()">ARM</button>
+        <button onclick="disarmSystem()">DISARM</button>
+        <button onclick="toggleSilent()">SILENT</button>
+        <button onclick="resetSystem()">RESET</button>
+    </div>
+
+    <div class="keypad">
+        <button onclick="press(1)">1</button>
+        <button onclick="press(2)">2</button>
+        <button onclick="press(3)">3</button>
+        <button onclick="press(4)">4</button>
+        <button onclick="press(5)">5</button>
+        <button onclick="press(6)">6</button>
+        <button onclick="press(7)">7</button>
+        <button onclick="press(8)">8</button>
+        <button onclick="press(9)">9</button>
+    </div>
+</div>
+
+<div class="log" id="log"></div>
+
+</div>
+
+<script>
+let correctPIN = "1234";
+let attempts = 0;
+let locked = false;
+let armed = false;
+let silent = false;
+let alarmActive = false;
+
+let logBox = document.getElementById("log");
+let status = document.getElementById("status");
+
+function addLog(msg) {
+    let time = new Date().toLocaleTimeString();
+    logBox.innerHTML += `[${time}] ${msg}<br>`;
+    logBox.scrollTop = logBox.scrollHeight;
+}
+
+function press(num) {
+    if (locked) return;
+
+    let pin = document.getElementById("pin");
+    pin.value += num;
+}
+
+function armSystem() {
+    if (locked) return;
+
+    armed = true;
+    status.innerHTML = "Status: ARMED";
+    addLog("System armed");
+}
+
+function disarmSystem() {
+    if (locked) return;
+
+    let pin = document.getElementById("pin").value;
+
+    if (pin === correctPIN) {
+        armed = false;
+        alarmActive = false;
+        attempts = 0;
+        status.innerHTML = "Status: DISARMED";
+        addLog("System disarmed");
+        stopAlarm();
+    } else {
+        attempts++;
+        addLog("Wrong PIN attempt: " + attempts);
+
+        if (attempts >= 3) {
+            triggerLock();
+        } else {
+            triggerAlarm();
+        }
+    }
+
+    document.getElementById("pin").value = "";
+}
+
+function triggerAlarm() {
+    alarmActive = true;
+    status.innerHTML = "Status: ⚠ ALARM TRIGGERED";
+    addLog("ALARM TRIGGERED");
+
+    if (!silent && navigator.vibrate) {
+        navigator.vibrate([500, 200, 500]);
+    }
+
+    if (!silent) {
+        let audio = new Audio("https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg");
+        audio.loop = true;
+        audio.play();
+    }
+}
+
+function stopAlarm() {
+    alarmActive = false;
+    status.innerHTML = armed ? "Status: ARMED" : "Status: DISARMED";
+}
+
+function triggerLock() {
+    locked = true;
+    status.innerHTML = "Status: 🔒 LOCKED (Bruteforce)";
+    addLog("SYSTEM LOCKED due to bruteforce");
+
+    setTimeout(() => {
+        locked = false;
+        attempts = 0;
+        status.innerHTML = "Status: DISARMED";
+        addLog("Lock released");
+    }, 15000);
+}
+
+function toggleSilent() {
+    silent = !silent;
+    addLog("Silent mode: " + (silent ? "ON" : "OFF"));
+}
+
+function resetSystem() {
+    armed = false;
+    alarmActive = false;
+    locked = false;
+    attempts = 0;
+    silent = false;
+
+    document.getElementById("pin").value = "";
+    status.innerHTML = "Status: DISARMED";
+    logBox.innerHTML = "";
+
+    addLog("System reset");
+}
+</script>
+
+</body>
+</html>
