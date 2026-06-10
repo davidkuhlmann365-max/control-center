@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PRO Security Panel Advanced</title>
+<title>Floorplan Security Panel</title>
 
 <style>
 body{
@@ -17,8 +17,9 @@ height:100vh;
 color:#00ffcc;
 }
 
+/* PANEL WRAPPER */
 .panel{
-width:440px;
+width:520px;
 background:#0b0f14;
 border:2px solid #1affc6;
 box-shadow:0 0 25px #00ffcc33;
@@ -26,49 +27,53 @@ display:flex;
 flex-direction:column;
 }
 
-.screen{
+/* FLOORPLAN */
+.floor{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+padding:10px;
+background:#070a10;
+}
+
+.room{
+border:1px solid #1affc6;
+padding:20px;
+text-align:center;
+cursor:pointer;
+background:#0d141d;
+transition:0.2s;
+}
+
+.room:hover{
+background:#111a25;
+}
+
+/* STATUS COLORS */
+.ok{background:#0d141d;}
+.open{background:#ffcc0030;}
+.alarm{background:#ff3b3b60;}
+.trouble{background:#ffcc0030;}
+.offline{background:#66666640;}
+
+/* BOTTOM PANEL */
+.bottom{
+border-top:1px solid #1affc6;
+padding:10px;
 background:black;
+}
+
+.screen{
 color:#00ff88;
-padding:12px;
-min-height:90px;
-border-bottom:1px solid #1affc6;
+min-height:60px;
 white-space:pre-line;
 }
 
-.ledbar{
-display:flex;
-justify-content:space-around;
-padding:6px;
-border-bottom:1px solid #1affc6;
-}
-
-.led{width:10px;height:10px;border-radius:50%;background:#222;}
-.g{background:#00ff88;}
-.y{background:#ffcc00;}
-.r{background:#ff3b3b;}
-
-.keypad{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:5px;
-padding:10px;
-}
-
-button{
-padding:12px;
-background:#111;
-border:1px solid #1affc6;
-color:#a8ffda;
-cursor:pointer;
-}
-
 .log{
-height:130px;
+height:120px;
 overflow:auto;
-background:#000;
-border-top:1px solid #1affc6;
 font-size:11px;
-padding:6px;
+margin-top:5px;
 }
 </style>
 </head>
@@ -77,52 +82,44 @@ padding:6px;
 
 <div class="panel">
 
+<!-- FLOORPLAN -->
+<div class="floor">
+
+<div class="room" id="door" onclick="test('door')">DOOR</div>
+<div class="room" id="window" onclick="test('window')">WINDOW</div>
+<div class="room" id="motion" onclick="test('motion')">MOTION</div>
+<div class="room" id="smoke" onclick="test('smoke')">SMOKE</div>
+
+</div>
+
+<!-- BOTTOM PANEL -->
+<div class="bottom">
+
 <div class="screen" id="screen">SYSTEM READY</div>
-
-<div class="ledbar">
-<div class="led" id="r"></div>
-<div class="led" id="g"></div>
-<div class="led" id="y"></div>
-<div class="led" id="a"></div>
-</div>
-
-<div class="keypad">
-<button onclick="key(1)">1</button><button onclick="key(2)">2</button><button onclick="key(3)">3</button>
-<button onclick="key(4)">4</button><button onclick="key(5)">5</button><button onclick="key(6)">6</button>
-<button onclick="key(7)">7</button><button onclick="key(8)">8</button><button onclick="key(9)">9</button>
-<button onclick="clr()">CLR</button><button onclick="key(0)">0</button><button onclick="ok()">OK</button>
-</div>
 
 <div class="log" id="log"></div>
 
 </div>
 
+</div>
+
 <script>
 
-/* ---------------- CORE ---------------- */
-let pin="";
-let master="1234";
-let installer="9999";
-
-let mode="USER";
-let state="READY";
-
-/* ---------------- ZONES ---------------- */
+/* ---------------- SYSTEM ---------------- */
 let zones={
- door:{state:"CLOSED",battery:100,signal:100,online:true},
- window:{state:"CLOSED",battery:100,signal:100,online:true},
- motion:{state:"CLOSED",battery:100,signal:100,online:true},
- smoke:{state:"CLOSED",battery:100,signal:100,online:true}
+door:{state:"CLOSED",battery:100,online:true},
+window:{state:"CLOSED",battery:100,online:true},
+motion:{state:"CLOSED",battery:100,online:true},
+smoke:{state:"CLOSED",battery:100,online:true}
 };
 
-/* ---------------- SYSTEM ---------------- */
-let ctx;
-let osc;
-let alarmLoop;
-let troubleLoop;
+let alarm=false;
+let trouble=false;
 
 /* ---------------- UI ---------------- */
-function screen(t){document.getElementById("screen").innerText=t;}
+function screen(t){
+document.getElementById("screen").innerText=t;
+}
 
 function log(m){
 let t=new Date().toLocaleTimeString();
@@ -132,203 +129,94 @@ document.getElementById("log").appendChild(el);
 document.getElementById("log").scrollTop=999999;
 }
 
-/* ---------------- LED ---------------- */
-function leds(r,g,y,a){
-document.getElementById("r").className="led "+(r?"g":"");
-document.getElementById("g").className="led "+(g?"g":"");
-document.getElementById("y").className="led "+(y?"y":"");
-document.getElementById("a").className="led "+(a?"r":"");
+/* ---------------- FLOOR UPDATE ---------------- */
+function updateFloor(){
+
+for(let z in zones){
+let el=document.getElementById(z);
+let r=zones[z];
+
+el.className="room ok";
+
+/* ALARM */
+if(r.state==="OPEN") el.classList.add("open");
+if(r.state==="ALARM") el.classList.add("alarm");
+
+/* TROUBLE */
+if(!r.online) el.classList.add("offline");
+if(r.battery<20) el.classList.add("trouble");
+
+el.innerText=`${z.toUpperCase()}
+${r.state}`;
+}
 }
 
-/* ---------------- STATE ---------------- */
-function setState(s){
-state=s;
-if(s==="READY")leds(1,0,0,0);
-if(s==="ARMED")leds(0,1,0,0);
-if(s==="TROUBLE")leds(0,0,1,0);
-if(s==="ALARM")leds(0,0,0,1);
-log("STATE → "+s);
-}
-
-/* ---------------- SENSOR SIMULATION ---------------- */
-function updateSensors(){
+/* ---------------- SIMULATION ---------------- */
+function simulate(){
 
 for(let z in zones){
 
-// 🔋 battery decay
-zones[z].battery -= Math.random()*0.2;
+zones[z].battery-=Math.random()*0.3;
 
-// 📡 signal fluctuation
-zones[z].signal += (Math.random()-0.5)*2;
-
-// clamp
-zones[z].battery=Math.max(0,zones[z].battery);
-zones[z].signal=Math.max(0,Math.min(100,zones[z].signal));
-
-// 📡 random disconnect
 if(Math.random()<0.02){
 zones[z].online=false;
-zones[z].state="FAULT";
-log(z.toUpperCase()+" OFFLINE");
+log(z+" OFFLINE");
 }
 
-// 🔋 low battery fault
-if(zones[z].battery<20){
-zones[z].state="FAULT";
-}
-
-// restore chance
 if(Math.random()<0.01){
-zones[z].online=true;
+zones[z].state="OPEN";
+}
+
+if(zones[z].battery<15){
+zones[z].state="FAULT";
+}
+
+if(Math.random()<0.005){
 zones[z].state="CLOSED";
+zones[z].online=true;
 }
 }
 
-checkTrouble();
+checkSystem();
+updateFloor();
 }
 
-/* ---------------- TROUBLE ---------------- */
-function checkTrouble(){
+/* ---------------- SYSTEM LOGIC ---------------- */
+function checkSystem(){
 
-let trouble=false;
+trouble=false;
 
 for(let z in zones){
-if(!zones[z].online) trouble=true;
-if(zones[z].state==="FAULT") trouble=true;
-if(zones[z].battery<20) trouble=true;
+if(!zones[z].online || zones[z].state==="FAULT") trouble=true;
+if(zones[z].state==="OPEN") alarm=true;
 }
 
-if(trouble && state!=="ALARM"){
-setState("TROUBLE");
-screen(renderDiag());
-startTrouble();
+if(alarm){
+screen("ALARM ACTIVE");
 }
 
-if(!trouble && state==="TROUBLE"){
-setState("READY");
+else if(trouble){
+screen("SYSTEM TROUBLE");
+}
+
+else{
 screen("SYSTEM READY");
-stopTrouble();
 }
 }
 
-/* ---------------- DIAGNOSTIC SCREEN ---------------- */
-function renderDiag(){
-let out="INSTALLER DIAGNOSTIC\n\n";
-for(let z in zones){
-out+=`${z.toUpperCase()}\n`;
-out+=`STATE: ${zones[z].state}\n`;
-out+=`BAT: ${zones[z].battery.toFixed(0)}%\n`;
-out+=`SIG: ${zones[z].signal.toFixed(0)}%\n`;
-out+=`ONLINE: ${zones[z].online}\n\n`;
-}
-return out;
+/* ---------------- INTERACTION ---------------- */
+function test(z){
+zones[z].state="OPEN";
+log(z+" TRIGGERED");
+updateFloor();
+checkSystem();
 }
 
-/* ---------------- INSTALLER ---------------- */
-function installerMode(){
-let p=prompt("INSTALLER PIN:");
-if(p===installer){
-mode="INSTALLER";
-screen(renderDiag());
-log("INSTALLER MODE");
-}else log("DENIED");
-}
-
-/* ---------------- KEYPAD ---------------- */
-function key(n){if(pin.length<6)pin+=n;screen("*".repeat(pin.length));}
-
-function clr(){pin="";screen("CLEARED");}
-
-function ok(){
-
-if(mode==="INSTALLER"){
-if(pin==="1")screen(renderDiag());
-if(pin==="2")resetAll();
-pin="";
-return;
-}
-
-if(pin===master){
-setState("READY");
-screen("DISARMED");
-stopAlarm();
-}else{
-setState("ALARM");
-screen("WRONG PIN");
-startAlarm();
-}
-pin="";
-}
-
-/* ---------------- RESET ---------------- */
-function resetAll(){
-for(let z in zones){
-zones[z].state="CLOSED";
-zones[z].battery=100;
-zones[z].signal=100;
-zones[z].online=true;
-}
-setState("READY");
-screen("RESET DONE");
-log("SYSTEM RESET");
-}
-
-/* ---------------- ALARM ---------------- */
-function startAlarm(){
-if(!ctx)ctx=new AudioContext();
-stopAlarm();
-
-osc=ctx.createOscillator();
-let g=ctx.createGain();
-
-osc.connect(g);g.connect(ctx.destination);
-
-osc.type="square";
-g.gain.value=0.05;
-
-osc.start();
-
-let up=false;
-alarmLoop=setInterval(()=>{
-osc.frequency.value=up?900:400;
-up=!up;
-},250);
-}
-
-function stopAlarm(){
-if(osc){osc.stop();osc=null;}
-clearInterval(alarmLoop);
-}
-
-/* ---------------- TROUBLE SOUND ---------------- */
-function startTrouble(){
-if(!ctx)ctx=new AudioContext();
-stopTrouble();
-
-troubleLoop=setInterval(()=>{
-let o=ctx.createOscillator();
-let g=ctx.createGain();
-
-o.connect(g);g.connect(ctx.destination);
-
-o.frequency.value=700;
-o.type="square";
-g.gain.value=0.02;
-
-o.start();
-setTimeout(()=>o.stop(),120);
-},45000);
-}
-
-function stopTrouble(){
-clearInterval(troubleLoop);
-}
-
-/* ---------------- SENSOR LOOP ---------------- */
-setInterval(updateSensors,3000);
+/* ---------------- LOOP ---------------- */
+setInterval(simulate,3000);
 
 /* INIT */
-setState("READY");
+updateFloor();
 
 </script>
 
