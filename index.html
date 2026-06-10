@@ -3,23 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>V5 Security Tablet</title>
+<title>V7 Smart Home Security</title>
 
-<meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Security V5">
 
 <style>
 body{
     margin:0;
-    background:#000814;
+    background:#000;
     color:#00ff99;
-    font-family: monospace;
-    overflow:hidden;
+    font-family:monospace;
 }
 
-#login, #app{
+#login,#app{
     height:100vh;
     display:flex;
     align-items:center;
@@ -27,7 +23,7 @@ body{
     flex-direction:column;
 }
 
-#app{display:none; padding:10px;}
+#app{display:none;padding:10px;}
 
 .panel{
     display:grid;
@@ -41,12 +37,9 @@ body{
     padding:10px;
 }
 
-.danger{color:red; font-weight:bold;}
+button{margin:3px;padding:6px;}
 
-button{
-    padding:8px;
-    margin:3px;
-}
+.danger{color:red;font-weight:bold;}
 
 .log{
     height:120px;
@@ -56,58 +49,76 @@ button{
     padding:5px;
 }
 
-video{
-    width:100%;
-    border:1px solid #00ff99;
-}
+video{width:100%;border:1px solid #00ff99;}
 
-.grid{
+.house{
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:5px;
 }
+
+.zone{
+    border:1px solid #00ff99;
+    padding:8px;
+    text-align:center;
+    cursor:pointer;
+}
+
+.zone.active{background:red;color:white;}
 </style>
 </head>
 
 <body>
 
 <div id="login">
-    <h2>🔐 V5 SECURITY LOGIN</h2>
-    <input id="pin" type="password" placeholder="PIN">
-    <button onclick="login()">ENTER</button>
+<h2>🔐 V7 LOGIN</h2>
+<input id="pin" type="password" placeholder="PIN">
+<button onclick="login()">ENTER</button>
 </div>
 
 <div id="app">
 
-    <h2>📟 SECURITY TABLET V5</h2>
+<h2>🏠 V7 SMART HOME SECURITY</h2>
 
-    <div class="panel">
+<div class="panel">
 
-        <div class="box">
-            <h3>STATUS</h3>
-            <p id="status">DISARMED</p>
-            <button onclick="arm()">ARM</button>
-            <button onclick="disarm()">DISARM</button>
-        </div>
+<div class="box">
+<h3>STATUS</h3>
+<p id="status">DISARMED</p>
+<button onclick="arm()">ARM</button>
+<button onclick="disarm()">DISARM</button>
+<button onclick="toggleSilent()">🔕 Silent</button>
+</div>
 
-        <div class="box">
-            <h3>AI MOTION SENSOR</h3>
-            <video id="cam" autoplay playsinline></video>
-            <canvas id="scan" style="display:none;"></canvas>
-            <p id="motion">No motion</p>
-        </div>
+<div class="box">
+<h3>HOUSE ZONES</h3>
+<div class="house">
+<div class="zone" onclick="fakeTrigger('DOOR')">🚪 DOOR</div>
+<div class="zone" onclick="fakeTrigger('WINDOW')">🪟 WINDOW</div>
+<div class="zone" onclick="fakeTrigger('MOTION')">🕵️ MOTION</div>
+<div class="zone" onclick="fakeTrigger('GARAGE')">🚗 GARAGE</div>
+</div>
+</div>
 
-        <div class="box">
-            <h3>CAMERA GRID</h3>
-            <div class="grid" id="grid"></div>
-        </div>
+<div class="box">
+<h3>AI CAMERA</h3>
+<video id="cam" autoplay playsinline></video>
+<canvas id="c" style="display:none;"></canvas>
+<p id="motion">idle</p>
+</div>
 
-        <div class="box">
-            <h3>LOG</h3>
-            <div class="log" id="log"></div>
-        </div>
+<div class="box">
+<h3>RECORDING</h3>
+<video id="recplay" controls></video>
+</div>
 
-    </div>
+<div class="box">
+<h3>LOG</h3>
+<div class="log" id="log"></div>
+</div>
+
+</div>
+
 </div>
 
 <audio id="alarm" loop>
@@ -116,166 +127,166 @@ video{
 
 <script>
 const PIN="1234";
+
 let armed=false;
 let alarm=false;
+let silent=false;
 let lastFrame=null;
-let broadcast = new BroadcastChannel("SECURITY_PANEL");
+
+let audio=document.getElementById("alarm");
+
+let recorder;
+let chunks=[];
 
 function log(t){
-    const l=document.getElementById("log");
-    l.innerHTML+="["+new Date().toLocaleTimeString()+"] "+t+"<br>";
-    l.scrollTop=l.scrollHeight;
-}
-
-function login(){
-    if(document.getElementById("pin").value===PIN){
-        document.getElementById("login").style.display="none";
-        document.getElementById("app").style.display="flex";
-        startCamera();
-        setupNotifications();
-        setupRemote();
-        log("LOGIN OK");
-    }
+let l=document.getElementById("log");
+l.innerHTML+="["+new Date().toLocaleTimeString()+"] "+t+"<br>";
+l.scrollTop=l.scrollHeight;
 }
 
 function setStatus(t){
-    document.getElementById("status").innerHTML=t;
+document.getElementById("status").innerHTML=t;
 }
 
-// FULLSCREEN (iPad App Mode)
-function goFullscreen(){
-    let el=document.documentElement;
-    if(el.requestFullscreen){
-        el.requestFullscreen();
-    }
+// 🔐 brute force delay
+let attempts=0;
+function login(){
+let p=document.getElementById("pin").value;
+
+if(p===PIN){
+document.getElementById("login").style.display="none";
+document.getElementById("app").style.display="flex";
+startCam();
+log("LOGIN OK");
+attempts=0;
+}else{
+attempts++;
+log("WRONG PIN");
+if(attempts>3){
+setTimeout(()=>attempts=0,5000);
+log("ANTI BRUTE FORCE DELAY");
+}
+}
 }
 
-// ARM / DISARM
 function arm(){
-    armed=true;
-    setStatus("ARMED");
-    log("SYSTEM ARMED");
-    broadcast.postMessage({type:"arm"});
-    goFullscreen();
+armed=true;
+setStatus("ARMED");
+log("ARMED");
 }
 
 function disarm(){
-    armed=false;
-    stopAlarm();
-    setStatus("DISARMED");
-    log("SYSTEM DISARMED");
-    broadcast.postMessage({type:"disarm"});
+armed=false;
+stopAlarm();
+setStatus("DISARMED");
+log("DISARMED");
 }
 
-// CAMERA MAIN
-function startCamera(){
-    navigator.mediaDevices.getUserMedia({video:true})
-    .then(stream=>{
-        document.getElementById("cam").srcObject=stream;
-        startMotionDetection();
-        startGridCameras();
-    });
+function toggleSilent(){
+silent=!silent;
+log("Silent: "+silent);
 }
 
-// 🧠 "AI" MOTION DETECTION (Frame Diff)
-function startMotionDetection(){
-    const video=document.getElementById("cam");
-    const canvas=document.getElementById("scan");
-    const ctx=canvas.getContext("2d");
-
-    setInterval(()=>{
-        if(video.readyState<2 || !armed) return;
-
-        canvas.width=video.videoWidth;
-        canvas.height=video.videoHeight;
-
-        ctx.drawImage(video,0,0);
-        let frame=ctx.getImageData(0,0,canvas.width,canvas.height);
-
-        if(lastFrame){
-            let diff=0;
-            for(let i=0;i<frame.data.length;i+=40){
-                diff+=Math.abs(frame.data[i]-lastFrame.data[i]);
-            }
-
-            document.getElementById("motion").innerText="Motion: "+diff;
-
-            if(diff>15000){
-                trigger("MOTION DETECTED");
-            }
-        }
-
-        lastFrame=frame;
-    },300);
+// 📳 vibration
+function vibrate(){
+if(!navigator.vibrate) return;
+navigator.vibrate([200,100,300,100,600]);
 }
 
-// MULTI CAMERA GRID
-async function startGridCameras(){
-    const grid=document.getElementById("grid");
-    const devices=await navigator.mediaDevices.enumerateDevices();
-    const cams=devices.filter(d=>d.kind==="videoinput");
-
-    cams.slice(0,4).forEach(async (cam,i)=>{
-        let stream=await navigator.mediaDevices.getUserMedia({
-            video:{deviceId:cam.deviceId}
-        });
-
-        let v=document.createElement("video");
-        v.autoplay=true;
-        v.playsInline=true;
-        v.srcObject=stream;
-        grid.appendChild(v);
-    });
-}
-
-// ALARM
+// 🚨 alarm
 function trigger(reason){
-    if(alarm || !armed) return;
+if(alarm || !armed) return;
 
-    alarm=true;
-    setStatus("<span class='danger'>ALARM ACTIVE</span>");
-    log("ALARM: "+reason);
+alarm=true;
+setStatus("🚨 ALARM ACTIVE");
+log("ALARM: "+reason);
 
-    document.getElementById("alarm").play();
-
-    notify("SECURITY ALERT", reason);
-    broadcast.postMessage({type:"alarm", reason});
+if(!silent){
+audio.currentTime=0;
+audio.play().catch(()=>log("audio blocked"));
 }
 
+vibrate();
+startRecording();
+}
+
+// 🛑 stop
 function stopAlarm(){
-    alarm=false;
-    document.getElementById("alarm").pause();
+alarm=false;
+audio.pause();
+audio.currentTime=0;
+stopRecording();
 }
 
-// 🔔 PUSH NOTIFICATIONS
-function setupNotifications(){
-    if("Notification" in window){
-        Notification.requestPermission();
-    }
+// 🧠 motion AI
+function startCam(){
+navigator.mediaDevices.getUserMedia({video:true})
+.then(s=>{
+document.getElementById("cam").srcObject=s;
+motionAI();
+});
 }
 
-function notify(title,msg){
-    if(Notification.permission==="granted"){
-        new Notification(title,{body:msg});
-    }
+function motionAI(){
+let v=document.getElementById("cam");
+let c=document.getElementById("c");
+let ctx=c.getContext("2d");
+
+setInterval(()=>{
+if(!armed || v.readyState<2) return;
+
+c.width=v.videoWidth;
+c.height=v.videoHeight;
+
+ctx.drawImage(v,0,0);
+let f=ctx.getImageData(0,0,c.width,c.height);
+
+if(lastFrame){
+let diff=0;
+for(let i=0;i<f.data.length;i+=60){
+diff+=Math.abs(f.data[i]-lastFrame.data[i]);
 }
 
-// 🌐 REMOTE CONTROL SYNC
-function setupRemote(){
-    broadcast.onmessage=(e)=>{
-        if(e.data.type==="arm") setStatus("ARMED (REMOTE)");
-        if(e.data.type==="disarm") setStatus("DISARMED (REMOTE)");
-        if(e.data.type==="alarm") trigger(e.data.reason+" (REMOTE)");
-    };
+document.getElementById("motion").innerText="motion:"+diff;
 
-    setInterval(()=>{
-        localStorage.setItem("sync",JSON.stringify({armed,alarm,t:Date.now()}));
-    },1000);
+if(diff>10000){
+trigger("MOTION DETECTED");
+}
 }
 
-// iPad keep awake (if supported)
-if(navigator.wakeLock){
-    navigator.wakeLock.request("screen");
+lastFrame=f;
+},300);
+}
+
+// 🏠 fake zone trigger
+function fakeTrigger(z){
+trigger(z);
+}
+
+// 📹 recording
+function startRecording(){
+navigator.mediaDevices.getUserMedia({video:true,audio:false})
+.then(stream=>{
+recorder=new MediaRecorder(stream);
+chunks=[];
+
+recorder.ondataavailable=e=>chunks.push(e.data);
+recorder.onstop=()=>{
+let blob=new Blob(chunks,{type:"video/webm"});
+let url=URL.createObjectURL(blob);
+document.getElementById("recplay").src=url;
+};
+
+recorder.start();
+log("RECORDING START");
+});
+}
+
+function stopRecording(){
+if(recorder && recorder.state==="recording"){
+recorder.stop();
+log("RECORDING STOP");
+}
 }
 </script>
 
