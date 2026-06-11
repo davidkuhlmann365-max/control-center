@@ -2,142 +2,160 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>V8 Professional Security Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Panel V8 Pro</title>
 
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: Arial, Helvetica, sans-serif;
-    }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
 
-    body {
-        background: #0b0f14;
-        color: #00ff9c;
-        overflow: hidden;
-        height: 100vh;
-    }
+body {
+    background: #0b0f14;
+    color: #00ff9c;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
 
-    /* HEADER */
-    .topbar {
-        background: #111826;
-        padding: 10px;
-        text-align: center;
-        font-weight: bold;
-        letter-spacing: 2px;
-        border-bottom: 2px solid #00ff9c;
-    }
+/* TOPBAR */
+.topbar {
+    background: #111826;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    letter-spacing: 1px;
+    border-bottom: 2px solid #00ff9c;
+    font-size: 14px;
+}
 
-    /* LOGIN SCREEN */
-    .login-screen {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        background: #0b0f14;
-    }
+/* LOGIN */
+.login-screen {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #0b0f14;
+    padding: 20px;
+}
 
-    .pin-box {
-        display: grid;
-        grid-template-columns: repeat(3, 80px);
-        gap: 10px;
-        margin-top: 20px;
-    }
+.pin-display {
+    font-size: 28px;
+    letter-spacing: 6px;
+    margin-bottom: 20px;
+}
 
-    .pin-display {
-        font-size: 28px;
-        letter-spacing: 10px;
-        margin-bottom: 20px;
-        color: #00ff9c;
-    }
+.pin-box {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(60px, 1fr));
+    gap: 10px;
+    width: min(300px, 90vw);
+}
 
-    button.key {
-        width: 80px;
-        height: 80px;
-        font-size: 22px;
-        background: #111826;
-        color: #00ff9c;
-        border: 1px solid #00ff9c;
-        border-radius: 10px;
-    }
+button.key {
+    aspect-ratio: 1 / 1;
+    font-size: 18px;
+    background: #111826;
+    color: #00ff9c;
+    border: 1px solid #00ff9c;
+    border-radius: 10px;
+}
 
-    button.key:active {
-        background: #00ff9c;
-        color: #000;
-    }
+button.key:active {
+    background: #00ff9c;
+    color: #000;
+}
 
-    .wide {
-        grid-column: span 3;
-        width: 100%;
-    }
+.wide {
+    grid-column: span 3;
+}
 
-    /* DASHBOARD */
-    .dashboard {
-        display: none;
-        padding: 10px;
-    }
+/* DASHBOARD */
+.dashboard {
+    display: none;
+    padding: 10px;
+    max-width: 1000px;
+    margin: auto;
+}
 
-    .panel {
-        background: #111826;
-        border: 1px solid #00ff9c;
-        border-radius: 10px;
-        padding: 10px;
-        margin-bottom: 10px;
-    }
+/* GRID LAYOUT (RESPONSIVE) */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+}
 
-    .status {
-        display: flex;
-        justify-content: space-between;
-        margin-top: 10px;
-    }
+/* PANEL */
+.panel {
+    background: #111826;
+    border: 1px solid #00ff9c;
+    border-radius: 10px;
+    padding: 10px;
+}
 
-    .zone {
-        padding: 5px;
-        border: 1px solid #00ff9c;
-        margin: 5px 0;
-    }
+/* TEXT */
+h3 {
+    font-size: 14px;
+    margin-bottom: 8px;
+}
 
-    .danger {
-        color: red;
-        border-color: red;
-    }
+/* STATUS */
+.status {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+}
 
-    .btn {
-        padding: 10px;
-        background: #00ff9c;
-        color: #000;
-        border: none;
-        margin-top: 10px;
-        width: 100%;
-        font-weight: bold;
-    }
+/* ZONES */
+.zone {
+    padding: 6px;
+    border: 1px solid #00ff9c;
+    margin-top: 5px;
+    font-size: 12px;
+}
 
-    video {
-        width: 100%;
-        border-radius: 10px;
-    }
+/* BUTTON */
+.btn {
+    padding: 8px;
+    background: #00ff9c;
+    color: #000;
+    border: none;
+    margin-top: 8px;
+    width: 100%;
+    font-weight: bold;
+    border-radius: 6px;
+    font-size: 13px;
+}
 
-    .alarm {
-        animation: flash 0.5s infinite;
-    }
+/* VIDEO */
+video {
+    width: 100%;
+    border-radius: 10px;
+    max-height: 200px;
+    object-fit: cover;
+}
 
-    @keyframes flash {
-        0% { background: #111826; }
-        50% { background: red; color: white; }
-        100% { background: #111826; }
-    }
+/* ALARM EFFECT */
+.alarm {
+    animation: flash 0.5s infinite;
+}
+
+@keyframes flash {
+    0% { background: #0b0f14; }
+    50% { background: red; color: white; }
+    100% { background: #0b0f14; }
+}
 
 </style>
 </head>
 
 <body>
 
-<div class="topbar">SECURITY PANEL V8 - PROFESSIONAL</div>
+<div class="topbar">SECURITY PANEL V8 PRO - RESPONSIVE</div>
 
 <!-- LOGIN -->
 <div class="login-screen" id="loginScreen">
@@ -161,11 +179,13 @@
 <!-- DASHBOARD -->
 <div class="dashboard" id="dashboard">
 
+<div class="grid">
+
     <div class="panel">
         <h3>STATUS</h3>
         <div class="status">
             <div>System: ARMED</div>
-            <div id="battery">Battery: OK</div>
+            <div>Battery: OK</div>
         </div>
     </div>
 
@@ -177,16 +197,18 @@
 
     <div class="panel">
         <h3>ZONES</h3>
-        <div class="zone" id="door">Door: OK</div>
-        <div class="zone" id="window">Window: OK</div>
-        <div class="zone" id="motion">Motion: OK</div>
+        <div class="zone">Door: OK</div>
+        <div class="zone">Window: OK</div>
+        <div class="zone">Motion: OK</div>
     </div>
 
-    <div class="panel" id="alarmPanel">
-        <h3>ALARM CONTROL</h3>
-        <button class="btn" onclick="triggerAlarm()">TRIGGER ALARM</button>
-        <button class="btn" onclick="resetAlarm()">RESET ALARM</button>
+    <div class="panel">
+        <h3>ALARM</h3>
+        <button class="btn" onclick="triggerAlarm()">TRIGGER</button>
+        <button class="btn" onclick="resetAlarm()">RESET</button>
     </div>
+
+</div>
 
 </div>
 
@@ -198,43 +220,24 @@
 <script>
 let pin = "";
 const correctPin = "1234";
-let locked = false;
 let alarmActive = false;
 
-function press(num){
-    if(locked) return;
+function press(n){
     if(pin.length < 4){
-        pin += num;
-        updateDisplay();
+        pin += n;
+        document.getElementById("pinDisplay").innerText = pin.padEnd(4,"-");
     }
-}
-
-function updateDisplay(){
-    document.getElementById("pinDisplay").innerText =
-        pin.padEnd(4, "-");
 }
 
 function checkPin(){
     if(pin === correctPin){
         document.getElementById("loginScreen").style.display = "none";
         document.getElementById("dashboard").style.display = "block";
-        startVibration();
+        if(navigator.vibrate) navigator.vibrate(200);
     } else {
         alert("Falscher PIN!");
         pin = "";
-        updateDisplay();
-        lockInput();
-    }
-}
-
-function lockInput(){
-    locked = true;
-    setTimeout(()=> locked = false, 3000);
-}
-
-function startVibration(){
-    if(navigator.vibrate){
-        navigator.vibrate([200,100,200]);
+        document.getElementById("pinDisplay").innerText = "----";
     }
 }
 
@@ -243,43 +246,24 @@ function startCamera(){
     .then(stream => {
         document.getElementById("video").srcObject = stream;
     })
-    .catch(err => {
-        alert("Kamera nicht erlaubt");
-    });
+    .catch(() => alert("Kamera nicht erlaubt"));
 }
 
 function triggerAlarm(){
     if(alarmActive) return;
     alarmActive = true;
-
     document.body.classList.add("alarm");
-
-    let sound = document.getElementById("smokeAlarm");
-    sound.play();
-
-    if(navigator.vibrate){
-        setInterval(()=> navigator.vibrate([300,100,300]), 1000);
-    }
-
-    document.getElementById("alarmPanel").style.border = "2px solid red";
+    document.getElementById("smokeAlarm").play();
+    if(navigator.vibrate) navigator.vibrate([300,100,300]);
 }
 
 function resetAlarm(){
     alarmActive = false;
     document.body.classList.remove("alarm");
-
-    let sound = document.getElementById("smokeAlarm");
-    sound.pause();
-    sound.currentTime = 0;
-
-    location.reload();
+    let a = document.getElementById("smokeAlarm");
+    a.pause();
+    a.currentTime = 0;
 }
-
-// Auto smoke demo (optional simulation)
-setTimeout(()=>{
-    // triggerAlarm();
-}, 999999);
-
 </script>
 
 </body>
