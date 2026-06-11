@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>V2 Pro Max Security System</title>
+<title>V4 Security Control Center</title>
 
 <style>
 body{
@@ -13,8 +13,8 @@ body{
     color:white;
 }
 
-/* TOP STATUS */
-#top{
+/* TOP BAR */
+#topbar{
     display:flex;
     justify-content:space-around;
     padding:10px;
@@ -22,19 +22,40 @@ body{
     font-size:13px;
 }
 
-/* GRID */
-.container{
-    display:grid;
-    grid-template-columns:1fr;
+/* NAV */
+#nav{
+    display:flex;
+    justify-content:center;
     gap:10px;
     padding:10px;
+    background:#0f1622;
+}
+
+button.nav{
+    background:#1e2a3a;
+    border:none;
+    padding:8px 12px;
+    color:white;
+    border-radius:6px;
+}
+
+/* PAGES */
+.page{
+    display:none;
+    padding:10px;
+}
+
+.active{
+    display:block;
 }
 
 /* CARD */
 .card{
     background:#121a26;
-    border-radius:12px;
     padding:12px;
+    margin:10px auto;
+    border-radius:10px;
+    max-width:500px;
 }
 
 /* BUTTON */
@@ -48,34 +69,15 @@ button{
     color:white;
 }
 
-/* ZONES */
-.zone{
-    padding:8px;
-    margin:5px 0;
-    border-radius:8px;
-    background:#0f1622;
-}
-
 /* LOG */
 #log{
-    height:160px;
+    height:150px;
     overflow:auto;
     font-size:12px;
     background:#0c121c;
     padding:8px;
     border-radius:8px;
 }
-
-/* DOTS */
-.dot{
-    width:10px;
-    height:10px;
-    border-radius:50%;
-    display:inline-block;
-}
-.green{background:lime;}
-.yellow{background:orange;}
-.red{background:red;}
 
 /* FLASH */
 @keyframes flash{
@@ -88,143 +90,163 @@ button{
 
 <body>
 
-<!-- TOP BAR -->
-<div id="top">
-    <div>THREAT: <span id="threat">GREEN</span></div>
+<!-- TOP STATUS -->
+<div id="topbar">
     <div>STATE: <span id="state">DISARMED</span></div>
+    <div>THREAT: <span id="threat">GREEN</span></div>
     <div>CARD: <span id="card">NONE</span></div>
 </div>
 
-<div class="container">
-
-<!-- KEYCARD -->
-<div class="card">
-    <h3>🪪 KEYCARD</h3>
-    <button onclick="cardIn('ADMIN')">Insert ADMIN</button>
-    <button onclick="cardIn('USER')">Insert USER</button>
-    <button onclick="cardOut()">Remove Card</button>
+<!-- NAV -->
+<div id="nav">
+    <button class="nav" onclick="show('home')">🏠</button>
+    <button class="nav" onclick="show('security')">🛡️</button>
+    <button class="nav" onclick="show('audio')">🔊</button>
+    <button class="nav" onclick="show('dashboard')">📊</button>
 </div>
 
-<!-- CONTROL -->
-<div class="card">
-    <h3>🔐 CONTROL</h3>
-    <button onclick="arm()">ARM SYSTEM</button>
-    <button onclick="disarm()">DISARM (ADMIN ONLY)</button>
+<!-- HOME -->
+<div id="home" class="page active">
+    <div class="card">
+        <h2>CONTROL CENTER</h2>
+        <p>All Systems Online</p>
+    </div>
 </div>
 
-<!-- ZONES -->
-<div class="card">
-    <h3>🗺️ ZONES</h3>
+<!-- SECURITY -->
+<div id="security" class="page">
 
-    <div class="zone">Zone A - Entrance <button onclick="trigger('ZONE A')">Trigger</button></div>
-    <div class="zone">Zone B - Living Room <button onclick="trigger('ZONE B')">Trigger</button></div>
-    <div class="zone">Zone C - Basement <button onclick="trigger('ZONE C')">Trigger</button></div>
+    <div class="card">
+        <h3>🪪 KEYCARD</h3>
+        <button onclick="card('ADMIN')">Insert ADMIN</button>
+        <button onclick="card('USER')">Insert USER</button>
+        <button onclick="removeCard()">Remove</button>
+    </div>
+
+    <div class="card">
+        <h3>🔐 CONTROL</h3>
+        <button onclick="arm()">ARM</button>
+        <button onclick="disarm()">DISARM</button>
+    </div>
+
+    <div class="card">
+        <h3>📡 SENSORS</h3>
+        <button onclick="trigger('DOOR')">Door</button>
+        <button onclick="trigger('MOTION')">Motion</button>
+        <button onclick="trigger('SMOKE')">Smoke</button>
+    </div>
+
 </div>
 
-<!-- LOG -->
-<div class="card">
-    <h3>📜 EVENT LOG</h3>
-    <div id="log"></div>
+<!-- AUDIO -->
+<div id="audio" class="page">
+
+    <div class="card">
+        <h3>🔊 TEST TONE</h3>
+        <button onclick="tone(440)">440 Hz</button>
+        <button onclick="tone(1000)">1000 Hz</button>
+        <button onclick="stopTone()">Stop</button>
+    </div>
+
 </div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="page">
+
+    <div class="card">
+        <h3>📊 SYSTEM LOG</h3>
+        <div id="log"></div>
+    </div>
 
 </div>
 
 <script>
 
+/* STATE */
 let state="DISARMED";
-let card=null;
-let threat="GREEN";
-let siren=null;
+let cardType=null;
+
+/* NAV */
+function show(p){
+    document.querySelectorAll(".page").forEach(e=>e.classList.remove("active"));
+    document.getElementById(p).classList.add("active");
+}
 
 /* LOG */
-function log(msg,color="white"){
+function log(msg){
     let t=new Date().toLocaleTimeString();
     document.getElementById("log").innerHTML=
-    `<span style="color:${color}">[${t}] ${msg}</span><br>`+
+    `[${t}] ${msg}<br>`+
     document.getElementById("log").innerHTML;
 }
 
 /* UI */
 function update(){
-
     document.getElementById("state").innerText=state;
-    document.getElementById("threat").innerText=threat;
-    document.getElementById("card").innerText=card?card:"NONE";
+    document.getElementById("card").innerText=cardType||"NONE";
 
-    if(threat==="RED"){
+    if(state==="ALARM"){
+        document.getElementById("threat").innerText="RED";
         document.body.style.animation="flash 0.2s infinite";
     }else{
+        document.getElementById("threat").innerText="GREEN";
         document.body.style.animation="";
     }
 }
 
 /* CARD */
-function cardIn(type){
-    card=type;
-    log("Card inserted: "+type,"deepskyblue");
+function card(type){
+    cardType=type;
+    log("Card inserted: "+type);
     update();
 }
 
-function cardOut(){
-    log("Card removed","orange");
-
-    if(state==="ARMED"){
-        triggerAlarm("CARD REMOVED");
-    }
-
-    card=null;
+function removeCard(){
+    log("Card removed");
+    cardType=null;
     update();
 }
 
 /* ARM */
 function arm(){
-    if(!card){
-        log("ARM FAILED","red");
+    if(!cardType){
+        log("ARM FAILED");
         return;
     }
-
     state="ARMED";
-    threat="GREEN";
-    log("SYSTEM ARMED","lime");
+    log("SYSTEM ARMED");
     update();
 }
 
 /* DISARM */
 function disarm(){
-
-    if(card!=="ADMIN"){
-        log("DISARM DENIED","red");
-        triggerAlarm("UNAUTHORIZED DISARM");
+    if(cardType!=="ADMIN"){
+        log("DISARM DENIED");
+        triggerAlarm("UNAUTHORIZED");
         return;
     }
-
     state="DISARMED";
-    threat="GREEN";
     stopAlarm();
-    log("SYSTEM DISARMED","lime");
+    log("SYSTEM DISARMED");
     update();
 }
 
-/* ZONES */
-function trigger(zone){
-
+/* SENSOR */
+function trigger(type){
     if(state!=="ARMED"){
-        log(zone+" ignored","gray");
+        log(type+" ignored");
         return;
     }
-
-    log("BREACH: "+zone,"orange");
-    threat="RED";
-
+    state="ALARM";
+    log("ALARM: "+type);
+    triggerAlarm(type);
     update();
-    triggerAlarm(zone);
 }
 
-/* ALARM ENGINE */
+/* ALARM */
+let siren=null;
+
 function triggerAlarm(reason){
-
-    log("ALARM: "+reason,"red");
-
     let freq=500;
 
     if(siren) clearInterval(siren);
@@ -240,14 +262,14 @@ function triggerAlarm(reason){
 
         osc.type="sawtooth";
         osc.frequency.value=freq;
-        gain.gain.value=0.12;
+        gain.gain.value=0.1;
 
         osc.start();
-        osc.stop(ctx.currentTime+0.25);
+        osc.stop(ctx.currentTime+0.2);
 
-        freq=(freq===500)?1300:500;
+        freq=(freq===500)?1200:500;
 
-    },280);
+    },300);
 }
 
 /* STOP */
@@ -256,9 +278,23 @@ function stopAlarm(){
         clearInterval(siren);
         siren=null;
     }
-
-    threat="GREEN";
+    state="DISARMED";
     update();
+}
+
+/* AUDIO */
+let ctx, osc;
+
+function tone(f){
+    ctx=new AudioContext();
+    osc=ctx.createOscillator();
+    osc.frequency.value=f;
+    osc.connect(ctx.destination);
+    osc.start();
+}
+
+function stopTone(){
+    if(osc) osc.stop();
 }
 
 update();
