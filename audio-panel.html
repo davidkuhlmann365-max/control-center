@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Studio Audio Control Panel</title>
+
+<style>
+body{
+    font-family:Arial;
+    background:#0b0f14;
+    color:white;
+    text-align:center;
+    margin:0;
+}
+
+.panel{
+    max-width:500px;
+    margin:20px auto;
+    background:#121a26;
+    padding:15px;
+    border-radius:12px;
+}
+
+button{
+    width:90%;
+    padding:10px;
+    margin:5px;
+    border:none;
+    border-radius:8px;
+    background:#1e2a3a;
+    color:white;
+}
+
+input{
+    width:90%;
+}
+
+#meter{
+    width:90%;
+    height:20px;
+    background:#222;
+    margin:10px auto;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+#level{
+    height:100%;
+    width:0%;
+    background:lime;
+}
+
+#clip{
+    color:lime;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🎛️ STUDIO AUDIO PANEL</h2>
+
+<div class="panel">
+
+    <h3>🔊 Test Tone</h3>
+
+    <button onclick="startTone('sine')">Sine</button>
+    <button onclick="startTone('square')">Square</button>
+    <button onclick="startTone('sawtooth')">Saw</button>
+    <button onclick="stopTone()">Stop</button>
+
+    <br><br>
+
+    Frequency: <span id="freqVal">440</span> Hz
+    <input type="range" min="20" max="2000" value="440" oninput="setFreq(this.value)">
+
+</div>
+
+<div class="panel">
+
+    <h3>🎚️ Output Level</h3>
+
+    <div id="meter">
+        <div id="level"></div>
+    </div>
+
+    <div id="clip">OK</div>
+
+</div>
+
+<script>
+
+let ctx;
+let osc;
+let gain;
+
+let analyser;
+let dataArray;
+let bufferLength;
+
+function init(){
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 256;
+
+    bufferLength = analyser.frequencyBinCount;
+    dataArray = new Uint8Array(bufferLength);
+}
+
+function startTone(type){
+
+    if(!ctx) init();
+
+    stopTone();
+
+    osc = ctx.createOscillator();
+    gain = ctx.createGain();
+
+    osc.type = type;
+    osc.frequency.value = 440;
+
+    osc.connect(gain);
+    gain.connect(analyser);
+    analyser.connect(ctx.destination);
+
+    gain.gain.value = 0.2;
+
+    osc.start();
+
+    visualize();
+}
+
+function stopTone(){
+    if(osc){
+        osc.stop();
+        osc.disconnect();
+    }
+}
+
+function setFreq(v){
+    document.getElementById("freqVal").innerText = v;
+    if(osc){
+        osc.frequency.value = v;
+    }
+}
+
+/* 📊 VISUAL METER */
+function visualize(){
+
+    requestAnimationFrame(visualize);
+
+    analyser.getByteFrequencyData(dataArray);
+
+    let sum = 0;
+    for(let i=0;i<dataArray.length;i++){
+        sum += dataArray[i];
+    }
+
+    let avg = sum / dataArray.length;
+    let percent = Math.min(100, (avg/128)*100);
+
+    document.getElementById("level").style.width = percent + "%";
+
+    if(percent > 85){
+        document.getElementById("level").style.background = "red";
+        document.getElementById("clip").innerText = "OVERLOAD 🔴";
+        document.getElementById("clip").style.color = "red";
+    } else {
+        document.getElementById("level").style.background = "lime";
+        document.getElementById("clip").innerText = "OK";
+        document.getElementById("clip").style.color = "lime";
+    }
+}
+
+</script>
+
+</body>
+</html>
