@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V5 Responsive Intercom</title>
+
+<style>
+/* 🌍 GLOBAL RESET */
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial;
+    background:#0b0f14;
+    color:white;
+    text-align:center;
+}
+
+/* 🧱 MAIN LAYOUT */
+.container{
+    width:100%;
+    max-width:900px;
+    margin:0 auto;
+    padding:10px;
+}
+
+/* 📹 CAMERA */
+video{
+    width:100%;
+    max-width:600px;
+    height:auto;
+    border-radius:12px;
+    border:2px solid #1e2a3a;
+}
+
+/* 🧩 PANELS */
+.panel{
+    background:#121a26;
+    margin:10px auto;
+    padding:12px;
+    border-radius:12px;
+    width:100%;
+    max-width:600px;
+}
+
+/* 🔘 BUTTONS */
+button{
+    width:100%;
+    padding:14px;
+    margin:5px 0;
+    border:none;
+    border-radius:10px;
+    background:#1e2a3a;
+    color:white;
+    font-size:16px;
+}
+
+/* 📱 TOP TITLE */
+h2{
+    font-size:20px;
+    margin:10px 0;
+}
+
+/* 🎙️ TALK ACTIVE */
+.talking{
+    background:#3b0000 !important;
+    animation:flash 0.3s infinite;
+}
+
+/* 🚨 FLASH */
+@keyframes flash{
+    0%{background:#0b0f14;}
+    50%{background:#3b0000;}
+    100%{background:#0b0f14;}
+}
+
+/* 📱 SMALL DEVICES */
+@media (max-width:600px){
+
+    h2{
+        font-size:18px;
+    }
+
+    button{
+        font-size:15px;
+        padding:16px;
+    }
+
+    .panel{
+        margin:8px;
+        padding:10px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🔔 SMART INTERCOM V5 (RESPONSIVE)</h2>
+
+<!-- 📹 CAMERA -->
+<div class="panel">
+    <video id="cam" autoplay playsinline></video>
+</div>
+
+<!-- CONTROLS -->
+<div class="panel">
+    <button onclick="startCam()">📹 Kamera starten</button>
+</div>
+
+<!-- 🎙️ TALK -->
+<div class="panel">
+    <h3>🎙️ PUSH TO TALK</h3>
+
+    <button id="talkBtn"
+        onmousedown="startTalk()"
+        onmouseup="stopTalk()"
+        ontouchstart="startTalk()"
+        ontouchend="stopTalk()">
+        HOLD TO TALK
+    </button>
+
+    <p id="talkStatus">IDLE</p>
+</div>
+
+<!-- 🚪 DOOR -->
+<div class="panel">
+    <h3>🚪 DOOR CONTROL</h3>
+
+    <input id="pin"
+        placeholder="PIN"
+        style="width:100%;padding:12px;border-radius:8px;border:none;margin-bottom:5px;">
+
+    <button onclick="unlockDoor()">UNLOCK</button>
+    <button onclick="lockDoor()">LOCK</button>
+
+    <p id="doorStatus">LOCKED 🔴</p>
+</div>
+
+</div>
+
+<script>
+
+let stream;
+let recorder;
+let chunks=[];
+let doorLocked=true;
+
+/* 📹 CAMERA */
+function startCam(){
+    navigator.mediaDevices.getUserMedia({video:true,audio:true})
+    .then(s=>{
+        stream=s;
+        document.getElementById("cam").srcObject=stream;
+    });
+}
+
+/* 🎙️ TALK */
+function startTalk(){
+
+    if(!stream) return;
+
+    document.getElementById("talkStatus").innerText="LIVE TALKING...";
+    document.getElementById("talkBtn").classList.add("talking");
+
+    recorder=new MediaRecorder(stream);
+    chunks=[];
+
+    recorder.ondataavailable=e=>{
+        chunks.push(e.data);
+    };
+
+    recorder.start();
+}
+
+function stopTalk(){
+
+    document.getElementById("talkStatus").innerText="IDLE";
+    document.getElementById("talkBtn").classList.remove("talking");
+
+    recorder.stop();
+
+    recorder.onstop=()=>{
+        let blob=new Blob(chunks,{type:"audio/webm"});
+        let url=URL.createObjectURL(blob);
+        let audio=new Audio(url);
+        audio.play();
+    };
+}
+
+/* 🚪 DOOR */
+function unlockDoor(){
+
+    let pin=document.getElementById("pin").value;
+
+    if(pin==="1234"){
+        doorLocked=false;
+        document.getElementById("doorStatus").innerText="UNLOCKED 🟢";
+    }else{
+        alert("WRONG PIN");
+    }
+}
+
+function lockDoor(){
+    doorLocked=true;
+    document.getElementById("doorStatus").innerText="LOCKED 🔴";
+}
+
+</script>
+
+</body>
+</html>
