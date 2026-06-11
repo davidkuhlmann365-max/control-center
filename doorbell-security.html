@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Doorbell Security System</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#000;
+    color:#00ff88;
+    overflow:hidden;
+}
+
+/* BOOT SCREEN */
+#boot{
+    position:fixed;
+    width:100%;
+    height:100%;
+    background:#000;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    font-size:18px;
+}
+
+#main{
+    display:none;
+    padding:20px;
+}
+
+.glow{
+    text-shadow:0 0 10px #00ff88;
+}
+
+/* FLASH */
+@keyframes flash{
+    0%{background:#000;}
+    50%{background:#200000;}
+    100%{background:#000;}
+}
+
+button{
+    padding:12px;
+    margin:5px;
+    background:#111;
+    color:#00ff88;
+    border:1px solid #00ff88;
+    border-radius:8px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- BOOT -->
+<div id="boot">
+    <div class="glow">SYSTEM OFFLINE</div>
+    <div id="status">WAITING FOR DOORBELL SIGNAL...</div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+    <h2>🛡️ SECURITY CONTROL CENTER</h2>
+
+    <button onclick="triggerDoorbell()">🔔 TEST DOORBELL</button>
+    <button onclick="triggerAlarm()">🚨 MANUAL ALARM</button>
+
+    <div id="log"></div>
+
+</div>
+
+<script>
+
+let booted=false;
+
+function log(msg){
+    document.getElementById("log").innerHTML+="<br>"+msg;
+}
+
+/* 🔔 DOORBELL EVENT */
+function triggerDoorbell(){
+
+    if(booted) return;
+
+    document.body.style.animation="flash 0.3s infinite";
+
+    document.getElementById("status").innerText="DOORBELL SIGNAL RECEIVED";
+
+    setTimeout(()=>{
+        document.getElementById("status").innerText="BOOTING SECURITY SYSTEM...";
+    },1000);
+
+    setTimeout(()=>{
+        document.getElementById("boot").style.display="none";
+        document.getElementById("main").style.display="block";
+        booted=true;
+        log("SYSTEM BOOTED FROM DOORBELL SIGNAL");
+        document.body.style.animation="";
+    },3000);
+}
+
+/* 🚨 ALARM */
+function triggerAlarm(){
+    document.body.style.animation="flash 0.2s infinite";
+    log("ALARM TRIGGERED");
+}
+
+</script>
+
+</body>
+</html>
