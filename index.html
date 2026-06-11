@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>V10 Keycard Security System</title>
+<title>V2 Pro Max Security System</title>
 
 <style>
 body{
@@ -11,63 +11,76 @@ body{
     font-family:Arial;
     background:#0b0f14;
     color:white;
-    text-align:center;
 }
 
-/* DASHBOARD */
-#dash{
-    padding:15px;
+/* TOP STATUS */
+#top{
+    display:flex;
+    justify-content:space-around;
+    padding:10px;
+    background:#111826;
+    font-size:13px;
 }
 
-/* PANELS */
-.panel{
+/* GRID */
+.container{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+    padding:10px;
+}
+
+/* CARD */
+.card{
     background:#121a26;
-    margin:10px auto;
-    padding:12px;
     border-radius:12px;
-    width:92%;
-    max-width:420px;
+    padding:12px;
 }
 
-/* BUTTONS */
+/* BUTTON */
 button{
-    padding:12px;
-    margin:5px;
-    width:90%;
+    width:100%;
+    margin:5px 0;
+    padding:10px;
     border:none;
     border-radius:8px;
     background:#1e2a3a;
     color:white;
-    font-size:15px;
 }
 
-/* LED */
-.led{
-    display:inline-block;
-    width:12px;
-    height:12px;
+/* ZONES */
+.zone{
+    padding:8px;
+    margin:5px 0;
+    border-radius:8px;
+    background:#0f1622;
+}
+
+/* LOG */
+#log{
+    height:160px;
+    overflow:auto;
+    font-size:12px;
+    background:#0c121c;
+    padding:8px;
+    border-radius:8px;
+}
+
+/* DOTS */
+.dot{
+    width:10px;
+    height:10px;
     border-radius:50%;
-    margin:0 5px;
+    display:inline-block;
 }
 .green{background:lime;}
 .yellow{background:orange;}
 .red{background:red;}
 
-/* LOG */
-#log{
-    text-align:left;
-    font-size:12px;
-    height:140px;
-    overflow:auto;
-    background:#0f1622;
-    padding:10px;
-    border-radius:10px;
-}
-
 /* FLASH */
 @keyframes flash{
     0%{background:#0b0f14;}
-    50%{background:red;}
+    50%{background:#3b0000;}
     100%{background:#0b0f14;}
 }
 </style>
@@ -75,160 +88,150 @@ button{
 
 <body>
 
-<div id="dash">
-
-<h2>V10 KEYCARD SECURITY SYSTEM</h2>
-
-<!-- STATUS -->
-<div class="panel">
-    <h3>SYSTEM STATUS</h3>
-    <div>
-        ARM: <span class="led red" id="ledArm"></span>
-        ALERT: <span class="led green" id="ledAlert"></span>
-        KEYCARD: <span class="led red" id="ledCard"></span>
-    </div>
+<!-- TOP BAR -->
+<div id="top">
+    <div>THREAT: <span id="threat">GREEN</span></div>
+    <div>STATE: <span id="state">DISARMED</span></div>
+    <div>CARD: <span id="card">NONE</span></div>
 </div>
+
+<div class="container">
 
 <!-- KEYCARD -->
-<div class="panel">
-    <h3>KEYCARD SLOT</h3>
-
-    <button onclick="insertCard('ADMIN-001')">🪪 Insert ADMIN Card</button>
-    <button onclick="insertCard('USER-123')">🪪 Insert USER Card</button>
-    <button onclick="removeCard()">⏏ Remove Card</button>
-</div>
-
-<!-- SENSORS -->
-<div class="panel">
-    <h3>SENSORS</h3>
-
-    <button onclick="door()">🚪 Door Open</button>
-    <button onclick="motion()">🧍 Motion</button>
-    <button onclick="smoke()">🔥 Smoke</button>
+<div class="card">
+    <h3>🪪 KEYCARD</h3>
+    <button onclick="cardIn('ADMIN')">Insert ADMIN</button>
+    <button onclick="cardIn('USER')">Insert USER</button>
+    <button onclick="cardOut()">Remove Card</button>
 </div>
 
 <!-- CONTROL -->
-<div class="panel">
-    <h3>CONTROL</h3>
+<div class="card">
+    <h3>🔐 CONTROL</h3>
+    <button onclick="arm()">ARM SYSTEM</button>
+    <button onclick="disarm()">DISARM (ADMIN ONLY)</button>
+</div>
 
-    <button onclick="armSystem()">🔒 ARM SYSTEM</button>
-    <button onclick="disarmSystem()">🔓 DISARM SYSTEM</button>
+<!-- ZONES -->
+<div class="card">
+    <h3>🗺️ ZONES</h3>
+
+    <div class="zone">Zone A - Entrance <button onclick="trigger('ZONE A')">Trigger</button></div>
+    <div class="zone">Zone B - Living Room <button onclick="trigger('ZONE B')">Trigger</button></div>
+    <div class="zone">Zone C - Basement <button onclick="trigger('ZONE C')">Trigger</button></div>
 </div>
 
 <!-- LOG -->
-<div class="panel">
-    <h3>EVENT LOG</h3>
+<div class="card">
+    <h3>📜 EVENT LOG</h3>
     <div id="log"></div>
 </div>
 
 </div>
 
-<audio id="smokeAudio" src="smoke.mp3"></audio>
-
 <script>
 
-let armed=false;
-let cardInserted=null;
-
-let smokeAudio=document.getElementById("smokeAudio");
-let sirenInterval=null;
+let state="DISARMED";
+let card=null;
+let threat="GREEN";
+let siren=null;
 
 /* LOG */
-function log(msg){
+function log(msg,color="white"){
     let t=new Date().toLocaleTimeString();
-    document.getElementById("log").innerHTML =
-    `[${t}] ${msg}<br>` + document.getElementById("log").innerHTML;
+    document.getElementById("log").innerHTML=
+    `<span style="color:${color}">[${t}] ${msg}</span><br>`+
+    document.getElementById("log").innerHTML;
 }
 
-/* LED */
-function updateLED(){
-    document.getElementById("ledArm").className="led "+(armed?"green":"red");
-    document.getElementById("ledCard").className="led "+(cardInserted?"green":"red");
-}
+/* UI */
+function update(){
 
-/* KEYCARD */
-function insertCard(id){
-    cardInserted=id;
-    updateLED();
-    log("Keycard inserted: "+id);
+    document.getElementById("state").innerText=state;
+    document.getElementById("threat").innerText=threat;
+    document.getElementById("card").innerText=card?card:"NONE";
 
-    if(id!=="ADMIN-001" && id!=="USER-123"){
-        triggerAlarm("UNKNOWN CARD");
+    if(threat==="RED"){
+        document.body.style.animation="flash 0.2s infinite";
+    }else{
+        document.body.style.animation="";
     }
 }
 
-function removeCard(){
-    log("Keycard removed");
-
-    if(armed){
-        triggerAlarm("CARD REMOVED WHILE ARMED");
-    }
-
-    cardInserted=null;
-    updateLED();
+/* CARD */
+function cardIn(type){
+    card=type;
+    log("Card inserted: "+type,"deepskyblue");
+    update();
 }
 
-/* ARM / DISARM */
-function armSystem(){
-    if(!cardInserted){
-        log("ARM FAILED - NO KEYCARD");
-        triggerAlarm("NO KEYCARD");
+function cardOut(){
+    log("Card removed","orange");
+
+    if(state==="ARMED"){
+        triggerAlarm("CARD REMOVED");
+    }
+
+    card=null;
+    update();
+}
+
+/* ARM */
+function arm(){
+    if(!card){
+        log("ARM FAILED","red");
         return;
     }
 
-    armed=true;
-    updateLED();
-    document.body.style.background="#0b0f14";
-    log("SYSTEM ARMED");
+    state="ARMED";
+    threat="GREEN";
+    log("SYSTEM ARMED","lime");
+    update();
 }
 
-function disarmSystem(){
-    if(cardInserted!=="ADMIN-001"){
-        log("DISARM DENIED - ADMIN ONLY");
+/* DISARM */
+function disarm(){
+
+    if(card!=="ADMIN"){
+        log("DISARM DENIED","red");
         triggerAlarm("UNAUTHORIZED DISARM");
         return;
     }
 
-    armed=false;
+    state="DISARMED";
+    threat="GREEN";
     stopAlarm();
-    updateLED();
-    log("SYSTEM DISARMED");
+    log("SYSTEM DISARMED","lime");
+    update();
 }
 
-/* SENSORS */
-function door(){
-    log("DOOR EVENT");
-    if(armed) triggerAlarm("DOOR BREACH");
+/* ZONES */
+function trigger(zone){
+
+    if(state!=="ARMED"){
+        log(zone+" ignored","gray");
+        return;
+    }
+
+    log("BREACH: "+zone,"orange");
+    threat="RED";
+
+    update();
+    triggerAlarm(zone);
 }
 
-function motion(){
-    log("MOTION EVENT");
-    if(armed) triggerAlarm("MOTION DETECTED");
-}
-
-function smoke(){
-    log("SMOKE EVENT");
-    smokeAudio.loop=true;
-    smokeAudio.play();
-
-    if(armed) triggerAlarm("SMOKE DETECTED");
-}
-
-/* ALARM */
+/* ALARM ENGINE */
 function triggerAlarm(reason){
 
-    log("ALARM: "+reason);
-
-    document.body.style.animation="flash 0.2s infinite";
-    document.body.style.background="darkred";
+    log("ALARM: "+reason,"red");
 
     let freq=500;
 
-    if(sirenInterval) clearInterval(sirenInterval);
+    if(siren) clearInterval(siren);
 
-    sirenInterval=setInterval(()=>{
+    siren=setInterval(()=>{
 
-        const ctx=new (window.AudioContext||window.webkitAudioContext)();
+        const ctx=new (window.AudioContext||webkitAudioContext)();
         const osc=ctx.createOscillator();
         const gain=ctx.createGain();
 
@@ -242,27 +245,23 @@ function triggerAlarm(reason){
         osc.start();
         osc.stop(ctx.currentTime+0.25);
 
-        freq=(freq===500)?1200:500;
+        freq=(freq===500)?1300:500;
 
-    },300);
+    },280);
 }
 
 /* STOP */
 function stopAlarm(){
-
-    document.body.style.animation="";
-    document.body.style.background="#0b0f14";
-
-    smokeAudio.pause();
-    smokeAudio.currentTime=0;
-
-    if(sirenInterval){
-        clearInterval(sirenInterval);
-        sirenInterval=null;
+    if(siren){
+        clearInterval(siren);
+        siren=null;
     }
+
+    threat="GREEN";
+    update();
 }
 
-updateLED();
+update();
 
 </script>
 
