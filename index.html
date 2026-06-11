@@ -3,30 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Security Panel V8 Pro</title>
+<title>Security Panel V8 Fixed</title>
 
 <style>
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Arial;
 }
 
 body {
     background: #0b0f14;
     color: #00ff9c;
-    min-height: 100vh;
-    overflow-x: hidden;
 }
 
-/* TOPBAR */
+/* TOP */
 .topbar {
     background: #111826;
     padding: 10px;
     text-align: center;
-    font-weight: bold;
-    letter-spacing: 1px;
     border-bottom: 2px solid #00ff9c;
     font-size: 14px;
 }
@@ -39,24 +35,26 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: #0b0f14;
-    padding: 20px;
+    gap: 15px;
 }
 
+/* PIN DISPLAY */
 .pin-display {
     font-size: 28px;
     letter-spacing: 6px;
-    margin-bottom: 20px;
 }
 
+/* KEYPAD */
 .pin-box {
+    width: min(320px, 90vw);
     display: grid;
-    grid-template-columns: repeat(3, minmax(60px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-    width: min(300px, 90vw);
 }
 
+/* BUTTONS */
 button.key {
+    width: 100%;
     aspect-ratio: 1 / 1;
     font-size: 18px;
     background: #111826;
@@ -70,23 +68,18 @@ button.key:active {
     color: #000;
 }
 
-.wide {
-    grid-column: span 3;
+/* BOTTOM ROW (0 + ENTER) */
+.bottom-row {
+    width: min(320px, 90vw);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
 
 /* DASHBOARD */
 .dashboard {
     display: none;
     padding: 10px;
-    max-width: 1000px;
-    margin: auto;
-}
-
-/* GRID LAYOUT (RESPONSIVE) */
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 10px;
 }
 
 /* PANEL */
@@ -95,58 +88,34 @@ button.key:active {
     border: 1px solid #00ff9c;
     border-radius: 10px;
     padding: 10px;
-}
-
-/* TEXT */
-h3 {
-    font-size: 14px;
-    margin-bottom: 8px;
-}
-
-/* STATUS */
-.status {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-}
-
-/* ZONES */
-.zone {
-    padding: 6px;
-    border: 1px solid #00ff9c;
-    margin-top: 5px;
-    font-size: 12px;
+    margin-bottom: 10px;
 }
 
 /* BUTTON */
 .btn {
-    padding: 8px;
+    width: 100%;
+    padding: 10px;
     background: #00ff9c;
     color: #000;
     border: none;
     margin-top: 8px;
-    width: 100%;
-    font-weight: bold;
     border-radius: 6px;
-    font-size: 13px;
 }
 
 /* VIDEO */
 video {
     width: 100%;
     border-radius: 10px;
-    max-height: 200px;
-    object-fit: cover;
 }
 
-/* ALARM EFFECT */
+/* ALARM */
 .alarm {
     animation: flash 0.5s infinite;
 }
 
 @keyframes flash {
     0% { background: #0b0f14; }
-    50% { background: red; color: white; }
+    50% { background: red; }
     100% { background: #0b0f14; }
 }
 
@@ -155,64 +124,58 @@ video {
 
 <body>
 
-<div class="topbar">SECURITY PANEL V8 PRO - RESPONSIVE</div>
+<div class="topbar">SECURITY PANEL V8 FIX</div>
 
 <!-- LOGIN -->
 <div class="login-screen" id="loginScreen">
+
     <div class="pin-display" id="pinDisplay">----</div>
 
+    <!-- 1-9 -->
     <div class="pin-box">
         <button class="key" onclick="press(1)">1</button>
         <button class="key" onclick="press(2)">2</button>
         <button class="key" onclick="press(3)">3</button>
+
         <button class="key" onclick="press(4)">4</button>
         <button class="key" onclick="press(5)">5</button>
         <button class="key" onclick="press(6)">6</button>
+
         <button class="key" onclick="press(7)">7</button>
         <button class="key" onclick="press(8)">8</button>
         <button class="key" onclick="press(9)">9</button>
-        <button class="key wide" onclick="press(0)">0</button>
-        <button class="key wide" onclick="checkPin()">ENTER</button>
     </div>
+
+    <!-- bottom -->
+    <div class="bottom-row">
+        <button class="key" onclick="press(0)">0</button>
+        <button class="key" onclick="checkPin()">ENTER</button>
+    </div>
+
 </div>
 
 <!-- DASHBOARD -->
 <div class="dashboard" id="dashboard">
 
-<div class="grid">
+<div class="panel">
+    <h3>STATUS</h3>
+    <div>System ARMED</div>
+</div>
 
-    <div class="panel">
-        <h3>STATUS</h3>
-        <div class="status">
-            <div>System: ARMED</div>
-            <div>Battery: OK</div>
-        </div>
-    </div>
+<div class="panel">
+    <h3>CAMERA</h3>
+    <video id="video" autoplay></video>
+    <button class="btn" onclick="startCamera()">Start Camera</button>
+</div>
 
-    <div class="panel">
-        <h3>CAMERA</h3>
-        <video id="video" autoplay></video>
-        <button class="btn" onclick="startCamera()">Start Camera</button>
-    </div>
-
-    <div class="panel">
-        <h3>ZONES</h3>
-        <div class="zone">Door: OK</div>
-        <div class="zone">Window: OK</div>
-        <div class="zone">Motion: OK</div>
-    </div>
-
-    <div class="panel">
-        <h3>ALARM</h3>
-        <button class="btn" onclick="triggerAlarm()">TRIGGER</button>
-        <button class="btn" onclick="resetAlarm()">RESET</button>
-    </div>
-
+<div class="panel">
+    <h3>ALARM</h3>
+    <button class="btn" onclick="triggerAlarm()">TRIGGER</button>
+    <button class="btn" onclick="resetAlarm()">RESET</button>
 </div>
 
 </div>
 
-<!-- AUDIO -->
 <audio id="smokeAlarm" loop>
   <source src="salamisound-7927385-rauchmelder-30-sekunden-10-x.mp3" type="audio/mpeg">
 </audio>
@@ -220,7 +183,7 @@ video {
 <script>
 let pin = "";
 const correctPin = "1234";
-let alarmActive = false;
+let alarm = false;
 
 function press(n){
     if(pin.length < 4){
@@ -233,9 +196,8 @@ function checkPin(){
     if(pin === correctPin){
         document.getElementById("loginScreen").style.display = "none";
         document.getElementById("dashboard").style.display = "block";
-        if(navigator.vibrate) navigator.vibrate(200);
     } else {
-        alert("Falscher PIN!");
+        alert("Falscher PIN");
         pin = "";
         document.getElementById("pinDisplay").innerText = "----";
     }
@@ -243,22 +205,19 @@ function checkPin(){
 
 function startCamera(){
     navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-        document.getElementById("video").srcObject = stream;
-    })
-    .catch(() => alert("Kamera nicht erlaubt"));
+    .then(stream => document.getElementById("video").srcObject = stream)
+    .catch(()=>alert("Kamera blockiert"));
 }
 
 function triggerAlarm(){
-    if(alarmActive) return;
-    alarmActive = true;
+    if(alarm) return;
+    alarm = true;
     document.body.classList.add("alarm");
     document.getElementById("smokeAlarm").play();
-    if(navigator.vibrate) navigator.vibrate([300,100,300]);
 }
 
 function resetAlarm(){
-    alarmActive = false;
+    alarm = false;
     document.body.classList.remove("alarm");
     let a = document.getElementById("smokeAlarm");
     a.pause();
