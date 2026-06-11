@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>V7 Stable Intercom OS</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:Arial;
+    background:#0b0f14;
+    color:white;
+    display:flex;
+    height:100vh;
+}
+
+/* 🧭 SIDEBAR */
+#sidebar{
+    width:220px;
+    background:#111826;
+    display:flex;
+    flex-direction:column;
+    padding:10px;
+}
+
+#sidebar button{
+    margin:5px 0;
+    padding:12px;
+    background:#1e2a3a;
+    border:none;
+    color:white;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+/* 📱 MAIN */
+#main{
+    flex:1;
+    padding:15px;
+    overflow:auto;
+}
+
+/* 🧱 PANEL */
+.panel{
+    background:#121a26;
+    padding:12px;
+    margin:10px auto;
+    border-radius:10px;
+    max-width:650px;
+}
+
+/* 📹 CAMERA */
+video{
+    width:100%;
+    border-radius:12px;
+    border:2px solid #1e2a3a;
+}
+
+/* 🧭 VIEWS */
+.view{
+    display:none;
+}
+
+.view.active{
+    display:block;
+}
+
+/* 📱 MOBILE */
+@media (max-width:700px){
+    body{
+        flex-direction:column;
+    }
+
+    #sidebar{
+        width:100%;
+        flex-direction:row;
+        overflow:auto;
+    }
+
+    #sidebar button{
+        flex:1;
+        font-size:12px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- 🧭 NAV -->
+<div id="sidebar">
+    <button onclick="showView('home')">🏠 Home</button>
+    <button onclick="showView('camera')">📹 Camera</button>
+    <button onclick="showView('intercom')">🎙️ Intercom</button>
+    <button onclick="showView('door')">🚪 Door</button>
+    <button onclick="showView('alarm')">🚨 Alarm</button>
+</div>
+
+<!-- 📱 MAIN -->
+<div id="main">
+
+<!-- 🏠 HOME -->
+<div id="home" class="view active">
+    <div class="panel">
+        <h2>🛡️ SYSTEM STATUS</h2>
+        <p id="status">SYSTEM READY</p>
+        <p id="ai">AI: STANDBY</p>
+    </div>
+</div>
+
+<!-- 📹 CAMERA -->
+<div id="camera" class="view">
+    <div class="panel">
+        <video id="cam" autoplay playsinline></video>
+        <button onclick="startCamera()">START CAMERA</button>
+    </div>
+</div>
+
+<!-- 🎙️ INTERCOM -->
+<div id="intercom" class="view">
+    <div class="panel">
+        <h3>🎙️ PUSH TO TALK</h3>
+
+        <button
+            onmousedown="startTalk()"
+            onmouseup="stopTalk()"
+            ontouchstart="startTalk()"
+            ontouchend="stopTalk()">
+            HOLD TO TALK
+        </button>
+
+        <p id="talkStatus">IDLE</p>
+    </div>
+</div>
+
+<!-- 🚪 DOOR -->
+<div id="door" class="view">
+    <div class="panel">
+        <h3>🚪 DOOR CONTROL</h3>
+
+        <input id="pin" placeholder="PIN" style="width:100%;padding:10px;border-radius:8px;border:none;">
+
+        <button onclick="unlockDoor()">UNLOCK</button>
+        <button onclick="lockDoor()">LOCK</button>
+
+        <p id="doorStatus">LOCKED 🔴</p>
+    </div>
+</div>
+
+<!-- 🚨 ALARM -->
+<div id="alarm" class="view">
+    <div class="panel">
+        <h3>🚨 ALARM SYSTEM</h3>
+        <button onclick="triggerAlarm()">TRIGGER ALARM</button>
+    </div>
+</div>
+
+</div>
+
+<script>
+
+/* 🧠 GLOBAL STATE (SAFE) */
+let stream = null;
+let recorder = null;
+let chunks = [];
+let doorLocked = true;
+let cameraReady = false;
+
+/* 🧭 SAFE NAVIGATION */
+function showView(id){
+    document.querySelectorAll(".view").forEach(v=>{
+        v.classList.remove("active");
+    });
+
+    document.getElementById(id).classList.add("active");
+}
+
+/* 📹 CAMERA (USER INIT ONLY) */
+async function startCamera(){
+
+    try{
+        stream = await navigator.mediaDevices.getUserMedia({
+            video:true,
+            audio:true
+        });
+
+        document.getElementById("cam").srcObject = stream;
+        cameraReady = true;
+
+        document.getElementById("status").innerText =
+            "CAMERA ACTIVE";
+    }
+    catch(err){
+        alert("Camera/Mic access denied");
+        console.error(err);
+    }
+}
+
+/* 🎙️ TALK SAFE */
+function startTalk(){
+
+    if(!stream){
+        alert("Start camera first");
+        return;
+    }
+
+    recorder = new MediaRecorder(stream);
+    chunks = [];
+
+    recorder.ondataavailable = e=>{
+        chunks.push(e.data);
+    };
+
+    recorder.start();
+
+    document.getElementById("talkStatus").innerText =
+        "LIVE TALKING...";
+}
+
+function stopTalk(){
+
+    if(!recorder) return;
+
+    recorder.onstop = ()=>{
+        const blob = new Blob(chunks,{type:"audio/webm"});
+        const url = URL.createObjectURL(blob);
+        new Audio(url).play();
+    };
+
+    recorder.stop();
+
+    document.getElementById("talkStatus").innerText =
+        "IDLE";
+}
+
+/* 🚪 DOOR */
+function unlockDoor(){
+
+    const pin = document.getElementById("pin").value;
+
+    if(pin === "1234"){
+        doorLocked = false;
+        document.getElementById("doorStatus").innerText =
+            "UNLOCKED 🟢";
+    } else {
+        alert("WRONG PIN");
+    }
+}
+
+function lockDoor(){
+    doorLocked = true;
+    document.getElementById("doorStatus").innerText =
+        "LOCKED 🔴";
+}
+
+/* 🚨 ALARM */
+function triggerAlarm(){
+    document.getElementById("status").innerText =
+        "🚨 ALARM ACTIVE";
+}
+
+/* 🧠 INIT SAFE */
+document.addEventListener("DOMContentLoaded", ()=>{
+    console.log("V7 SYSTEM READY");
+});
+
+</script>
+
+</body>
+</html>
