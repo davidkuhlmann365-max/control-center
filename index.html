@@ -3,226 +3,267 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Security Panel V8 Fixed</title>
+<title>V10 Keycard Security System</title>
 
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: Arial;
-}
-
-body {
-    background: #0b0f14;
-    color: #00ff9c;
-}
-
-/* TOP */
-.topbar {
-    background: #111826;
-    padding: 10px;
-    text-align: center;
-    border-bottom: 2px solid #00ff9c;
-    font-size: 14px;
-}
-
-/* LOGIN */
-.login-screen {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-}
-
-/* PIN DISPLAY */
-.pin-display {
-    font-size: 28px;
-    letter-spacing: 6px;
-}
-
-/* KEYPAD */
-.pin-box {
-    width: min(320px, 90vw);
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-}
-
-/* BUTTONS */
-button.key {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    font-size: 18px;
-    background: #111826;
-    color: #00ff9c;
-    border: 1px solid #00ff9c;
-    border-radius: 10px;
-}
-
-button.key:active {
-    background: #00ff9c;
-    color: #000;
-}
-
-/* BOTTOM ROW (0 + ENTER) */
-.bottom-row {
-    width: min(320px, 90vw);
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+body{
+    margin:0;
+    font-family:Arial;
+    background:#0b0f14;
+    color:white;
+    text-align:center;
 }
 
 /* DASHBOARD */
-.dashboard {
-    display: none;
-    padding: 10px;
+#dash{
+    padding:15px;
 }
 
-/* PANEL */
-.panel {
-    background: #111826;
-    border: 1px solid #00ff9c;
-    border-radius: 10px;
-    padding: 10px;
-    margin-bottom: 10px;
+/* PANELS */
+.panel{
+    background:#121a26;
+    margin:10px auto;
+    padding:12px;
+    border-radius:12px;
+    width:92%;
+    max-width:420px;
 }
 
-/* BUTTON */
-.btn {
-    width: 100%;
-    padding: 10px;
-    background: #00ff9c;
-    color: #000;
-    border: none;
-    margin-top: 8px;
-    border-radius: 6px;
+/* BUTTONS */
+button{
+    padding:12px;
+    margin:5px;
+    width:90%;
+    border:none;
+    border-radius:8px;
+    background:#1e2a3a;
+    color:white;
+    font-size:15px;
 }
 
-/* VIDEO */
-video {
-    width: 100%;
-    border-radius: 10px;
+/* LED */
+.led{
+    display:inline-block;
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    margin:0 5px;
+}
+.green{background:lime;}
+.yellow{background:orange;}
+.red{background:red;}
+
+/* LOG */
+#log{
+    text-align:left;
+    font-size:12px;
+    height:140px;
+    overflow:auto;
+    background:#0f1622;
+    padding:10px;
+    border-radius:10px;
 }
 
-/* ALARM */
-.alarm {
-    animation: flash 0.5s infinite;
+/* FLASH */
+@keyframes flash{
+    0%{background:#0b0f14;}
+    50%{background:red;}
+    100%{background:#0b0f14;}
 }
-
-@keyframes flash {
-    0% { background: #0b0f14; }
-    50% { background: red; }
-    100% { background: #0b0f14; }
-}
-
 </style>
 </head>
 
 <body>
 
-<div class="topbar">SECURITY PANEL V8 FIX</div>
+<div id="dash">
 
-<!-- LOGIN -->
-<div class="login-screen" id="loginScreen">
+<h2>V10 KEYCARD SECURITY SYSTEM</h2>
 
-    <div class="pin-display" id="pinDisplay">----</div>
-
-    <!-- 1-9 -->
-    <div class="pin-box">
-        <button class="key" onclick="press(1)">1</button>
-        <button class="key" onclick="press(2)">2</button>
-        <button class="key" onclick="press(3)">3</button>
-
-        <button class="key" onclick="press(4)">4</button>
-        <button class="key" onclick="press(5)">5</button>
-        <button class="key" onclick="press(6)">6</button>
-
-        <button class="key" onclick="press(7)">7</button>
-        <button class="key" onclick="press(8)">8</button>
-        <button class="key" onclick="press(9)">9</button>
+<!-- STATUS -->
+<div class="panel">
+    <h3>SYSTEM STATUS</h3>
+    <div>
+        ARM: <span class="led red" id="ledArm"></span>
+        ALERT: <span class="led green" id="ledAlert"></span>
+        KEYCARD: <span class="led red" id="ledCard"></span>
     </div>
-
-    <!-- bottom -->
-    <div class="bottom-row">
-        <button class="key" onclick="press(0)">0</button>
-        <button class="key" onclick="checkPin()">ENTER</button>
-    </div>
-
 </div>
 
-<!-- DASHBOARD -->
-<div class="dashboard" id="dashboard">
-
+<!-- KEYCARD -->
 <div class="panel">
-    <h3>STATUS</h3>
-    <div>System ARMED</div>
+    <h3>KEYCARD SLOT</h3>
+
+    <button onclick="insertCard('ADMIN-001')">🪪 Insert ADMIN Card</button>
+    <button onclick="insertCard('USER-123')">🪪 Insert USER Card</button>
+    <button onclick="removeCard()">⏏ Remove Card</button>
 </div>
 
+<!-- SENSORS -->
 <div class="panel">
-    <h3>CAMERA</h3>
-    <video id="video" autoplay></video>
-    <button class="btn" onclick="startCamera()">Start Camera</button>
+    <h3>SENSORS</h3>
+
+    <button onclick="door()">🚪 Door Open</button>
+    <button onclick="motion()">🧍 Motion</button>
+    <button onclick="smoke()">🔥 Smoke</button>
 </div>
 
+<!-- CONTROL -->
 <div class="panel">
-    <h3>ALARM</h3>
-    <button class="btn" onclick="triggerAlarm()">TRIGGER</button>
-    <button class="btn" onclick="resetAlarm()">RESET</button>
+    <h3>CONTROL</h3>
+
+    <button onclick="armSystem()">🔒 ARM SYSTEM</button>
+    <button onclick="disarmSystem()">🔓 DISARM SYSTEM</button>
+</div>
+
+<!-- LOG -->
+<div class="panel">
+    <h3>EVENT LOG</h3>
+    <div id="log"></div>
 </div>
 
 </div>
 
-<audio id="smokeAlarm" loop>
-  <source src="salamisound-7927385-rauchmelder-30-sekunden-10-x.mp3" type="audio/mpeg">
-</audio>
+<audio id="smokeAudio" src="smoke.mp3"></audio>
 
 <script>
-let pin = "";
-const correctPin = "1234";
-let alarm = false;
 
-function press(n){
-    if(pin.length < 4){
-        pin += n;
-        document.getElementById("pinDisplay").innerText = pin.padEnd(4,"-");
+let armed=false;
+let cardInserted=null;
+
+let smokeAudio=document.getElementById("smokeAudio");
+let sirenInterval=null;
+
+/* LOG */
+function log(msg){
+    let t=new Date().toLocaleTimeString();
+    document.getElementById("log").innerHTML =
+    `[${t}] ${msg}<br>` + document.getElementById("log").innerHTML;
+}
+
+/* LED */
+function updateLED(){
+    document.getElementById("ledArm").className="led "+(armed?"green":"red");
+    document.getElementById("ledCard").className="led "+(cardInserted?"green":"red");
+}
+
+/* KEYCARD */
+function insertCard(id){
+    cardInserted=id;
+    updateLED();
+    log("Keycard inserted: "+id);
+
+    if(id!=="ADMIN-001" && id!=="USER-123"){
+        triggerAlarm("UNKNOWN CARD");
     }
 }
 
-function checkPin(){
-    if(pin === correctPin){
-        document.getElementById("loginScreen").style.display = "none";
-        document.getElementById("dashboard").style.display = "block";
-    } else {
-        alert("Falscher PIN");
-        pin = "";
-        document.getElementById("pinDisplay").innerText = "----";
+function removeCard(){
+    log("Keycard removed");
+
+    if(armed){
+        triggerAlarm("CARD REMOVED WHILE ARMED");
+    }
+
+    cardInserted=null;
+    updateLED();
+}
+
+/* ARM / DISARM */
+function armSystem(){
+    if(!cardInserted){
+        log("ARM FAILED - NO KEYCARD");
+        triggerAlarm("NO KEYCARD");
+        return;
+    }
+
+    armed=true;
+    updateLED();
+    document.body.style.background="#0b0f14";
+    log("SYSTEM ARMED");
+}
+
+function disarmSystem(){
+    if(cardInserted!=="ADMIN-001"){
+        log("DISARM DENIED - ADMIN ONLY");
+        triggerAlarm("UNAUTHORIZED DISARM");
+        return;
+    }
+
+    armed=false;
+    stopAlarm();
+    updateLED();
+    log("SYSTEM DISARMED");
+}
+
+/* SENSORS */
+function door(){
+    log("DOOR EVENT");
+    if(armed) triggerAlarm("DOOR BREACH");
+}
+
+function motion(){
+    log("MOTION EVENT");
+    if(armed) triggerAlarm("MOTION DETECTED");
+}
+
+function smoke(){
+    log("SMOKE EVENT");
+    smokeAudio.loop=true;
+    smokeAudio.play();
+
+    if(armed) triggerAlarm("SMOKE DETECTED");
+}
+
+/* ALARM */
+function triggerAlarm(reason){
+
+    log("ALARM: "+reason);
+
+    document.body.style.animation="flash 0.2s infinite";
+    document.body.style.background="darkred";
+
+    let freq=500;
+
+    if(sirenInterval) clearInterval(sirenInterval);
+
+    sirenInterval=setInterval(()=>{
+
+        const ctx=new (window.AudioContext||window.webkitAudioContext)();
+        const osc=ctx.createOscillator();
+        const gain=ctx.createGain();
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.type="sawtooth";
+        osc.frequency.value=freq;
+        gain.gain.value=0.12;
+
+        osc.start();
+        osc.stop(ctx.currentTime+0.25);
+
+        freq=(freq===500)?1200:500;
+
+    },300);
+}
+
+/* STOP */
+function stopAlarm(){
+
+    document.body.style.animation="";
+    document.body.style.background="#0b0f14";
+
+    smokeAudio.pause();
+    smokeAudio.currentTime=0;
+
+    if(sirenInterval){
+        clearInterval(sirenInterval);
+        sirenInterval=null;
     }
 }
 
-function startCamera(){
-    navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => document.getElementById("video").srcObject = stream)
-    .catch(()=>alert("Kamera blockiert"));
-}
+updateLED();
 
-function triggerAlarm(){
-    if(alarm) return;
-    alarm = true;
-    document.body.classList.add("alarm");
-    document.getElementById("smokeAlarm").play();
-}
-
-function resetAlarm(){
-    alarm = false;
-    document.body.classList.remove("alarm");
-    let a = document.getElementById("smokeAlarm");
-    a.pause();
-    a.currentTime = 0;
-}
 </script>
 
 </body>
