@@ -1,140 +1,31 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Smart Security Dashboard</title>
-
-<style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: #0b0f14;
-        color: white;
-        overflow: hidden;
-    }
-
-    .header {
-        background: #111826;
-        padding: 15px;
-        text-align: center;
-        font-size: 22px;
-        font-weight: bold;
-        border-bottom: 2px solid #1f2a3a;
-    }
-
-    .status {
-        display: flex;
-        justify-content: space-around;
-        padding: 10px;
-        font-size: 14px;
-        background: #0f1622;
-    }
-
-    .green { color: #2ecc71; }
-    .red { color: #e74c3c; }
-
-    .grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        padding: 20px;
-    }
-
-    button {
-        width: 100%;
-        height: 120px;
-        font-size: 20px;
-        border: none;
-        border-radius: 15px;
-        cursor: pointer;
-        transition: 0.2s;
-    }
-
-    button:active {
-        transform: scale(0.97);
-    }
-
-    .doorbell {
-        background: #3498db;
-        color: white;
-    }
-
-    .alarm {
-        background: #e74c3c;
-        color: white;
-    }
-
-    .log {
-        margin: 20px;
-        padding: 15px;
-        background: #111826;
-        height: 200px;
-        overflow-y: auto;
-        border-radius: 10px;
-        font-size: 14px;
-    }
-
-    .blink {
-        animation: blink 0.3s infinite;
-    }
-
-    @keyframes blink {
-        0% { background: #e74c3c; }
-        50% { background: #111826; }
-        100% { background: #e74c3c; }
-    }
-</style>
-</head>
-
-<body>
-
-<div class="header">🏠 Smart Security Leitstelle</div>
-
-<div class="status">
-    <div>System: <span class="green">ONLINE</span></div>
-    <div>OBS: <span class="green">VERBUNDEN</span></div>
-    <div>IP: 192.168.178.33</div>
-</div>
-
-<div class="grid">
-    <button class="doorbell" onclick="doorbell()">🚪 Klingel (Ding-Dong)</button>
-    <button class="alarm" onclick="alarm()">🚨 ALARM AUSLÖSEN</button>
-</div>
-
-<div class="log" id="log">
-    <b>📋 Ereignisse:</b><br>
-</div>
-
-<audio id="ding" src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg"></audio>
+<button class="doorbell" onclick="doorbellSync()">
+🚪 Klingel (SYNC)
+</button>
 
 <script>
-function addLog(text) {
+function addLog(text){
     const log = document.getElementById("log");
-    const time = new Date().toLocaleTimeString();
-    log.innerHTML += `[${time}] ${text}<br>`;
+    const t = new Date().toLocaleTimeString();
+    log.innerHTML += `[${t}] ${text}<br>`;
     log.scrollTop = log.scrollHeight;
 }
 
-function doorbell() {
-    fetch("http://localhost:5000/doorbell")
-        .catch(()=>{});
+function doorbellSync(){
 
-    document.getElementById("ding").play();
-    addLog("🚪 Türklingel ausgelöst (Ding-Dong)");
-}
+    // sofort UI Feedback
+    addLog("🚪 Klingel ausgelöst (SYNC)");
 
-function alarm() {
-    document.body.classList.add("blink");
-    document.getElementById("ding").play();
+    // Server triggert ALLES gleichzeitig
+    fetch("http://192.168.178.33:5000/doorbell")
+        .then(() => {
+            addLog("📡 Server bestätigt Trigger");
+        })
+        .catch(() => {
+            addLog("❌ Server nicht erreichbar");
+        });
 
-    addLog("🚨 ALARM AUSGELÖST!");
-
-    setTimeout(() => {
-        document.body.classList.remove("blink");
-    }, 5000);
+    // optional lokaler UI Sound fallback
+    const audio = new Audio("sounds/gong.mp3");
+    audio.play();
 }
 </script>
-
-</body>
-</html>
