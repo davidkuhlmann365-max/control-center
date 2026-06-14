@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Security Dashboard</title>
+<title>Smart Doorbell / Security Dashboard</title>
 
 <style>
   body {
     margin: 0;
     font-family: Arial, sans-serif;
     background: #0b0f14;
-    color: #fff;
+    color: white;
   }
 
   header {
@@ -23,7 +23,7 @@
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 12px;
     padding: 12px;
   }
@@ -36,8 +36,8 @@
   }
 
   .status {
-    font-size: 14px;
     opacity: 0.8;
+    margin-top: 8px;
   }
 
   .alarm-on {
@@ -49,8 +49,8 @@
     padding: 12px;
     border: none;
     border-radius: 10px;
-    cursor: pointer;
     font-size: 16px;
+    cursor: pointer;
   }
 
   .btn-alarm {
@@ -62,30 +62,24 @@
     background: #2ecc71;
     color: white;
   }
-
-  .fullscreen {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
 </style>
 </head>
 
 <body>
 
-<header>🛡️ Security Control Panel</header>
+<header>🛡️ Smart Doorbell Security Panel</header>
 
 <div class="grid">
   <div class="card" id="alarmCard">
     <h3>Alarmanlage</h3>
     <div class="status" id="status">Status: AUS</div>
+
     <button class="btn-alarm" onclick="startAlarm()">ALARM AUSLÖSEN</button>
     <button class="btn-stop" onclick="stopAlarm()">STOP</button>
   </div>
 
   <div class="card">
-    <h3>Kameras</h3>
+    <h3>Kamera</h3>
     <div class="status">LIVE (Demo)</div>
   </div>
 
@@ -96,42 +90,39 @@
 </div>
 
 <script>
-let audioCtx;
 let alarmActive = false;
-let interval;
 
-// einfacher "BEEP"
-function playBeep() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
+// MP3 Alarm
+let alarmAudio = new Audio("alarm.mp3");
+alarmAudio.loop = true;
+alarmAudio.volume = 1;
 
-  const oscillator = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
+// 🔥 Verstärkung über Web Audio API
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+const source = audioContext.createMediaElementSource(alarmAudio);
+const gainNode = audioContext.createGain();
 
-  oscillator.type = "square";
-  oscillator.frequency.setValueAtTime(900, audioCtx.currentTime);
+// Lautstärke-Boost (anpassen falls nötig)
+gainNode.gain.value = 3.0;
 
-  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-
-  oscillator.connect(gain);
-  gain.connect(audioCtx.destination);
-
-  oscillator.start();
-  oscillator.stop(audioCtx.currentTime + 0.2);
-}
+source.connect(gainNode);
+gainNode.connect(audioContext.destination);
 
 function startAlarm() {
   if (alarmActive) return;
 
   alarmActive = true;
+
   document.getElementById("status").innerText = "Status: ALARM!";
   document.getElementById("alarmCard").classList.add("alarm-on");
 
-  // wiederholender Alarm (FIX)
-  interval = setInterval(() => {
-    playBeep();
-  }, 300);
+  // Browser Audio freischalten
+  audioContext.resume();
+
+  alarmAudio.currentTime = 0;
+  alarmAudio.play().catch(err => {
+    console.log("Audio blocked:", err);
+  });
 }
 
 function stopAlarm() {
@@ -140,7 +131,8 @@ function stopAlarm() {
   document.getElementById("status").innerText = "Status: AUS";
   document.getElementById("alarmCard").classList.remove("alarm-on");
 
-  clearInterval(interval);
+  alarmAudio.pause();
+  alarmAudio.currentTime = 0;
 }
 </script>
 
