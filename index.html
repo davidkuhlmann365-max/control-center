@@ -1,223 +1,139 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>V4 SMART DOORBELL</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Smart Security Dashboard</title>
 
 <style>
-body{
-    margin:0;
-    font-family:Arial;
-    background:#0b0f14;
-    color:white;
-    text-align:center;
-}
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #0b0f14;
+        color: white;
+        overflow: hidden;
+    }
 
-.panel{
-    max-width:700px;
-    margin:20px auto;
-    padding:15px;
-    background:#121a26;
-    border-radius:12px;
-}
+    .header {
+        background: #111826;
+        padding: 15px;
+        text-align: center;
+        font-size: 22px;
+        font-weight: bold;
+        border-bottom: 2px solid #1f2a3a;
+    }
 
-video{
-    width:100%;
-    border-radius:12px;
-    background:black;
-}
+    .status {
+        display: flex;
+        justify-content: space-around;
+        padding: 10px;
+        font-size: 14px;
+        background: #0f1622;
+    }
 
-button{
-    padding:12px;
-    margin:6px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-}
+    .green { color: #2ecc71; }
+    .red { color: #e74c3c; }
 
-#state{
-    font-size:18px;
-    margin:10px;
-    font-weight:bold;
-    animation:pulse 1s infinite;
-}
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        padding: 20px;
+    }
 
-@keyframes pulse{
-    0%{opacity:1;}
-    50%{opacity:0.4;}
-    100%{opacity:1;}
-}
+    button {
+        width: 100%;
+        height: 120px;
+        font-size: 20px;
+        border: none;
+        border-radius: 15px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    button:active {
+        transform: scale(0.97);
+    }
+
+    .doorbell {
+        background: #3498db;
+        color: white;
+    }
+
+    .alarm {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .log {
+        margin: 20px;
+        padding: 15px;
+        background: #111826;
+        height: 200px;
+        overflow-y: auto;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+
+    .blink {
+        animation: blink 0.3s infinite;
+    }
+
+    @keyframes blink {
+        0% { background: #e74c3c; }
+        50% { background: #111826; }
+        100% { background: #e74c3c; }
+    }
 </style>
 </head>
 
 <body>
 
-<div class="panel">
-<h2>📡 SMART DOORBELL V4</h2>
+<div class="header">🏠 Smart Security Leitstelle</div>
 
-<p id="state">READY</p>
-
-<video id="cam" autoplay playsinline></video>
-
-<br>
-
-<button onclick="ringBell()">🔔 RING</button>
-<button onclick="startSystem('caller')">📱 START AS CALLER</button>
-<button onclick="startSystem('receiver')">💻 START AS RECEIVER</button>
-
+<div class="status">
+    <div>System: <span class="green">ONLINE</span></div>
+    <div>OBS: <span class="green">VERBUNDEN</span></div>
+    <div>IP: 192.168.178.33</div>
 </div>
 
-<!-- 🔥 FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+<div class="grid">
+    <button class="doorbell" onclick="doorbell()">🚪 Klingel (Ding-Dong)</button>
+    <button class="alarm" onclick="alarm()">🚨 ALARM AUSLÖSEN</button>
+</div>
+
+<div class="log" id="log">
+    <b>📋 Ereignisse:</b><br>
+</div>
+
+<audio id="ding" src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg"></audio>
 
 <script>
-
-/* =========================
-   🔥 FIREBASE SETUP
-========================= */
-
-const firebaseConfig = {
-    databaseURL: "YOUR_FIREBASE_URL"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-let pc;
-let stream;
-let roomId = "door-v4";
-
-/* =========================
-   📡 START SYSTEM
-========================= */
-
-async function startSystem(role){
-
-    stream = await navigator.mediaDevices.getUserMedia({
-        video:true,
-        audio:true
-    });
-
-    document.getElementById("cam").srcObject = stream;
-
-    pc = new RTCPeerConnection({
-        iceServers:[
-            { urls:"stun:stun.l.google.com:19302" }
-        ]
-    });
-
-    stream.getTracks().forEach(track=>{
-        pc.addTrack(track, stream);
-    });
-
-    pc.ontrack = (e)=>{
-        document.getElementById("cam").srcObject =
-            e.streams[0];
-    };
-
-    pc.onicecandidate = (e)=>{
-        if(e.candidate){
-            db.ref(roomId + "/candidates").push(
-                JSON.stringify(e.candidate)
-            );
-        }
-    };
-
-    if(role === "caller"){
-        createOffer();
-    } else {
-        listenOffer();
-    }
-
-    document.getElementById("state").innerText =
-        "📶 CONNECTED AS " + role;
+function addLog(text) {
+    const log = document.getElementById("log");
+    const time = new Date().toLocaleTimeString();
+    log.innerHTML += `[${time}] ${text}<br>`;
+    log.scrollTop = log.scrollHeight;
 }
 
-/* =========================
-   📤 OFFER
-========================= */
+function doorbell() {
+    fetch("http://localhost:5000/doorbell")
+        .catch(()=>{});
 
-async function createOffer(){
-
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-
-    db.ref(roomId + "/offer").set(
-        JSON.stringify(offer)
-    );
-
-    listenAnswer();
+    document.getElementById("ding").play();
+    addLog("🚪 Türklingel ausgelöst (Ding-Dong)");
 }
 
-/* =========================
-   📥 ANSWER
-========================= */
+function alarm() {
+    document.body.classList.add("blink");
+    document.getElementById("ding").play();
 
-function listenOffer(){
+    addLog("🚨 ALARM AUSGELÖST!");
 
-    db.ref(roomId + "/offer").on("value", async snap=>{
-
-        if(!snap.val()) return;
-
-        const offer = JSON.parse(snap.val());
-
-        await pc.setRemoteDescription(offer);
-
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-
-        db.ref(roomId + "/answer").set(
-            JSON.stringify(answer)
-        );
-    });
+    setTimeout(() => {
+        document.body.classList.remove("blink");
+    }, 5000);
 }
-
-/* =========================
-   📥 ANSWER LISTENER
-========================= */
-
-function listenAnswer(){
-
-    db.ref(roomId + "/answer").on("value", async snap=>{
-
-        if(!snap.val()) return;
-
-        const answer = JSON.parse(snap.val());
-
-        await pc.setRemoteDescription(answer);
-    });
-}
-
-/* =========================
-   🔔 DOORBELL
-========================= */
-
-function ringBell(){
-
-    db.ref(roomId + "/ring").set(true);
-
-    document.getElementById("state").innerText =
-        "🔔 RINGING...";
-
-    navigator.vibrate?.([200,100,200]);
-}
-
-/* =========================
-   📡 AUTO RING LISTENER
-========================= */
-
-db.ref(roomId + "/ring").on("value", snap=>{
-
-    if(snap.val() === true){
-
-        document.getElementById("state").innerText =
-            "📶 INCOMING CALL";
-
-    }
-});
-
 </script>
 
 </body>
