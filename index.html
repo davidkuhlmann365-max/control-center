@@ -1,56 +1,148 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Alarmzentrale</title>
-  <style>
-    body { font-family: Arial; background: #0b0f14; color: white; text-align: center; }
-    .box { margin: 20px; padding: 20px; background: #141c2b; border-radius: 12px; }
-    .alarm { background: red !important; }
-    button { padding: 15px; margin: 10px; border: none; border-radius: 10px; cursor: pointer; }
-    .red { background: #ff2b2b; color: white; }
-    .green { background: #2ecc71; color: white; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Alarmzentrale</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0b0f14;
+    color: white;
+  }
+
+  header {
+    background: #111826;
+    padding: 15px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  .status {
+    text-align: center;
+    padding: 10px;
+    font-size: 14px;
+    color: #aaa;
+  }
+
+  .container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .panel {
+    background: #151c28;
+    border-radius: 12px;
+    padding: 15px;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .panel h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+  }
+
+  .btn {
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    background: #2b6cff;
+    color: white;
+  }
+
+  .btn:active {
+    transform: scale(0.97);
+  }
+
+  .danger {
+    background: #ff3b3b;
+  }
+
+  .ok {
+    background: #2ecc71;
+  }
+
+  .footer {
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    padding: 10px;
+  }
+
+  /* Mobile Feinschliff */
+  @media (max-width: 600px) {
+    header {
+      font-size: 16px;
+    }
+
+    .panel {
+      min-height: 100px;
+    }
+
+    .btn {
+      font-size: 16px;
+      padding: 14px;
+    }
+  }
+</style>
 </head>
+
 <body>
 
-  <h1>🚨 Alarmzentrale</h1>
+<header>🚨 Alarmzentrale</header>
+<div class="status">Status: <span id="status">Standby</span></div>
 
-  <div class="box" id="panel">
-    <h3 id="status">Status: AUS</h3>
-    <button class="red" onclick="startAlarm()">ALARM START</button>
-    <button class="green" onclick="stopAlarm()">STOP</button>
+<div class="container">
+
+  <div class="panel">
+    <h3>Feueralarm</h3>
+    <button class="btn danger" onclick="triggerAlarm()">ALARM AUSLÖSEN</button>
   </div>
 
-  <script>
-    let alarmActive = false;
-    let alarmAudio = new Audio('deutscher-bahnhofsgong.mp3'); // Deine echte MP3-Datei
-    alarmAudio.loop = true;
+  <div class="panel">
+    <h3>System</h3>
+    <button class="btn ok" onclick="resetAlarm()">RESET</button>
+  </div>
 
-    function startAlarm() {
-      if (alarmActive) return; // Verhindert mehrfaches Starten
-      alarmActive = true;
+  <div class="panel">
+    <h3>Test</h3>
+    <button class="btn" onclick="test()">TEST TON</button>
+  </div>
 
-      alarmAudio.currentTime = 0;
-      alarmAudio.play().catch(err => {
-        console.log("Audio blockiert:", err);
-        alert("Bitte einmal klicken, um Audio zu aktivieren.");
-      });
+</div>
 
-      document.getElementById("status").innerText = "Status: ALARM!";
-      document.getElementById("panel").classList.add("alarm");
-    }
+<div class="footer">
+  Responsive Alarm Dashboard
+</div>
 
-    function stopAlarm() {
-      alarmActive = false;
+<script>
+  const status = document.getElementById("status");
 
-      alarmAudio.pause();
-      alarmAudio.currentTime = 0;
+  function triggerAlarm() {
+    status.textContent = "🚨 ALARM!";
+    document.body.style.background = "#2a0000";
+  }
 
-      document.getElementById("status").innerText = "Status: AUS";
-      document.getElementById("panel").classList.remove("alarm");
-    }
-  </script>
+  function resetAlarm() {
+    status.textContent = "Standby";
+    document.body.style.background = "#0b0f14";
+  }
+
+  function test() {
+    alert("Test erfolgreich (Simulation)");
+  }
+</script>
 
 </body>
 </html>
