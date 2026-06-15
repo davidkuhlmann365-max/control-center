@@ -15,9 +15,9 @@
   }
 
   header {
-    background: #111826;
-    padding: 15px;
+    padding: 16px;
     text-align: center;
+    background: #111826;
     font-size: 20px;
     font-weight: bold;
   }
@@ -25,13 +25,12 @@
   .status {
     text-align: center;
     padding: 10px;
-    font-size: 14px;
     color: #aaa;
   }
 
   .container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 12px;
     padding: 12px;
   }
@@ -40,60 +39,25 @@
     background: #151c28;
     border-radius: 12px;
     padding: 15px;
-    min-height: 120px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
   }
 
-  .panel h3 {
-    margin: 0 0 10px 0;
-    font-size: 16px;
-  }
-
-  .btn {
-    padding: 12px;
+  button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 10px;
     border: none;
     border-radius: 10px;
+    font-size: 16px;
     cursor: pointer;
-    font-size: 14px;
-    background: #2b6cff;
     color: white;
   }
 
-  .btn:active {
-    transform: scale(0.97);
-  }
+  .alarm { background: #ff3b3b; }
+  .reset { background: #2ecc71; }
+  .test  { background: #2b6cff; }
 
-  .danger {
-    background: #ff3b3b;
-  }
-
-  .ok {
-    background: #2ecc71;
-  }
-
-  .footer {
-    text-align: center;
-    font-size: 12px;
-    color: #666;
-    padding: 10px;
-  }
-
-  /* Mobile Feinschliff */
-  @media (max-width: 600px) {
-    header {
-      font-size: 16px;
-    }
-
-    .panel {
-      min-height: 100px;
-    }
-
-    .btn {
-      font-size: 16px;
-      padding: 14px;
-    }
+  button:active {
+    transform: scale(0.98);
   }
 </style>
 </head>
@@ -107,41 +71,73 @@
 
   <div class="panel">
     <h3>Feueralarm</h3>
-    <button class="btn danger" onclick="triggerAlarm()">ALARM AUSLÖSEN</button>
+    <button class="alarm" onclick="triggerAlarm()">ALARM AUSLÖSEN</button>
   </div>
 
   <div class="panel">
     <h3>System</h3>
-    <button class="btn ok" onclick="resetAlarm()">RESET</button>
+    <button class="reset" onclick="resetSystem()">RESET</button>
   </div>
 
   <div class="panel">
     <h3>Test</h3>
-    <button class="btn" onclick="test()">TEST TON</button>
+    <button class="test" onclick="testSound()">TON TEST</button>
   </div>
 
 </div>
 
-<div class="footer">
-  Responsive Alarm Dashboard
-</div>
-
 <script>
-  const status = document.getElementById("status");
+let audioCtx;
 
-  function triggerAlarm() {
-    status.textContent = "🚨 ALARM!";
-    document.body.style.background = "#2a0000";
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
+}
 
-  function resetAlarm() {
-    status.textContent = "Standby";
-    document.body.style.background = "#0b0f14";
-  }
+// einfacher „Bahnhof / Sirenen“-Sound
+function playAlarmSound(duration = 1000, frequency = 800) {
+  initAudio();
 
-  function test() {
-    alert("Test erfolgreich (Simulation)");
-  }
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.type = "square";
+  osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+
+  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+
+  setTimeout(() => {
+    osc.stop();
+  }, duration);
+}
+
+function triggerAlarm() {
+  document.getElementById("status").innerText = "🚨 ALARM!";
+  document.body.style.background = "#2a0000";
+
+  // Sirenen-Effekt
+  let i = 0;
+  const interval = setInterval(() => {
+    playAlarmSound(200, 600 + (i % 2) * 300);
+    i++;
+    if (i > 10) clearInterval(interval);
+  }, 250);
+}
+
+function resetSystem() {
+  document.getElementById("status").innerText = "Standby";
+  document.body.style.background = "#0b0f14";
+}
+
+function testSound() {
+  playAlarmSound(500, 700);
+}
 </script>
 
 </body>
