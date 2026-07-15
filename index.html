@@ -1,144 +1,47 @@
 <!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Alarmzentrale</title>
-
+<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Alarmzentrale Pro</title>
 <style>
-  body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0b0f14;
-    color: white;
-  }
-
-  header {
-    padding: 16px;
-    text-align: center;
-    background: #111826;
-    font-size: 20px;
-    font-weight: bold;
-  }
-
-  .status {
-    text-align: center;
-    padding: 10px;
-    color: #aaa;
-  }
-
-  .container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 12px;
-    padding: 12px;
-  }
-
-  .panel {
-    background: #151c28;
-    border-radius: 12px;
-    padding: 15px;
-  }
-
-  button {
-    width: 100%;
-    padding: 14px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
-    cursor: pointer;
-    color: white;
-  }
-
-  .alarm { background: #ff3b3b; }
-  .reset { background: #2ecc71; }
-  .test  { background: #2b6cff; }
-
-  button:active {
-    transform: scale(0.98);
-  }
-</style>
-</head>
-
+body{margin:0;font-family:Arial;background:#0b0f14;color:#fff}
+header{background:#111826;padding:16px;text-align:center;font-size:24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;padding:12px}
+.card{background:#18212d;border-radius:12px;padding:14px}
+button{width:100%;padding:12px;margin:6px 0;border:0;border-radius:8px;color:#fff;cursor:pointer}
+.red{background:#c62828}.green{background:#2e7d32}.blue{background:#1565c0}
+#log{height:180px;overflow:auto;background:#000;padding:8px;font:13px monospace}
+.sensor{padding:6px;background:#263238;border-radius:6px;margin:4px 0}
+</style></head>
 <body>
-
-<header>🚨 Alarmzentrale</header>
-<div class="status">Status: <span id="status">Standby</span></div>
-
-<div class="container">
-
-  <div class="panel">
-    <h3>Feueralarm</h3>
-    <button class="alarm" onclick="triggerAlarm()">ALARM AUSLÖSEN</button>
-  </div>
-
-  <div class="panel">
-    <h3>System</h3>
-    <button class="reset" onclick="resetSystem()">RESET</button>
-  </div>
-
-  <div class="panel">
-    <h3>Test</h3>
-    <button class="test" onclick="testSound()">TON TEST</button>
-  </div>
-
+<header>🚨 Alarmzentrale Pro</header>
+<div style="padding:10px;text-align:center">Status: <b id="status">Standby</b></div>
+<div class="grid">
+<div class="card"><h3>Steuerung</h3>
+<button class="red" onclick="alarm()">Alarm</button>
+<button class="green" onclick="resetSys()">Reset</button>
+<button class="blue" onclick="armed=!armed;log('Scharf: '+armed)">Scharf/Unscharf</button>
 </div>
-
+<div class="card"><h3>Sensoren</h3>
+<div class="sensor">Tür: <span id="door">Geschlossen</span></div>
+<div class="sensor">Fenster: <span id="window">Geschlossen</span></div>
+<div class="sensor">Bewegung: <span id="motion">Keine</span></div>
+<div class="sensor">Rauch: <span id="smoke">Normal</span></div>
+<button class="blue" onclick="simulate()">Simulation</button></div>
+<div class="card"><h3>Kameras</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div style="background:#000;height:120px;display:flex;align-items:center;justify-content:center">📹1</div>
+<div style="background:#000;height:120px;display:flex;align-items:center;justify-content:center">📹2</div>
+<div style="background:#000;height:120px;display:flex;align-items:center;justify-content:center">📹3</div>
+<div style="background:#000;height:120px;display:flex;align-items:center;justify-content:center">📹4</div>
+</div></div>
+<div class="card"><h3>Ereignisprotokoll</h3><div id="log"></div></div>
+</div>
 <script>
-let audioCtx;
-
-function initAudio() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-}
-
-// einfacher „Bahnhof / Sirenen“-Sound
-function playAlarmSound(duration = 1000, frequency = 800) {
-  initAudio();
-
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-
-  osc.type = "square";
-  osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-
-  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-
-  osc.start();
-
-  setTimeout(() => {
-    osc.stop();
-  }, duration);
-}
-
-function triggerAlarm() {
-  document.getElementById("status").innerText = "🚨 ALARM!";
-  document.body.style.background = "#2a0000";
-
-  // Sirenen-Effekt
-  let i = 0;
-  const interval = setInterval(() => {
-    playAlarmSound(200, 600 + (i % 2) * 300);
-    i++;
-    if (i > 10) clearInterval(interval);
-  }, 250);
-}
-
-function resetSystem() {
-  document.getElementById("status").innerText = "Standby";
-  document.body.style.background = "#0b0f14";
-}
-
-function testSound() {
-  playAlarmSound(500, 700);
-}
-</script>
-
-</body>
-</html>
+let armed=false,ctx;
+function log(t){let l=document.getElementById('log');l.innerHTML+=new Date().toLocaleTimeString()+" "+t+"<br>";l.scrollTop=l.scrollHeight;}
+function audio(){if(!ctx)ctx=new (AudioContext||webkitAudioContext)();}
+function beep(f,d){audio();let o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=f;g.gain.value=.12;o.connect(g);g.connect(ctx.destination);o.start();setTimeout(()=>o.stop(),d);}
+function alarm(){status.textContent="🚨 ALARM";document.body.style.background="#300";let i=0;let x=setInterval(()=>{beep(i%2?900:600,180);if(++i>20)clearInterval(x);},220);log("Alarm ausgelöst");}
+function resetSys(){status.textContent="Standby";document.body.style.background="#0b0f14";log("Reset");}
+function simulate(){door.textContent=Math.random()>.5?"Offen":"Geschlossen";window.textContent=Math.random()>.5?"Offen":"Geschlossen";motion.textContent=Math.random()>.5?"Erkannt":"Keine";smoke.textContent=Math.random()>.8?"Rauch":"Normal";log("Sensoren aktualisiert");if(armed&&(door.textContent=="Offen"||window.textContent=="Offen"||motion.textContent=="Erkannt"||smoke.textContent=="Rauch"))alarm();}
+log("System gestartet");
+</script></body></html>
