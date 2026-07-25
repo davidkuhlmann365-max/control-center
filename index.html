@@ -1,47 +1,453 @@
+```html
 <!DOCTYPE html>
-<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
 <title>Alarmzentrale Pro</title>
+
 <style>
-body{margin:0;font-family:Arial;background:#0b0f14;color:#fff}
-header{background:#111826;padding:16px;text-align:center;font-size:24px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;padding:12px}
-.card{background:#18212d;border-radius:12px;padding:14px}
-button{width:100%;padding:12px;margin:6px 0;border:0;border-radius:8px;color:#fff;cursor:pointer}
-.red{background:#c62828}.green{background:#2e7d32}.blue{background:#1565c0}
-#log{height:180px;overflow:auto;background:#000;padding:8px;font:13px monospace}
-.sensor{padding:6px;background:#263238;border-radius:6px;margin:4px 0}
-</style></head>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#0b0f14;
+  color:#fff;
+  transition:.3s;
+}
+
+header{
+  background:#111826;
+  padding:16px;
+  text-align:center;
+  font-size:24px;
+  font-weight:bold;
+  border-bottom:1px solid #263241;
+}
+
+.statusbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:10px 14px;
+  background:#0f1622;
+  border-bottom:1px solid #263241;
+  font-size:14px;
+}
+
+.status-item{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+
+.dot{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:#2e7d32;
+  box-shadow:0 0 8px #2e7d32;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:12px;
+  padding:12px;
+}
+
+.card{
+  background:#18212d;
+  border:1px solid #263241;
+  border-radius:12px;
+  padding:14px;
+  box-shadow:0 5px 20px rgba(0,0,0,.2);
+}
+
+.card h3{
+  margin-top:0;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  margin:6px 0;
+  border:0;
+  border-radius:8px;
+  color:#fff;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+button:hover{
+  filter:brightness(1.15);
+}
+
+.red{background:#c62828}
+.green{background:#2e7d32}
+.blue{background:#1565c0}
+
+#log{
+  height:180px;
+  overflow:auto;
+  background:#000;
+  padding:8px;
+  border-radius:6px;
+  font:13px monospace;
+}
+
+.sensor{
+  padding:8px;
+  background:#263238;
+  border-radius:6px;
+  margin:5px 0;
+}
+
+.camera-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.camera{
+  background:#000;
+  height:120px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:6px;
+  color:#777;
+  font-size:30px;
+}
+
+#clock{
+  font-family:monospace;
+  font-size:15px;
+}
+
+#status{
+  color:#66bb6a;
+}
+</style>
+</head>
+
 <body>
+
 <header>🚨 Alarmzentrale Pro</header>
-<div style="padding:10px;text-align:center">Status: <b id="status">Standby</b></div>
+
+<div class="statusbar">
+
+  <div class="status-item">
+    <span class="dot" id="statusDot"></span>
+    System:
+    <b id="status">Standby</b>
+  </div>
+
+  <div class="status-item">
+    🔐 Sicherheit:
+    <b id="securityStatus">UNSCHARF</b>
+  </div>
+
+  <div class="status-item">
+    🕒 <span id="clock">--:--:--</span>
+  </div>
+
+</div>
+
 <div class="grid">
-<div class="card"><h3>Steuerung</h3>
-<button class="red" onclick="alarm()">Alarm</button>
-<button class="green" onclick="resetSys()">Reset</button>
-<button class="blue" onclick="armed=!armed;log('Scharf: '+armed)">Scharf/Unscharf</button>
+
+  <div class="card">
+    <h3>Steuerung</h3>
+
+    <button class="red" onclick="alarm()">
+      🚨 Alarm
+    </button>
+
+    <button class="green" onclick="resetSys()">
+      ♻️ Reset
+    </button>
+
+    <button class="blue" onclick="toggleArmed()">
+      🔐 Scharf / Unscharf
+    </button>
+  </div>
+
+
+  <div class="card">
+    <h3>Sensoren</h3>
+
+    <div class="sensor">
+      🚪 Tür:
+      <span id="door">Geschlossen</span>
+    </div>
+
+    <div class="sensor">
+      🪟 Fenster:
+      <span id="window">Geschlossen</span>
+    </div>
+
+    <div class="sensor">
+      🏃 Bewegung:
+      <span id="motion">Keine</span>
+    </div>
+
+    <div class="sensor">
+      🔥 Rauch:
+      <span id="smoke">Normal</span>
+    </div>
+
+    <button class="blue" onclick="simulate()">
+      🎲 Simulation
+    </button>
+  </div>
+
+
+  <div class="card">
+    <h3>Kameras</h3>
+
+    <div class="camera-grid">
+
+      <div class="camera">📹1</div>
+      <div class="camera">📹2</div>
+      <div class="camera">📹3</div>
+      <div class="camera">📹4</div>
+
+    </div>
+  </div>
+
+
+  <div class="card">
+    <h3>Ereignisprotokoll</h3>
+
+    <div id="log"></div>
+  </div>
+
 </div>
-<div class="card"><h3>Sensoren</h3>
-<div class="sensor">Tür: <span id="door">Geschlossen</span></div>
-<div class="sensor">Fenster: <span id="window">Geschlossen</span></div>
-<div class="sensor">Bewegung: <span id="motion">Keine</span></div>
-<div class="sensor">Rauch: <span id="smoke">Normal</span></div>
-<button class="blue" onclick="simulate()">Simulation</button></div>
-<div class="card"><h3>Kameras</h3>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-<div style="background:#000;height:120px;display:flex;align-items:center;justify-content:center">📹1</div>
-<div style="background:#000;height:120px;display:flex;align-items:center;justify-content:center">📹2</div>
-<div style="background:#000;height:120px;display:flex;align-items:center;justify-content:center">📹3</div>
-<div style="background:#000;height:120px;display:flex;align-items:center;justify-content:center">📹4</div>
-</div></div>
-<div class="card"><h3>Ereignisprotokoll</h3><div id="log"></div></div>
-</div>
+
+
 <script>
-let armed=false,ctx;
-function log(t){let l=document.getElementById('log');l.innerHTML+=new Date().toLocaleTimeString()+" "+t+"<br>";l.scrollTop=l.scrollHeight;}
-function audio(){if(!ctx)ctx=new (AudioContext||webkitAudioContext)();}
-function beep(f,d){audio();let o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=f;g.gain.value=.12;o.connect(g);g.connect(ctx.destination);o.start();setTimeout(()=>o.stop(),d);}
-function alarm(){status.textContent="🚨 ALARM";document.body.style.background="#300";let i=0;let x=setInterval(()=>{beep(i%2?900:600,180);if(++i>20)clearInterval(x);},220);log("Alarm ausgelöst");}
-function resetSys(){status.textContent="Standby";document.body.style.background="#0b0f14";log("Reset");}
-function simulate(){door.textContent=Math.random()>.5?"Offen":"Geschlossen";window.textContent=Math.random()>.5?"Offen":"Geschlossen";motion.textContent=Math.random()>.5?"Erkannt":"Keine";smoke.textContent=Math.random()>.8?"Rauch":"Normal";log("Sensoren aktualisiert");if(armed&&(door.textContent=="Offen"||window.textContent=="Offen"||motion.textContent=="Erkannt"||smoke.textContent=="Rauch"))alarm();}
+
+let armed = false;
+let ctx = null;
+
+
+/* Uhr */
+
+function updateClock(){
+
+  document.getElementById("clock").textContent =
+    new Date().toLocaleTimeString();
+
+}
+
+setInterval(updateClock,1000);
+updateClock();
+
+
+/* Protokoll */
+
+function log(text){
+
+  const l = document.getElementById("log");
+
+  l.innerHTML +=
+    new Date().toLocaleTimeString() +
+    "  " +
+    text +
+    "<br>";
+
+  l.scrollTop = l.scrollHeight;
+
+}
+
+
+/* Audio */
+
+function audio(){
+
+  if(!ctx){
+
+    ctx =
+      new (window.AudioContext ||
+      window.webkitAudioContext)();
+
+  }
+
+}
+
+
+function beep(f,d){
+
+  audio();
+
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+
+  o.frequency.value = f;
+  g.gain.value = .12;
+
+  o.connect(g);
+  g.connect(ctx.destination);
+
+  o.start();
+
+  setTimeout(()=>{
+    o.stop();
+  },d);
+
+}
+
+
+/* Scharf / Unscharf */
+
+function toggleArmed(){
+
+  armed = !armed;
+
+  const security =
+    document.getElementById("securityStatus");
+
+  if(armed){
+
+    security.textContent = "SCHARF";
+    log("System scharfgeschaltet");
+
+  }else{
+
+    security.textContent = "UNSCHARF";
+    log("System unscharfgeschaltet");
+
+  }
+
+}
+
+
+/* Alarm */
+
+function alarm(){
+
+  document.getElementById("status").textContent =
+    "🚨 ALARM";
+
+  document.getElementById("statusDot").style.background =
+    "#c62828";
+
+  document.getElementById("statusDot").style.boxShadow =
+    "0 0 12px #c62828";
+
+  document.body.style.background = "#300";
+
+  let i = 0;
+
+  const x = setInterval(()=>{
+
+    beep(i % 2 ? 900 : 600,180);
+
+    if(++i > 20){
+
+      clearInterval(x);
+
+    }
+
+  },220);
+
+  log("🚨 Alarm ausgelöst");
+
+}
+
+
+/* Reset */
+
+function resetSys(){
+
+  document.getElementById("status").textContent =
+    "Standby";
+
+  document.getElementById("statusDot").style.background =
+    "#2e7d32";
+
+  document.getElementById("statusDot").style.boxShadow =
+    "0 0 8px #2e7d32";
+
+  document.body.style.background =
+    "#0b0f14";
+
+  log("System zurückgesetzt");
+
+}
+
+
+/* Sensor-Simulation */
+
+function simulate(){
+
+  const door =
+    document.getElementById("door");
+
+  const windowSensor =
+    document.getElementById("window");
+
+  const motion =
+    document.getElementById("motion");
+
+  const smoke =
+    document.getElementById("smoke");
+
+
+  door.textContent =
+    Math.random() > .5
+      ? "Offen"
+      : "Geschlossen";
+
+
+  windowSensor.textContent =
+    Math.random() > .5
+      ? "Offen"
+      : "Geschlossen";
+
+
+  motion.textContent =
+    Math.random() > .5
+      ? "Erkannt"
+      : "Keine";
+
+
+  smoke.textContent =
+    Math.random() > .8
+      ? "Rauch"
+      : "Normal";
+
+
+  log("Sensoren aktualisiert");
+
+
+  if(
+    armed &&
+    (
+      door.textContent === "Offen" ||
+      windowSensor.textContent === "Offen" ||
+      motion.textContent === "Erkannt" ||
+      smoke.textContent === "Rauch"
+    )
+  ){
+
+    alarm();
+
+  }
+
+}
+
+
+/* Start */
+
 log("System gestartet");
-</script></body></html>
+log("Security Panel bereit");
+
+</script>
+
+</body>
+</html>
+```
