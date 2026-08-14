@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROOM CONTROL</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background:
+    radial-gradient(circle at center,
+      #12313d 0%,
+      #071118 55%,
+      #02070a 100%);
+
+  color: #d9faff;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* PIN-SCHUTZ */
+
+#lockScreen {
+  width: min(420px, 90vw);
+  padding: 30px;
+
+  border: 1px solid #277b91;
+  border-radius: 20px;
+
+  background: rgba(7, 20, 28, 0.95);
+
+  box-shadow:
+    0 0 30px rgba(39, 123, 145, 0.25),
+    inset 0 0 30px rgba(39, 123, 145, 0.05);
+
+  text-align: center;
+}
+
+#lockScreen h1 {
+  margin: 0 0 10px;
+  font-size: 30px;
+  letter-spacing: 0.12em;
+}
+
+.lockStatus {
+  color: #6b9aa6;
+  font-family: monospace;
+  margin-bottom: 20px;
+}
+
+#pinInput {
+  width: 100%;
+  padding: 15px;
+
+  border: 1px solid #286e80;
+  border-radius: 10px;
+
+  background: #030b10;
+  color: #d9faff;
+
+  font-size: 24px;
+  text-align: center;
+  letter-spacing: 0.3em;
+
+  outline: none;
+}
+
+#pinInput:focus {
+  border-color: #70ddf5;
+}
+
+#unlockButton {
+  width: 100%;
+  margin-top: 15px;
+  padding: 15px;
+
+  border: 1px solid #286e80;
+  border-radius: 10px;
+
+  background:
+    linear-gradient(#102b37, #07151c);
+
+  color: #d9faff;
+
+  font-size: 18px;
+  font-weight: bold;
+
+  cursor: pointer;
+}
+
+#unlockButton:hover {
+  border-color: #70ddf5;
+}
+
+#pinError {
+  min-height: 20px;
+  margin-top: 15px;
+
+  color: #ff6b6b;
+  font-family: monospace;
+}
+
+
+/* HAUPTSEITE */
+
+.panel {
+  width: min(720px, 92vw);
+  padding: 30px;
+
+  border: 1px solid #277b91;
+  border-radius: 20px;
+
+  background: rgba(7, 20, 28, 0.95);
+
+  box-shadow:
+    0 0 30px rgba(39, 123, 145, 0.25),
+    inset 0 0 30px rgba(39, 123, 145, 0.05);
+
+  transition: 0.2s;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(26px, 5vw, 44px);
+  letter-spacing: 0.15em;
+}
+
+.online {
+  color: #67ff9b;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+}
+
+.screen {
+  margin: 25px 0;
+  padding: 22px;
+  min-height: 115px;
+
+  border: 1px solid #185266;
+  border-radius: 12px;
+
+  background: #030b10;
+
+  font-family: monospace;
+
+  box-shadow:
+    inset 0 0 20px rgba(0, 180, 220, 0.08);
+}
+
+#message {
+  display: block;
+  font-size: 25px;
+  letter-spacing: 0.08em;
+}
+
+#detail {
+  margin-top: 10px;
+  color: #6b9aa6;
+}
+
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+button {
+  min-height: 120px;
+
+  border: 1px solid #286e80;
+  border-radius: 15px;
+
+  background:
+    linear-gradient(#102b37, #07151c);
+
+  color: #d9faff;
+
+  font-size: 20px;
+  font-weight: bold;
+
+  cursor: pointer;
+
+  transition: 0.12s;
+
+  box-shadow:
+    inset 0 0 20px rgba(39, 123, 145, 0.08);
+}
+
+button:hover {
+  border-color: #70ddf5;
+
+  box-shadow:
+    0 0 15px rgba(70, 210, 240, 0.25),
+    inset 0 0 20px rgba(39, 123, 145, 0.15);
+}
+
+button:active {
+  transform: scale(0.97);
+}
+
+button span {
+  display: block;
+  font-size: 42px;
+  margin-bottom: 8px;
+}
+
+.volume {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-top: 22px;
+
+  color: #6b9aa6;
+}
+
+.volume input {
+  width: 100%;
+}
+
+.footer {
+  margin-top: 18px;
+
+  text-align: center;
+
+  color: #456c76;
+
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.flash {
+  animation: flash 0.25s;
+}
+
+@keyframes flash {
+
+  50% {
+    box-shadow:
+      0 0 35px rgba(80, 220, 255, 0.45),
+      inset 0 0 30px rgba(80, 220, 255, 0.15);
+  }
+
+}
+
+@media (max-width: 600px) {
+
+  .buttons {
+    grid-template-columns: 1fr;
+  }
+
+  button {
+    min-height: 90px;
+  }
+
+}
+</style>
+</head>
+
+<body>
+
+<!-- PIN-SPERRBILDSCHIRM -->
+
+<div id="lockScreen">
+
+  <h1>ROOM CONTROL</h1>
+
+  <div class="lockStatus">
+    🔒 ACCESS LOCKED
+  </div>
+
+  <input
+    id="pinInput"
+    type="password"
+    inputmode="numeric"
+    maxlength="4"
+    placeholder="PIN"
+  >
+
+  <button id="unlockButton">
+    UNLOCK
+  </button>
+
+  <div id="pinError"></div>
+
+</div>
+
+
+<!-- ROOM CONTROL -->
+
+<main class="panel" id="panel" style="display:none;">
+
+  <div class="header">
+
+    <h1>ROOM CONTROL</h1>
+
+    <div class="online">
+      ● ONLINE
+    </div>
+
+  </div>
+
+  <section class="screen">
+
+    <span id="message">
+      SYSTEM READY
+    </span>
+
+    <div id="detail">
+      Awaiting command...
+    </div>
+
+  </section>
+
+  <section class="buttons">
+
+    <button id="power">
+      <span>⏻</span>
+      POWER
+    </button>
+
+    <button id="plus">
+      <span>＋</span>
+      BIOHAZARD
+    </button>
+
+    <button id="minus">
+      <span>−</span>
+      ERROR
+    </button>
+
+  </section>
+
+  <div class="volume">
+
+    🔊
+
+    <input
+      id="volume"
+      type="range"
+      min="0"
+      max="1"
+      step="0.01"
+      value="0.8"
+    >
+
+  </div>
+
+  <div class="footer">
+    ROOM ACCESS CONTROL • LOCAL INTERFACE
+  </div>
+
+</main>
+
+
+<!-- POWER / ACCESS GRANTED -->
+
+<audio
+  id="accessGranted"
+  preload="auto"
+  src="https://cdn.pixabay.com/download/audio/2026/05/15/audio_f1f7fd4449.mp3?filename=soundshelfstudio-ui-system-access-granted-534603.mp3">
+</audio>
+
+
+<!-- BIOHAZARD / WARNING -->
+
+<audio
+  id="biohazard"
+  preload="auto"
+  src="https://cdn.pixabay.com/download/audio/2026/06/02/audio_26933dce5c.mp3?filename=tithuh-warning-545568.mp3">
+</audio>
+
+
+<!-- ERROR / ACCESS DENIED -->
+
+<audio
+  id="errorAlert"
+  preload="auto"
+  src="https://cdn.pixabay.com/download/audio/2023/01/04/audio_8969bfb5fa.mp3?filename=universfield-error-alert-132113.mp3">
+</audio>
+
+
+<script>
+
+/* =========================
+   PIN-SYSTEM
+   ========================= */
+
+const correctPIN = "7392";
+
+const lockScreen =
+  document.getElementById("lockScreen");
+
+const pinInput =
+  document.getElementById("pinInput");
+
+const unlockButton =
+  document.getElementById("unlockButton");
+
+const pinError =
+  document.getElementById("pinError");
+
+const panel =
+  document.getElementById("panel");
+
+
+function unlock() {
+
+  if (pinInput.value === correctPIN) {
+
+    lockScreen.style.display = "none";
+    panel.style.display = "block";
+
+  } else {
+
+    pinError.textContent =
+      "ACCESS DENIED";
+
+    pinInput.value = "";
+
+    pinInput.focus();
+
+  }
+
+}
+
+
+unlockButton.addEventListener("click", unlock);
+
+
+pinInput.addEventListener("keydown", (event) => {
+
+  if (event.key === "Enter") {
+    unlock();
+  }
+
+});
+
+
+/* =========================
+   AUDIO
+   ========================= */
+
+const accessGranted =
+  document.getElementById("accessGranted");
+
+const biohazard =
+  document.getElementById("biohazard");
+
+const errorAlert =
+  document.getElementById("errorAlert");
+
+const volume =
+  document.getElementById("volume");
+
+const message =
+  document.getElementById("message");
+
+const detail =
+  document.getElementById("detail");
+
+
+function playSound(sound, title, description) {
+
+  accessGranted.pause();
+  biohazard.pause();
+  errorAlert.pause();
+
+  accessGranted.currentTime = 0;
+  biohazard.currentTime = 0;
+  errorAlert.currentTime = 0;
+
+  sound.volume =
+    Number(volume.value);
+
+  sound.play().catch(() => {
+
+    detail.textContent =
+      "Audio wurde vom Browser blockiert. Noch einmal drücken.";
+
+  });
+
+  message.textContent =
+    title;
+
+  detail.textContent =
+    description;
+
+  panel.classList.remove("flash");
+
+  void panel.offsetWidth;
+
+  panel.classList.add("flash");
+
+}
+
+
+/* POWER */
+
+document.getElementById("power")
+.addEventListener("click", () => {
+
+  playSound(
+    accessGranted,
+    "ACCESS GRANTED",
+    "Door control command accepted."
+  );
+
+});
+
+
+/* BIOHAZARD */
+
+document.getElementById("plus")
+.addEventListener("click", () => {
+
+  playSound(
+    biohazard,
+    "WARNING",
+    "WARNING: Biological hazard detected."
+  );
+
+  setTimeout(() => {
+
+    biohazard.pause();
+    biohazard.currentTime = 0;
+
+  }, 3000);
+
+});
+
+
+/* ERROR */
+
+document.getElementById("minus")
+.addEventListener("click", () => {
+
+  playSound(
+    errorAlert,
+    "ACCESS DENIED",
+    "Invalid control command."
+  );
+
+});
+
+
+/* LAUTSTÄRKE */
+
+volume.addEventListener("input", () => {
+
+  accessGranted.volume =
+    Number(volume.value);
+
+  biohazard.volume =
+    Number(volume.value);
+
+  errorAlert.volume =
+    Number(volume.value);
+
+});
+
+
+accessGranted.volume = 0.8;
+biohazard.volume = 0.8;
+errorAlert.volume = 0.8;
+
+</script>
+
+</body>
+</html>
