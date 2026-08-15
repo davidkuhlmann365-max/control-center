@@ -27,7 +27,10 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* PIN / LOGIN-SCHUTZ */
+
+/* =========================
+   LOGIN
+   ========================= */
 
 #lockScreen {
   width: min(420px, 90vw);
@@ -57,7 +60,10 @@ body {
   margin-bottom: 20px;
 }
 
-/* BENUTZERNAME + PIN */
+
+/* =========================
+   LOGIN FELDER
+   ========================= */
 
 .loginInput {
   width: 100%;
@@ -84,6 +90,11 @@ body {
 #pinInput {
   letter-spacing: 0.3em;
 }
+
+
+/* =========================
+   UNLOCK
+   ========================= */
 
 #unlockButton {
   width: 100%;
@@ -117,7 +128,9 @@ body {
 }
 
 
-/* HAUPTSEITE */
+/* =========================
+   HAUPTSEITE
+   ========================= */
 
 .panel {
   width: min(720px, 92vw);
@@ -153,6 +166,11 @@ h1 {
   letter-spacing: 0.12em;
 }
 
+
+/* =========================
+   SCREEN
+   ========================= */
+
 .screen {
   margin: 25px 0;
   padding: 22px;
@@ -179,6 +197,11 @@ h1 {
   margin-top: 10px;
   color: #6b9aa6;
 }
+
+
+/* =========================
+   BUTTONS
+   ========================= */
 
 .buttons {
   display: grid;
@@ -226,6 +249,11 @@ button span {
   margin-bottom: 8px;
 }
 
+
+/* =========================
+   LAUTSTÄRKE
+   ========================= */
+
 .volume {
   display: flex;
   align-items: center;
@@ -240,6 +268,46 @@ button span {
   width: 100%;
 }
 
+
+/* =========================
+   ABMELDEN
+   ========================= */
+
+.logout {
+  width: 100%;
+  min-height: 55px;
+
+  margin-top: 22px;
+
+  border: 1px solid #286e80;
+  border-radius: 10px;
+
+  background:
+    linear-gradient(#102b37, #07151c);
+
+  color: #d9faff;
+
+  font-size: 17px;
+  font-weight: bold;
+
+  cursor: pointer;
+
+  box-shadow:
+    inset 0 0 15px rgba(39, 123, 145, 0.08);
+}
+
+.logout:hover {
+  border-color: #70ddf5;
+
+  box-shadow:
+    0 0 15px rgba(70, 210, 240, 0.25);
+}
+
+
+/* =========================
+   FOOTER
+   ========================= */
+
 .footer {
   margin-top: 18px;
 
@@ -250,6 +318,11 @@ button span {
   font-size: 11px;
   letter-spacing: 0.08em;
 }
+
+
+/* =========================
+   FLASH EFFECT
+   ========================= */
 
 .flash {
   animation: flash 0.25s;
@@ -265,6 +338,11 @@ button span {
 
 }
 
+
+/* =========================
+   MOBILE
+   ========================= */
+
 @media (max-width: 600px) {
 
   .buttons {
@@ -279,9 +357,13 @@ button span {
 </style>
 </head>
 
+
 <body>
 
-<!-- LOGIN / ZUGANGSSCHUTZ -->
+
+<!-- =========================
+     LOGIN SCREEN
+     ========================= -->
 
 <div id="lockScreen">
 
@@ -290,6 +372,7 @@ button span {
   <div class="lockStatus">
     🔒 ACCESS LOCKED
   </div>
+
 
   <!-- BENUTZERNAME -->
 
@@ -300,6 +383,7 @@ button span {
     autocomplete="username"
     placeholder="USERNAME"
   >
+
 
   <!-- PIN -->
 
@@ -313,16 +397,21 @@ button span {
     placeholder="PIN"
   >
 
+
   <button id="unlockButton">
     UNLOCK
   </button>
+
 
   <div id="pinError"></div>
 
 </div>
 
 
-<!-- ROOM CONTROL -->
+
+<!-- =========================
+     ROOM CONTROL
+     ========================= -->
 
 <main class="panel" id="panel" style="display:none;">
 
@@ -336,6 +425,7 @@ button span {
 
   </div>
 
+
   <section class="screen">
 
     <span id="message">
@@ -348,24 +438,47 @@ button span {
 
   </section>
 
+
   <section class="buttons">
 
+
+    <!-- POWER -->
+
     <button id="power">
+
       <span>⏻</span>
+
       POWER
+
     </button>
+
+
+    <!-- BIOHAZARD -->
 
     <button id="plus">
+
       <span>＋</span>
+
       BIOHAZARD
+
     </button>
+
+
+    <!-- ERROR -->
 
     <button id="minus">
+
       <span>−</span>
+
       ERROR
+
     </button>
 
+
   </section>
+
+
+  <!-- LAUTSTÄRKE -->
 
   <div class="volume">
 
@@ -382,14 +495,32 @@ button span {
 
   </div>
 
+
+  <!-- ABMELDEN -->
+
+  <button id="logoutButton" class="logout">
+
+    🔒 ABMELDEN
+
+  </button>
+
+
   <div class="footer">
+
     ROOM ACCESS CONTROL • LOCAL INTERFACE
+
   </div>
 
 </main>
 
 
-<!-- POWER / ACCESS GRANTED -->
+
+<!-- =========================
+     AUDIO
+     ========================= -->
+
+
+<!-- ACCESS GRANTED -->
 
 <audio
   id="accessGranted"
@@ -398,7 +529,7 @@ button span {
 </audio>
 
 
-<!-- BIOHAZARD / WARNING -->
+<!-- BIOHAZARD -->
 
 <audio
   id="biohazard"
@@ -407,7 +538,7 @@ button span {
 </audio>
 
 
-<!-- ERROR / ACCESS DENIED -->
+<!-- ERROR -->
 
 <audio
   id="errorAlert"
@@ -416,13 +547,16 @@ button span {
 </audio>
 
 
+
 <script>
+
 
 /* =========================
    LOGIN-SYSTEM
    ========================= */
 
 const correctUsername = "admin";
+
 const correctPIN = "7392";
 
 
@@ -445,6 +579,10 @@ const panel =
   document.getElementById("panel");
 
 
+/* =========================
+   LOGIN
+   ========================= */
+
 function unlock() {
 
   const username =
@@ -460,9 +598,14 @@ function unlock() {
   ) {
 
     lockScreen.style.display = "none";
+
     panel.style.display = "block";
 
-  } else {
+    pinError.textContent = "";
+
+  }
+
+  else {
 
     pinError.textContent =
       "ACCESS DENIED";
@@ -476,25 +619,83 @@ function unlock() {
 }
 
 
-unlockButton.addEventListener("click", unlock);
+/* UNLOCK BUTTON */
+
+unlockButton.addEventListener(
+  "click",
+  unlock
+);
 
 
-pinInput.addEventListener("keydown", (event) => {
+/* ENTER IN PIN */
 
-  if (event.key === "Enter") {
-    unlock();
+pinInput.addEventListener(
+  "keydown",
+  (event) => {
+
+    if (event.key === "Enter") {
+
+      unlock();
+
+    }
+
   }
+);
 
-});
 
+/* ENTER IN USERNAME */
 
-usernameInput.addEventListener("keydown", (event) => {
+usernameInput.addEventListener(
+  "keydown",
+  (event) => {
 
-  if (event.key === "Enter") {
-    pinInput.focus();
+    if (event.key === "Enter") {
+
+      pinInput.focus();
+
+    }
+
   }
+);
 
-});
+
+/* =========================
+   ABMELDEN
+   ========================= */
+
+const logoutButton =
+  document.getElementById("logoutButton");
+
+
+logoutButton.addEventListener(
+  "click",
+  () => {
+
+    /* Hauptseite ausblenden */
+
+    panel.style.display = "none";
+
+
+    /* Login wieder anzeigen */
+
+    lockScreen.style.display = "block";
+
+
+    /* Eingaben löschen */
+
+    usernameInput.value = "";
+
+    pinInput.value = "";
+
+    pinError.textContent = "";
+
+
+    /* Cursor wieder auf Benutzername */
+
+    usernameInput.focus();
+
+  }
+);
 
 
 /* =========================
@@ -520,18 +721,33 @@ const detail =
   document.getElementById("detail");
 
 
-function playSound(sound, title, description) {
+/* =========================
+   SOUND FUNCTION
+   ========================= */
+
+function playSound(
+  sound,
+  title,
+  description
+) {
 
   accessGranted.pause();
+
   biohazard.pause();
+
   errorAlert.pause();
 
+
   accessGranted.currentTime = 0;
+
   biohazard.currentTime = 0;
+
   errorAlert.currentTime = 0;
+
 
   sound.volume =
     Number(volume.value);
+
 
   sound.play().catch(() => {
 
@@ -540,89 +756,123 @@ function playSound(sound, title, description) {
 
   });
 
+
   message.textContent =
     title;
 
   detail.textContent =
     description;
 
-  panel.classList.remove("flash");
+
+  panel.classList.remove(
+    "flash"
+  );
 
   void panel.offsetWidth;
 
-  panel.classList.add("flash");
+  panel.classList.add(
+    "flash"
+  );
 
 }
 
 
-/* POWER */
+/* =========================
+   POWER
+   ========================= */
 
 document.getElementById("power")
-.addEventListener("click", () => {
+.addEventListener(
+  "click",
+  () => {
 
-  playSound(
-    accessGranted,
-    "ACCESS GRANTED",
-    "Door control command accepted."
-  );
+    playSound(
+      accessGranted,
+      "ACCESS GRANTED",
+      "Door control command accepted."
+    );
 
-});
+  }
+);
 
 
-/* BIOHAZARD */
+/* =========================
+   BIOHAZARD
+   ========================= */
 
 document.getElementById("plus")
-.addEventListener("click", () => {
+.addEventListener(
+  "click",
+  () => {
 
-  playSound(
-    biohazard,
-    "WARNING",
-    "WARNING: Biological hazard detected."
-  );
-
-  setTimeout(() => {
-
-    biohazard.pause();
-    biohazard.currentTime = 0;
-
-  }, 3000);
-
-});
+    playSound(
+      biohazard,
+      "WARNING",
+      "WARNING: Biological hazard detected."
+    );
 
 
-/* ERROR */
+    setTimeout(
+      () => {
+
+        biohazard.pause();
+
+        biohazard.currentTime = 0;
+
+      },
+      3000
+    );
+
+  }
+);
+
+
+/* =========================
+   ERROR
+   ========================= */
 
 document.getElementById("minus")
-.addEventListener("click", () => {
+.addEventListener(
+  "click",
+  () => {
 
-  playSound(
-    errorAlert,
-    "ACCESS DENIED",
-    "Invalid control command."
-  );
+    playSound(
+      errorAlert,
+      "ACCESS DENIED",
+      "Invalid control command."
+    );
 
-});
+  }
+);
 
 
-/* LAUTSTÄRKE */
+/* =========================
+   LAUTSTÄRKE
+   ========================= */
 
-volume.addEventListener("input", () => {
+volume.addEventListener(
+  "input",
+  () => {
 
-  accessGranted.volume =
-    Number(volume.value);
+    accessGranted.volume =
+      Number(volume.value);
 
-  biohazard.volume =
-    Number(volume.value);
+    biohazard.volume =
+      Number(volume.value);
 
-  errorAlert.volume =
-    Number(volume.value);
+    errorAlert.volume =
+      Number(volume.value);
 
-});
+  }
+);
 
 
 accessGranted.volume = 0.8;
+
 biohazard.volume = 0.8;
+
 errorAlert.volume = 0.8;
+
 
 </script>
 
