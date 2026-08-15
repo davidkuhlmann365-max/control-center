@@ -27,7 +27,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* PIN-SCHUTZ */
+/* PIN / LOGIN-SCHUTZ */
 
 #lockScreen {
   width: min(420px, 90vw);
@@ -57,9 +57,13 @@ body {
   margin-bottom: 20px;
 }
 
-#pinInput {
+/* BENUTZERNAME + PIN */
+
+.loginInput {
   width: 100%;
   padding: 15px;
+
+  margin-bottom: 12px;
 
   border: 1px solid #286e80;
   border-radius: 10px;
@@ -67,20 +71,23 @@ body {
   background: #030b10;
   color: #d9faff;
 
-  font-size: 24px;
+  font-size: 20px;
   text-align: center;
-  letter-spacing: 0.3em;
 
   outline: none;
 }
 
-#pinInput:focus {
+.loginInput:focus {
   border-color: #70ddf5;
+}
+
+#pinInput {
+  letter-spacing: 0.3em;
 }
 
 #unlockButton {
   width: 100%;
-  margin-top: 15px;
+  margin-top: 5px;
   padding: 15px;
 
   border: 1px solid #286e80;
@@ -274,7 +281,7 @@ button span {
 
 <body>
 
-<!-- PIN-SPERRBILDSCHIRM -->
+<!-- LOGIN / ZUGANGSSCHUTZ -->
 
 <div id="lockScreen">
 
@@ -284,11 +291,25 @@ button span {
     🔒 ACCESS LOCKED
   </div>
 
+  <!-- BENUTZERNAME -->
+
+  <input
+    id="usernameInput"
+    class="loginInput"
+    type="text"
+    autocomplete="username"
+    placeholder="USERNAME"
+  >
+
+  <!-- PIN -->
+
   <input
     id="pinInput"
+    class="loginInput"
     type="password"
     inputmode="numeric"
     maxlength="4"
+    autocomplete="current-password"
     placeholder="PIN"
   >
 
@@ -398,13 +419,18 @@ button span {
 <script>
 
 /* =========================
-   PIN-SYSTEM
+   LOGIN-SYSTEM
    ========================= */
 
+const correctUsername = "admin";
 const correctPIN = "7392";
+
 
 const lockScreen =
   document.getElementById("lockScreen");
+
+const usernameInput =
+  document.getElementById("usernameInput");
 
 const pinInput =
   document.getElementById("pinInput");
@@ -421,7 +447,17 @@ const panel =
 
 function unlock() {
 
-  if (pinInput.value === correctPIN) {
+  const username =
+    usernameInput.value.trim();
+
+  const pin =
+    pinInput.value;
+
+
+  if (
+    username === correctUsername &&
+    pin === correctPIN
+  ) {
 
     lockScreen.style.display = "none";
     panel.style.display = "block";
@@ -447,6 +483,15 @@ pinInput.addEventListener("keydown", (event) => {
 
   if (event.key === "Enter") {
     unlock();
+  }
+
+});
+
+
+usernameInput.addEventListener("keydown", (event) => {
+
+  if (event.key === "Enter") {
+    pinInput.focus();
   }
 
 });
