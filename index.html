@@ -373,9 +373,6 @@ button span {
     🔒 ACCESS LOCKED
   </div>
 
-
-  <!-- BENUTZERNAME -->
-
   <input
     id="usernameInput"
     class="loginInput"
@@ -383,9 +380,6 @@ button span {
     autocomplete="username"
     placeholder="USERNAME"
   >
-
-
-  <!-- PIN -->
 
   <input
     id="pinInput"
@@ -397,16 +391,13 @@ button span {
     placeholder="PIN"
   >
 
-
   <button id="unlockButton">
     UNLOCK
   </button>
 
-
   <div id="pinError"></div>
 
 </div>
-
 
 
 <!-- =========================
@@ -441,9 +432,6 @@ button span {
 
   <section class="buttons">
 
-
-    <!-- POWER -->
-
     <button id="power">
 
       <span>⏻</span>
@@ -452,8 +440,6 @@ button span {
 
     </button>
 
-
-    <!-- BIOHAZARD -->
 
     <button id="plus">
 
@@ -464,8 +450,6 @@ button span {
     </button>
 
 
-    <!-- ERROR -->
-
     <button id="minus">
 
       <span>−</span>
@@ -474,11 +458,8 @@ button span {
 
     </button>
 
-
   </section>
 
-
-  <!-- LAUTSTÄRKE -->
 
   <div class="volume">
 
@@ -496,8 +477,6 @@ button span {
   </div>
 
 
-  <!-- ABMELDEN -->
-
   <button id="logoutButton" class="logout">
 
     🔒 ABMELDEN
@@ -514,13 +493,9 @@ button span {
 </main>
 
 
-
 <!-- =========================
      AUDIO
      ========================= -->
-
-
-<!-- ACCESS GRANTED -->
 
 <audio
   id="accessGranted"
@@ -529,8 +504,6 @@ button span {
 </audio>
 
 
-<!-- BIOHAZARD -->
-
 <audio
   id="biohazard"
   preload="auto"
@@ -538,27 +511,43 @@ button span {
 </audio>
 
 
-<!-- ERROR -->
+<!-- DEIN FEHLERTON -->
 
 <audio
   id="errorAlert"
   preload="auto"
-  src="https://cdn.pixabay.com/download/audio/2023/01/04/audio_8969bfb5fa.mp3?filename=universfield-error-alert-132113.mp3">
+  src="Error.mp3">
 </audio>
-
 
 
 <script>
 
-
 /* =========================
-   LOGIN-SYSTEM
+   AUDIO
    ========================= */
 
-const correctUsername = "admin";
+const accessGranted =
+  document.getElementById("accessGranted");
 
-const correctPIN = "7392";
+const biohazard =
+  document.getElementById("biohazard");
 
+const errorAlert =
+  document.getElementById("errorAlert");
+
+const volume =
+  document.getElementById("volume");
+
+const message =
+  document.getElementById("message");
+
+const detail =
+  document.getElementById("detail");
+
+
+/* =========================
+   LOGIN ELEMENTE
+   ========================= */
 
 const lockScreen =
   document.getElementById("lockScreen");
@@ -577,6 +566,58 @@ const pinError =
 
 const panel =
   document.getElementById("panel");
+
+
+/* =========================
+   LOGIN-DATEN
+   ========================= */
+
+const correctUsername = "admin";
+
+const correctPIN = "7392";
+
+
+/* =========================
+   SOUND FUNCTION
+   ========================= */
+
+function playSound(
+  sound,
+  title,
+  description
+) {
+
+  accessGranted.pause();
+  biohazard.pause();
+  errorAlert.pause();
+
+  accessGranted.currentTime = 0;
+  biohazard.currentTime = 0;
+  errorAlert.currentTime = 0;
+
+  sound.volume =
+    Number(volume.value);
+
+  sound.play().catch(() => {
+
+    detail.textContent =
+      "Audio wurde vom Browser blockiert. Noch einmal drücken.";
+
+  });
+
+  message.textContent =
+    title;
+
+  detail.textContent =
+    description;
+
+  panel.classList.remove("flash");
+
+  void panel.offsetWidth;
+
+  panel.classList.add("flash");
+
+}
 
 
 /* =========================
@@ -603,12 +644,38 @@ function unlock() {
 
     pinError.textContent = "";
 
+    /* Zugriffston */
+
+    accessGranted.currentTime = 0;
+
+    accessGranted.volume =
+      Number(volume.value);
+
+    accessGranted.play().catch(() => {});
+
   }
 
   else {
 
+    /* =========================
+       FALSCHER LOGIN
+       ========================= */
+
     pinError.textContent =
       "ACCESS DENIED";
+
+    /* Fehlerton abspielen */
+
+    errorAlert.pause();
+
+    errorAlert.currentTime = 0;
+
+    errorAlert.volume =
+      Number(volume.value);
+
+    errorAlert.play().catch(() => {});
+
+    /* Eingabe zurücksetzen */
 
     pinInput.value = "";
 
@@ -619,7 +686,9 @@ function unlock() {
 }
 
 
-/* UNLOCK BUTTON */
+/* =========================
+   UNLOCK BUTTON
+   ========================= */
 
 unlockButton.addEventListener(
   "click",
@@ -627,7 +696,9 @@ unlockButton.addEventListener(
 );
 
 
-/* ENTER IN PIN */
+/* =========================
+   ENTER IN PIN
+   ========================= */
 
 pinInput.addEventListener(
   "keydown",
@@ -643,7 +714,9 @@ pinInput.addEventListener(
 );
 
 
-/* ENTER IN USERNAME */
+/* =========================
+   ENTER IN USERNAME
+   ========================= */
 
 usernameInput.addEventListener(
   "keydown",
@@ -671,17 +744,9 @@ logoutButton.addEventListener(
   "click",
   () => {
 
-    /* Hauptseite ausblenden */
-
     panel.style.display = "none";
 
-
-    /* Login wieder anzeigen */
-
     lockScreen.style.display = "block";
-
-
-    /* Eingaben löschen */
 
     usernameInput.value = "";
 
@@ -689,92 +754,10 @@ logoutButton.addEventListener(
 
     pinError.textContent = "";
 
-
-    /* Cursor wieder auf Benutzername */
-
     usernameInput.focus();
 
   }
 );
-
-
-/* =========================
-   AUDIO
-   ========================= */
-
-const accessGranted =
-  document.getElementById("accessGranted");
-
-const biohazard =
-  document.getElementById("biohazard");
-
-const errorAlert =
-  document.getElementById("errorAlert");
-
-const volume =
-  document.getElementById("volume");
-
-const message =
-  document.getElementById("message");
-
-const detail =
-  document.getElementById("detail");
-
-
-/* =========================
-   SOUND FUNCTION
-   ========================= */
-
-function playSound(
-  sound,
-  title,
-  description
-) {
-
-  accessGranted.pause();
-
-  biohazard.pause();
-
-  errorAlert.pause();
-
-
-  accessGranted.currentTime = 0;
-
-  biohazard.currentTime = 0;
-
-  errorAlert.currentTime = 0;
-
-
-  sound.volume =
-    Number(volume.value);
-
-
-  sound.play().catch(() => {
-
-    detail.textContent =
-      "Audio wurde vom Browser blockiert. Noch einmal drücken.";
-
-  });
-
-
-  message.textContent =
-    title;
-
-  detail.textContent =
-    description;
-
-
-  panel.classList.remove(
-    "flash"
-  );
-
-  void panel.offsetWidth;
-
-  panel.classList.add(
-    "flash"
-  );
-
-}
 
 
 /* =========================
@@ -811,7 +794,6 @@ document.getElementById("plus")
       "WARNING: Biological hazard detected."
     );
 
-
     setTimeout(
       () => {
 
@@ -828,7 +810,7 @@ document.getElementById("plus")
 
 
 /* =========================
-   ERROR
+   ERROR BUTTON
    ========================= */
 
 document.getElementById("minus")
@@ -873,6 +855,12 @@ biohazard.volume = 0.8;
 
 errorAlert.volume = 0.8;
 
+
+/* =========================
+   START
+   ========================= */
+
+usernameInput.focus();
 
 </script>
 
