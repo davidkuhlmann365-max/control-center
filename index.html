@@ -63,7 +63,7 @@ body {
 
 
 /* ==================================================
-   ALARM LOOK
+   NORMALER ALARM
    ================================================== */
 
 #lockScreen.alarm {
@@ -89,6 +89,32 @@ body {
 
 
 /* ==================================================
+   PERMANENTER LOCKDOWN
+   ================================================== */
+
+#lockScreen.permanentLockdown {
+  border-color: #ff2222;
+
+  box-shadow:
+    0 0 80px rgba(255, 0, 0, 0.85),
+    inset 0 0 50px rgba(255, 0, 0, 0.25);
+
+  animation:
+    permanentPulse 0.65s infinite;
+}
+
+@keyframes permanentPulse {
+
+  50% {
+    box-shadow:
+      0 0 110px rgba(255, 0, 0, 1),
+      inset 0 0 70px rgba(255, 0, 0, 0.35);
+  }
+
+}
+
+
+/* ==================================================
    LOGIN TITEL
    ================================================== */
 
@@ -96,9 +122,7 @@ body {
   margin: 0 0 10px;
 
   font-size: 30px;
-
-  letter-spacing:
-    0.12em;
+  letter-spacing: 0.12em;
 }
 
 .lockStatus {
@@ -116,7 +140,6 @@ body {
 
 .securityStatus {
   margin-bottom: 18px;
-
   padding: 10px;
 
   border: 1px solid #286e80;
@@ -129,14 +152,12 @@ body {
   font-family: monospace;
 
   font-size: 12px;
-
-  letter-spacing:
-    0.08em;
+  letter-spacing: 0.08em;
 }
 
-#lockScreen.alarm .securityStatus {
+#lockScreen.alarm .securityStatus,
+#lockScreen.permanentLockdown .securityStatus {
   border-color: #ff3333;
-
   color: #ff4d4d;
 }
 
@@ -149,7 +170,6 @@ body {
   display: none;
 
   margin-bottom: 18px;
-
   padding: 15px;
 
   border: 1px solid #ff3333;
@@ -163,11 +183,11 @@ body {
   font-family: monospace;
 
   font-size: 14px;
-
   line-height: 1.5;
 }
 
-#lockScreen.alarm #alarmMessage {
+#lockScreen.alarm #alarmMessage,
+#lockScreen.permanentLockdown #alarmMessage {
   display: block;
 }
 
@@ -180,42 +200,30 @@ body {
   width: 100%;
 
   padding: 15px;
-
   margin-bottom: 12px;
 
-  border:
-    1px solid #286e80;
-
+  border: 1px solid #286e80;
   border-radius: 10px;
 
-  background:
-    #030b10;
+  background: #030b10;
 
-  color:
-    #d9faff;
+  color: #d9faff;
 
-  font-size:
-    20px;
+  font-size: 20px;
+  text-align: center;
 
-  text-align:
-    center;
-
-  outline:
-    none;
+  outline: none;
 }
 
 .loginInput:focus {
-  border-color:
-    #70ddf5;
+  border-color: #70ddf5;
 
   box-shadow:
-    0 0 10px
-    rgba(112, 221, 245, 0.15);
+    0 0 10px rgba(112, 221, 245, 0.15);
 }
 
 #pinInput {
-  letter-spacing:
-    0.3em;
+  letter-spacing: 0.3em;
 }
 
 
@@ -225,127 +233,110 @@ body {
 
 #unlockButton {
   width: 100%;
+  min-height: 55px;
 
-  min-height:
-    55px;
+  margin-top: 5px;
+  padding: 15px;
 
-  margin-top:
-    5px;
-
-  padding:
-    15px;
-
-  border:
-    1px solid #286e80;
-
-  border-radius:
-    10px;
+  border: 1px solid #286e80;
+  border-radius: 10px;
 
   background:
-    linear-gradient(
-      #102b37,
-      #07151c
-    );
+    linear-gradient(#102b37, #07151c);
 
-  color:
-    #d9faff;
+  color: #d9faff;
 
-  font-size:
-    18px;
+  font-size: 18px;
+  font-weight: bold;
 
-  font-weight:
-    bold;
-
-  cursor:
-    pointer;
+  cursor: pointer;
 }
 
 #unlockButton:hover {
-  border-color:
-    #70ddf5;
+  border-color: #70ddf5;
 
   box-shadow:
-    0 0 15px
-    rgba(70, 210, 240, 0.25);
+    0 0 15px rgba(70, 210, 240, 0.25);
 }
 
 #unlockButton:disabled {
-  opacity:
-    0.45;
-
-  cursor:
-    not-allowed;
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 
 /* ==================================================
-   ERROR
+   FEHLER
    ================================================== */
 
 #pinError {
-  min-height:
-    20px;
+  min-height: 20px;
+  margin-top: 15px;
 
-  margin-top:
-    15px;
+  color: #ff6b6b;
 
-  color:
-    #ff6b6b;
-
-  font-family:
-    monospace;
+  font-family: monospace;
 }
 
 
 /* ==================================================
-   LOCKDOWN
+   LOCKOUT
    ================================================== */
 
 #lockoutBox {
-  display:
-    none;
+  display: none;
 
-  margin-top:
-    15px;
+  margin-top: 15px;
+  padding: 15px;
 
-  padding:
-    15px;
-
-  border:
-    1px solid #ff3333;
-
-  border-radius:
-    10px;
+  border: 1px solid #ff3333;
+  border-radius: 10px;
 
   background:
     rgba(100, 0, 0, 0.18);
 
-  color:
-    #ff5c5c;
+  color: #ff5c5c;
 
-  font-family:
-    monospace;
+  font-family: monospace;
 
-  line-height:
-    1.5;
+  line-height: 1.5;
 }
 
 #lockoutBox.active {
-  display:
-    block;
+  display: block;
+}
+
+#lockoutTimer {
+  font-size: 24px;
+  color: #ff6b6b;
 }
 
 
 /* ==================================================
-   LOCKDOWN COUNTDOWN
+   PERMANENT LOCKDOWN BOX
    ================================================== */
 
-#lockoutTimer {
-  font-size:
-    24px;
+#permanentLockdownBox {
+  display: none;
 
-  color:
-    #ff6b6b;
+  margin-top: 15px;
+  padding: 18px;
+
+  border: 1px solid #ff2222;
+  border-radius: 10px;
+
+  background:
+    rgba(120, 0, 0, 0.25);
+
+  color: #ff5555;
+
+  font-family: monospace;
+
+  line-height: 1.6;
+}
+
+#permanentLockdownBox.active {
+  display: block;
 }
 
 
@@ -354,27 +345,17 @@ body {
    ================================================== */
 
 .panel {
-  width:
-    min(720px, 92vw);
+  width: min(720px, 92vw);
+  padding: 30px;
 
-  padding:
-    30px;
+  border: 1px solid #277b91;
+  border-radius: 20px;
 
-  border:
-    1px solid #277b91;
-
-  border-radius:
-    20px;
-
-  background:
-    rgba(7, 20, 28, 0.96);
+  background: rgba(7, 20, 28, 0.96);
 
   box-shadow:
-    0 0 30px
-    rgba(39, 123, 145, 0.25),
-
-    inset 0 0 30px
-    rgba(39, 123, 145, 0.05);
+    0 0 30px rgba(39, 123, 145, 0.25),
+    inset 0 0 30px rgba(39, 123, 145, 0.05);
 }
 
 
@@ -383,39 +364,29 @@ body {
    ================================================== */
 
 .header {
-  display:
-    flex;
+  display: flex;
 
-  justify-content:
-    space-between;
+  justify-content: space-between;
+  align-items: center;
 
-  align-items:
-    center;
-
-  gap:
-    15px;
+  gap: 15px;
 }
 
 h1 {
-  margin:
-    0;
+  margin: 0;
 
   font-size:
     clamp(26px, 5vw, 44px);
 
-  letter-spacing:
-    0.15em;
+  letter-spacing: 0.15em;
 }
 
 .online {
-  color:
-    #67ff9b;
+  color: #67ff9b;
 
-  font-size:
-    13px;
+  font-size: 13px;
 
-  letter-spacing:
-    0.12em;
+  letter-spacing: 0.12em;
 }
 
 
@@ -424,26 +395,17 @@ h1 {
    ================================================== */
 
 .screen {
-  margin:
-    25px 0;
+  margin: 25px 0;
+  padding: 22px;
 
-  padding:
-    22px;
+  min-height: 115px;
 
-  min-height:
-    115px;
+  border: 1px solid #185266;
+  border-radius: 12px;
 
-  border:
-    1px solid #185266;
+  background: #030b10;
 
-  border-radius:
-    12px;
-
-  background:
-    #030b10;
-
-  font-family:
-    monospace;
+  font-family: monospace;
 
   box-shadow:
     inset 0 0 20px
@@ -451,25 +413,19 @@ h1 {
 }
 
 #message {
-  display:
-    block;
+  display: block;
 
-  font-size:
-    25px;
+  font-size: 25px;
 
-  letter-spacing:
-    0.08em;
+  letter-spacing: 0.08em;
 }
 
 #detail {
-  margin-top:
-    10px;
+  margin-top: 10px;
 
-  color:
-    #6b9aa6;
+  color: #6b9aa6;
 
-  line-height:
-    1.5;
+  line-height: 1.5;
 }
 
 
@@ -478,52 +434,37 @@ h1 {
    ================================================== */
 
 .securityPanel {
-  margin-bottom:
-    20px;
+  margin-bottom: 20px;
+  padding: 12px;
 
-  padding:
-    12px;
+  border: 1px solid #185266;
+  border-radius: 10px;
 
-  border:
-    1px solid #185266;
+  background: #030b10;
 
-  border-radius:
-    10px;
+  font-family: monospace;
 
-  background:
-    #030b10;
-
-  font-family:
-    monospace;
-
-  font-size:
-    12px;
+  font-size: 12px;
 }
 
 .securityRow {
-  display:
-    flex;
+  display: flex;
 
-  justify-content:
-    space-between;
+  justify-content: space-between;
 
-  margin:
-    5px 0;
+  margin: 5px 0;
 }
 
 .securityGood {
-  color:
-    #67ff9b;
+  color: #67ff9b;
 }
 
 .securityWarning {
-  color:
-    #ffd45c;
+  color: #ffd45c;
 }
 
 .securityDanger {
-  color:
-    #ff5c5c;
+  color: #ff5c5c;
 }
 
 
@@ -532,46 +473,31 @@ h1 {
    ================================================== */
 
 .buttons {
-  display:
-    grid;
+  display: grid;
 
   grid-template-columns:
     repeat(3, 1fr);
 
-  gap:
-    15px;
+  gap: 15px;
 }
 
 .controlButton {
-  min-height:
-    120px;
+  min-height: 120px;
 
-  border:
-    1px solid #286e80;
-
-  border-radius:
-    15px;
+  border: 1px solid #286e80;
+  border-radius: 15px;
 
   background:
-    linear-gradient(
-      #102b37,
-      #07151c
-    );
+    linear-gradient(#102b37, #07151c);
 
-  color:
-    #d9faff;
+  color: #d9faff;
 
-  font-size:
-    20px;
+  font-size: 20px;
+  font-weight: bold;
 
-  font-weight:
-    bold;
+  cursor: pointer;
 
-  cursor:
-    pointer;
-
-  transition:
-    0.12s;
+  transition: 0.12s;
 
   box-shadow:
     inset 0 0 20px
@@ -579,31 +505,24 @@ h1 {
 }
 
 .controlButton:hover {
-  border-color:
-    #70ddf5;
+  border-color: #70ddf5;
 
   box-shadow:
-    0 0 15px
-    rgba(70, 210, 240, 0.25),
-
+    0 0 15px rgba(70, 210, 240, 0.25),
     inset 0 0 20px
     rgba(39, 123, 145, 0.15);
 }
 
 .controlButton:active {
-  transform:
-    scale(0.97);
+  transform: scale(0.97);
 }
 
 .controlButton span {
-  display:
-    block;
+  display: block;
 
-  font-size:
-    42px;
+  font-size: 42px;
 
-  margin-bottom:
-    8px;
+  margin-bottom: 8px;
 }
 
 
@@ -612,25 +531,19 @@ h1 {
    ================================================== */
 
 .volume {
-  display:
-    flex;
+  display: flex;
 
-  align-items:
-    center;
+  align-items: center;
 
-  gap:
-    12px;
+  gap: 12px;
 
-  margin-top:
-    22px;
+  margin-top: 22px;
 
-  color:
-    #6b9aa6;
+  color: #6b9aa6;
 }
 
 .volume input {
-  width:
-    100%;
+  width: 100%;
 }
 
 
@@ -639,38 +552,24 @@ h1 {
    ================================================== */
 
 .logout {
-  width:
-    100%;
+  width: 100%;
 
-  min-height:
-    55px;
+  min-height: 55px;
 
-  margin-top:
-    22px;
+  margin-top: 22px;
 
-  border:
-    1px solid #286e80;
-
-  border-radius:
-    10px;
+  border: 1px solid #286e80;
+  border-radius: 10px;
 
   background:
-    linear-gradient(
-      #102b37,
-      #07151c
-    );
+    linear-gradient(#102b37, #07151c);
 
-  color:
-    #d9faff;
+  color: #d9faff;
 
-  font-size:
-    17px;
+  font-size: 17px;
+  font-weight: bold;
 
-  font-weight:
-    bold;
-
-  cursor:
-    pointer;
+  cursor: pointer;
 
   box-shadow:
     inset 0 0 15px
@@ -678,12 +577,10 @@ h1 {
 }
 
 .logout:hover {
-  border-color:
-    #70ddf5;
+  border-color: #70ddf5;
 
   box-shadow:
-    0 0 15px
-    rgba(70, 210, 240, 0.25);
+    0 0 15px rgba(70, 210, 240, 0.25);
 }
 
 
@@ -692,20 +589,15 @@ h1 {
    ================================================== */
 
 .footer {
-  margin-top:
-    18px;
+  margin-top: 18px;
 
-  text-align:
-    center;
+  text-align: center;
 
-  color:
-    #456c76;
+  color: #456c76;
 
-  font-size:
-    11px;
+  font-size: 11px;
 
-  letter-spacing:
-    0.08em;
+  letter-spacing: 0.08em;
 }
 
 
@@ -714,8 +606,7 @@ h1 {
    ================================================== */
 
 .flash {
-  animation:
-    flash 0.25s;
+  animation: flash 0.25s;
 }
 
 @keyframes flash {
@@ -739,23 +630,19 @@ h1 {
 @media (max-width: 600px) {
 
   body {
-    padding:
-      12px;
+    padding: 12px;
   }
 
   .panel {
-    padding:
-      20px;
+    padding: 20px;
   }
 
   .buttons {
-    grid-template-columns:
-      1fr;
+    grid-template-columns: 1fr;
   }
 
   .controlButton {
-    min-height:
-      90px;
+    min-height: 90px;
   }
 
 }
@@ -834,7 +721,9 @@ h1 {
   <div id="pinError"></div>
 
 
-  <div id="lockoutBox">
+  <div
+    id="lockoutBox"
+  >
 
     🔒 SECURITY LOCKDOWN
 
@@ -854,6 +743,31 @@ h1 {
     </strong>
 
     Sekunden
+
+  </div>
+
+
+  <div
+    id="permanentLockdownBox"
+  >
+
+    🚨 PERMANENTER LOCKDOWN 🚨
+
+    <br><br>
+
+    Zu viele fehlgeschlagene
+    Anmeldeversuche.
+
+    <br><br>
+
+    Der Sicherheitsalarm bleibt
+    aktiv.
+
+    <br><br>
+
+    Bitte geben Sie die
+    <strong>korrekten Zugangsdaten</strong>
+    ein, um den Alarm zu deaktivieren.
 
   </div>
 
@@ -1054,21 +968,8 @@ h1 {
 
 
 /* ==================================================
-   LOGIN
+   ZUGANGSDATEN
    ================================================== */
-
-
-/*
- * GitHub-Pages-Version:
- *
- * Die Zugangsdaten werden hier lokal geprüft.
- *
- * WICHTIG:
- * Das ist KEINE echte serverseitige Sicherheit.
- *
- * Für einen echten Schutz müsste die Prüfung
- * später über ein Backend erfolgen.
- */
 
 const correctUsername =
   "admin";
@@ -1124,6 +1025,11 @@ const lockoutBox =
 const lockoutTimer =
   document.getElementById(
     "lockoutTimer"
+  );
+
+const permanentLockdownBox =
+  document.getElementById(
+    "permanentLockdownBox"
   );
 
 const panel =
@@ -1193,60 +1099,172 @@ const logoutButton =
 
 
 /* ==================================================
-   SECURITY VARIABLEN
+   SICHERHEIT
    ================================================== */
 
-let failedAttempts =
-  0;
-
-let alarmActive =
-  false;
-
-let lockedUntil =
-  0;
-
-let lockoutInterval =
-  null;
-
-let alarmInterval =
-  null;
-
-let sessionTimer =
-  null;
-
-let audioContext =
-  null;
+const SECURITY_STORAGE_KEY =
+  "roomControlSecurity_v2";
 
 
-/*
- * Automatische Abmeldung
- * nach 10 Minuten ohne Aktivität.
- */
+const PERMANENT_LOCKOUT_AFTER =
+  10;
 
-const SESSION_TIMEOUT =
-  10 * 60 * 1000;
-
-
-/*
- * Ab 3 Fehlversuchen
- * beginnt die Sperre.
- */
 
 const LOCKOUT_AFTER =
   3;
 
 
-/*
- * Erste Sperre:
- * 30 Sekunden.
- */
-
 const BASE_LOCKOUT =
   30;
 
 
+const SESSION_TIMEOUT =
+  10 * 60 * 1000;
+
+
+let securityData =
+  loadSecurityData();
+
+
+let failedAttempts =
+  securityData.failedAttempts;
+
+
+let alarmActive =
+  securityData.alarmActive;
+
+
+let lockedUntil =
+  securityData.lockedUntil;
+
+
+let permanentLockdown =
+  securityData.permanentLockdown;
+
+
+let lockoutInterval =
+  null;
+
+
+let alarmInterval =
+  null;
+
+
+let sessionTimer =
+  null;
+
+
+let audioContext =
+  null;
+
+
 /* ==================================================
-   AUDIO CONTEXT
+   SECURITY DATEN LADEN
+   ================================================== */
+
+function loadSecurityData() {
+
+  try {
+
+    const saved =
+      localStorage.getItem(
+        SECURITY_STORAGE_KEY
+      );
+
+
+    if (!saved) {
+
+      return {
+        failedAttempts: 0,
+        alarmActive: false,
+        lockedUntil: 0,
+        permanentLockdown: false
+      };
+
+    }
+
+
+    const data =
+      JSON.parse(saved);
+
+
+    return {
+
+      failedAttempts:
+        Number(
+          data.failedAttempts
+        ) || 0,
+
+      alarmActive:
+        data.alarmActive === true,
+
+      lockedUntil:
+        Number(
+          data.lockedUntil
+        ) || 0,
+
+      permanentLockdown:
+        data.permanentLockdown === true
+
+    };
+
+  }
+
+  catch (_) {
+
+    return {
+      failedAttempts: 0,
+      alarmActive: false,
+      lockedUntil: 0,
+      permanentLockdown: false
+    };
+
+  }
+
+}
+
+
+/* ==================================================
+   SECURITY DATEN SPEICHERN
+   ================================================== */
+
+function saveSecurityData() {
+
+  securityData = {
+
+    failedAttempts:
+      failedAttempts,
+
+    alarmActive:
+      alarmActive,
+
+    lockedUntil:
+      lockedUntil,
+
+    permanentLockdown:
+      permanentLockdown
+
+  };
+
+
+  try {
+
+    localStorage.setItem(
+      SECURITY_STORAGE_KEY,
+      JSON.stringify(
+        securityData
+      )
+    );
+
+  }
+
+  catch (_) {}
+
+}
+
+
+/* ==================================================
+   AUDIO
    ================================================== */
 
 function getAudioContext() {
@@ -1314,20 +1332,16 @@ function getVolume() {
 
 function updateAudioVolume() {
 
-  const currentVolume =
+  accessGranted.volume =
     getVolume();
 
-
-  accessGranted.volume =
-    currentVolume;
-
   biohazard.volume =
-    currentVolume;
+    getVolume();
 }
 
 
 /* ==================================================
-   AUDIO STOPPEN
+   ALLE AUDIOWIEDERGABEN STOPPEN
    ================================================== */
 
 function stopAllAudio() {
@@ -1355,7 +1369,7 @@ function stopAllAudio() {
 
 
 /* ==================================================
-   MANIPULATIONSALARM
+   ALARMTON
    ================================================== */
 
 function playAlarmTone() {
@@ -1387,6 +1401,7 @@ function playAlarmTone() {
 
 
   const notes = [
+
     {
       frequency: 880,
       start: 0,
@@ -1398,6 +1413,7 @@ function playAlarmTone() {
       start: 0.18,
       duration: 0.13
     }
+
   ];
 
 
@@ -1415,7 +1431,8 @@ function playAlarmTone() {
         now + note.start;
 
       const end =
-        start + note.duration;
+        start +
+        note.duration;
 
 
       oscillator.type =
@@ -1473,13 +1490,16 @@ function playAlarmTone() {
 
 
 /* ==================================================
-   MANIPULATIONSALARM STARTEN
+   ALARM STARTEN
    ================================================== */
 
 function startAlarm() {
 
   alarmActive =
     true;
+
+
+  saveSecurityData();
 
 
   lockScreen.classList.add(
@@ -1498,7 +1518,9 @@ function startAlarm() {
   playAlarmTone();
 
 
-  if (alarmInterval !== null) {
+  if (
+    alarmInterval !== null
+  ) {
 
     clearInterval(
       alarmInterval
@@ -1524,7 +1546,7 @@ function startAlarm() {
 
 
 /* ==================================================
-   ALARM DEAKTIVIEREN
+   ALARM STOPPEN
    ================================================== */
 
 function stopAlarm() {
@@ -1534,8 +1556,7 @@ function stopAlarm() {
 
 
   if (
-    alarmInterval !==
-    null
+    alarmInterval !== null
   ) {
 
     clearInterval(
@@ -1552,6 +1573,127 @@ function stopAlarm() {
     "alarm"
   );
 
+}
+
+
+/* ==================================================
+   PERMANENTEN LOCKDOWN AKTIVIEREN
+   ================================================== */
+
+function activatePermanentLockdown() {
+
+  permanentLockdown =
+    true;
+
+
+  alarmActive =
+    true;
+
+
+  lockedUntil =
+    0;
+
+
+  saveSecurityData();
+
+
+  lockScreen.classList.remove(
+    "alarm"
+  );
+
+
+  lockScreen.classList.add(
+    "permanentLockdown"
+  );
+
+
+  permanentLockdownBox.classList.add(
+    "active"
+  );
+
+
+  lockoutBox.classList.remove(
+    "active"
+  );
+
+
+  securityStatus.textContent =
+    "SECURITY STATUS: PERMANENT LOCKDOWN";
+
+
+  pinError.textContent =
+    "🚨 PERMANENTER LOCKDOWN AKTIV";
+
+
+  unlockButton.disabled =
+    false;
+
+
+  playAlarmTone();
+
+
+  if (
+    alarmInterval !== null
+  ) {
+
+    clearInterval(
+      alarmInterval
+    );
+
+  }
+
+
+  alarmInterval =
+    setInterval(
+      () => {
+
+        if (permanentLockdown) {
+
+          playAlarmTone();
+
+        }
+
+      },
+      1000
+    );
+}
+
+
+/* ==================================================
+   PERMANENTEN LOCKDOWN DEAKTIVIEREN
+   ================================================== */
+
+function deactivatePermanentLockdown() {
+
+  permanentLockdown =
+    false;
+
+  alarmActive =
+    false;
+
+  failedAttempts =
+    0;
+
+  lockedUntil =
+    0;
+
+
+  saveSecurityData();
+
+
+  lockScreen.classList.remove(
+    "alarm"
+  );
+
+  lockScreen.classList.remove(
+    "permanentLockdown"
+  );
+
+
+  permanentLockdownBox.classList.remove(
+    "active"
+  );
+
 
   securityStatus.textContent =
     "SECURITY STATUS: PROTECTED";
@@ -1559,30 +1701,21 @@ function stopAlarm() {
 
   pinError.textContent =
     "";
+
 }
 
 
 /* ==================================================
-   LOCKDOWN STARTEN
+   NORMALE SPERRE
    ================================================== */
 
 function startLockout() {
-
-  /*
-   * Die Sperre wird mit jedem
-   * weiteren Fehlversuch länger.
-   *
-   * 3 Versuche = 30 Sekunden
-   * 4 Versuche = 60 Sekunden
-   * 5 Versuche = 90 Sekunden
-   */
 
   const seconds =
     BASE_LOCKOUT *
     Math.max(
       1,
-      failedAttempts -
-      2
+      failedAttempts - 2
     );
 
 
@@ -1591,8 +1724,11 @@ function startLockout() {
     seconds * 1000;
 
 
+  saveSecurityData();
+
+
   unlockButton.disabled =
-    true;
+    false;
 
 
   lockoutBox.classList.add(
@@ -1604,8 +1740,7 @@ function startLockout() {
 
 
   if (
-    lockoutInterval !==
-    null
+    lockoutInterval !== null
   ) {
 
     clearInterval(
@@ -1624,10 +1759,15 @@ function startLockout() {
 
 
 /* ==================================================
-   LOCKDOWN ANZEIGE
+   SPERRZEIT ANZEIGEN
    ================================================== */
 
 function updateLockoutDisplay() {
+
+  if (permanentLockdown) {
+    return;
+  }
+
 
   const remaining =
     Math.max(
@@ -1651,13 +1791,18 @@ function updateLockoutDisplay() {
     remaining <= 0
   ) {
 
-    clearInterval(
-      lockoutInterval
-    );
+    if (
+      lockoutInterval !== null
+    ) {
 
+      clearInterval(
+        lockoutInterval
+      );
 
-    lockoutInterval =
-      null;
+      lockoutInterval =
+        null;
+
+    }
 
 
     lockoutBox.classList.remove(
@@ -1665,8 +1810,11 @@ function updateLockoutDisplay() {
     );
 
 
-    unlockButton.disabled =
-      false;
+    lockedUntil =
+      0;
+
+
+    saveSecurityData();
 
 
     pinError.textContent =
@@ -1682,29 +1830,7 @@ function updateLockoutDisplay() {
 
 function unlock() {
 
-  /*
-   * Audio-Kontext durch
-   * Benutzeraktion freischalten.
-   */
-
   getAudioContext();
-
-
-  /*
-   * Prüfen, ob gerade
-   * eine Sperrzeit läuft.
-   */
-
-  if (
-    Date.now() <
-    lockedUntil
-  ) {
-
-    updateLockoutDisplay();
-
-    return;
-
-  }
 
 
   const username =
@@ -1715,7 +1841,14 @@ function unlock() {
 
 
   /*
-   * KORREKTER LOGIN
+   * KORREKTE ZUGANGSDATEN
+   *
+   * Diese Prüfung kommt VOR
+   * dem Lockdown.
+   *
+   * Dadurch kann ein permanenter
+   * Lockdown mit den richtigen
+   * Zugangsdaten aufgehoben werden.
    */
 
   if (
@@ -1726,15 +1859,30 @@ function unlock() {
       correctPIN
   ) {
 
-    stopAlarm();
+    deactivatePermanentLockdown();
 
 
-    failedAttempts =
-      0;
+    if (
+      lockoutInterval !== null
+    ) {
+
+      clearInterval(
+        lockoutInterval
+      );
+
+      lockoutInterval =
+        null;
+
+    }
 
 
-    attemptDisplay.textContent =
-      "0";
+    lockoutBox.classList.remove(
+      "active"
+    );
+
+
+    unlockButton.disabled =
+      false;
 
 
     lockScreen.style.display =
@@ -1756,6 +1904,10 @@ function unlock() {
       "securityGood";
 
 
+    attemptDisplay.textContent =
+      "0";
+
+
     updateAudioVolume();
 
 
@@ -1773,15 +1925,20 @@ function unlock() {
 
     accessGranted
       .play()
-      .catch(
-        () => {}
-      );
+      .catch(() => {});
 
 
     resetSessionTimer();
 
-    return;
 
+    usernameInput.value =
+      "";
+
+    pinInput.value =
+      "";
+
+
+    return;
   }
 
 
@@ -1807,20 +1964,38 @@ function unlock() {
     "ACCESS DENIED";
 
 
-  startAlarm();
-
-
   /*
-   * Nach mehreren Fehlversuchen
-   * zusätzlich sperren.
+   * Ab 10 Versuchen:
+   * permanenter Lockdown.
    */
 
   if (
     failedAttempts >=
-    LOCKOUT_AFTER
+    PERMANENT_LOCKOUT_AFTER
   ) {
 
-    startLockout();
+    activatePermanentLockdown();
+
+  }
+
+  else {
+
+    startAlarm();
+
+
+    /*
+     * Ab dem 3. Versuch:
+     * zeitlich begrenzte Sperre.
+     */
+
+    if (
+      failedAttempts >=
+      LOCKOUT_AFTER
+    ) {
+
+      startLockout();
+
+    }
 
   }
 
@@ -1836,8 +2011,7 @@ function unlock() {
 function resetSessionTimer() {
 
   if (
-    sessionTimer !==
-    null
+    sessionTimer !== null
   ) {
 
     clearTimeout(
@@ -1898,38 +2072,12 @@ function automaticLogout() {
     "SESSION TIMEOUT – ERNEUTE ANMELDUNG ERFORDERLICH";
 
 
-  message.textContent =
-    "SESSION EXPIRED";
-
-
-  detail.textContent =
-    "Automatische Abmeldung wegen Inaktivität.";
-
-
   usernameInput.focus();
 }
 
 
 /* ==================================================
-   POWER
-   ================================================== */
-
-powerButton.addEventListener(
-  "click",
-  () => {
-
-    playNormalSound(
-      accessGranted,
-      "ACCESS GRANTED",
-      "Door control command accepted."
-    );
-
-  }
-);
-
-
-/* ==================================================
-   NORMALE AUDIOFUNKTION
+   NORMALE SOUND-FUNKTION
    ================================================== */
 
 function playNormalSound(
@@ -1969,15 +2117,31 @@ function playNormalSound(
 
 
   sound.play()
-    .catch(
-      () => {
+    .catch(() => {
 
-        detail.textContent =
-          "Audio konnte nicht abgespielt werden.";
+      detail.textContent =
+        "Audio konnte nicht abgespielt werden.";
 
-      }
-    );
+    });
 }
+
+
+/* ==================================================
+   POWER
+   ================================================== */
+
+powerButton.addEventListener(
+  "click",
+  () => {
+
+    playNormalSound(
+      accessGranted,
+      "ACCESS GRANTED",
+      "Door control command accepted."
+    );
+
+  }
+);
 
 
 /* ==================================================
@@ -2021,6 +2185,7 @@ errorButton.addEventListener(
 
     getAudioContext();
 
+
     playAlarmTone();
 
 
@@ -2058,12 +2223,9 @@ logoutButton.addEventListener(
 
     stopAllAudio();
 
-    stopAlarm();
-
 
     if (
-      sessionTimer !==
-      null
+      sessionTimer !== null
     ) {
 
       clearTimeout(
@@ -2209,6 +2371,51 @@ pinInput.addEventListener(
    ================================================== */
 
 updateAudioVolume();
+
+
+/*
+ * Bereits vorhandenen
+ * permanenten Lockdown wiederherstellen.
+ */
+
+if (permanentLockdown) {
+
+  activatePermanentLockdown();
+
+}
+
+else if (
+  lockedUntil >
+  Date.now()
+) {
+
+  lockoutBox.classList.add(
+    "active"
+  );
+
+  updateLockoutDisplay();
+
+  lockoutInterval =
+    setInterval(
+      updateLockoutDisplay,
+      250
+    );
+
+}
+
+else {
+
+  lockedUntil =
+    0;
+
+  saveSecurityData();
+
+}
+
+
+attemptDisplay.textContent =
+  failedAttempts;
+
 
 usernameInput.focus();
 
