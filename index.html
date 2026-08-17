@@ -18,10 +18,11 @@ body {
 
 body {
   min-height: 100vh;
+  padding: 15px;
+
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
 
   background:
     radial-gradient(
@@ -36,18 +37,18 @@ body {
 }
 
 
-/* =========================
+/* ==================================================
    LOGIN
-   ========================= */
+   ================================================== */
 
 #lockScreen {
-  width: min(420px, 90vw);
+  width: min(440px, 92vw);
   padding: 30px;
 
   border: 1px solid #277b91;
   border-radius: 20px;
 
-  background: rgba(7, 20, 28, 0.95);
+  background: rgba(7, 20, 28, 0.96);
 
   box-shadow:
     0 0 30px rgba(39, 123, 145, 0.25),
@@ -60,439 +61,703 @@ body {
     box-shadow 0.2s;
 }
 
+
+/* ==================================================
+   ALARM LOOK
+   ================================================== */
+
 #lockScreen.alarm {
-  border-color: #ff3b3b;
+  border-color: #ff3333;
 
   box-shadow:
-    0 0 35px rgba(255, 50, 50, 0.55),
-    inset 0 0 30px rgba(255, 50, 50, 0.12);
+    0 0 40px rgba(255, 40, 40, 0.65),
+    inset 0 0 35px rgba(255, 40, 40, 0.15);
 
-  animation: alarmPulse 0.8s infinite;
+  animation:
+    alarmPulse 0.8s infinite;
 }
 
 @keyframes alarmPulse {
+
   50% {
     box-shadow:
-      0 0 55px rgba(255, 50, 50, 0.75),
-      inset 0 0 40px rgba(255, 50, 50, 0.2);
+      0 0 65px rgba(255, 40, 40, 0.85),
+      inset 0 0 45px rgba(255, 40, 40, 0.25);
   }
+
 }
+
+
+/* ==================================================
+   LOGIN TITEL
+   ================================================== */
 
 #lockScreen h1 {
   margin: 0 0 10px;
 
   font-size: 30px;
-  letter-spacing: 0.12em;
+
+  letter-spacing:
+    0.12em;
 }
 
 .lockStatus {
   margin-bottom: 20px;
 
   color: #6b9aa6;
+
   font-family: monospace;
 }
+
+
+/* ==================================================
+   SECURITY STATUS
+   ================================================== */
+
+.securityStatus {
+  margin-bottom: 18px;
+
+  padding: 10px;
+
+  border: 1px solid #286e80;
+  border-radius: 8px;
+
+  background: #030b10;
+
+  color: #67ff9b;
+
+  font-family: monospace;
+
+  font-size: 12px;
+
+  letter-spacing:
+    0.08em;
+}
+
+#lockScreen.alarm .securityStatus {
+  border-color: #ff3333;
+
+  color: #ff4d4d;
+}
+
+
+/* ==================================================
+   ALARM MESSAGE
+   ================================================== */
 
 #alarmMessage {
   display: none;
 
-  margin: -5px 0 18px;
-  padding: 14px;
+  margin-bottom: 18px;
 
-  border: 1px solid #ff3b3b;
+  padding: 15px;
+
+  border: 1px solid #ff3333;
   border-radius: 10px;
 
-  background: rgba(120, 0, 0, 0.18);
+  background:
+    rgba(100, 0, 0, 0.25);
 
   color: #ff5c5c;
 
   font-family: monospace;
-  font-size: 14px;
-  line-height: 1.5;
 
-  animation: alarmText 0.8s infinite;
+  font-size: 14px;
+
+  line-height: 1.5;
 }
 
 #lockScreen.alarm #alarmMessage {
   display: block;
 }
 
-@keyframes alarmText {
-  50% {
-    opacity: 0.55;
-  }
-}
 
-
-/* =========================
-   LOGIN FELDER
-   ========================= */
+/* ==================================================
+   INPUTS
+   ================================================== */
 
 .loginInput {
   width: 100%;
+
   padding: 15px;
+
   margin-bottom: 12px;
 
-  border: 1px solid #286e80;
-  border-radius: 10px;
+  border:
+    1px solid #286e80;
 
-  background: #030b10;
-  color: #d9faff;
-
-  font-size: 20px;
-  text-align: center;
-
-  outline: none;
-
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s;
-}
-
-.loginInput:focus {
-  border-color: #70ddf5;
-
-  box-shadow:
-    0 0 10px rgba(112, 221, 245, 0.15);
-}
-
-#pinInput {
-  letter-spacing: 0.3em;
-}
-
-
-/* =========================
-   UNLOCK
-   ========================= */
-
-#unlockButton {
-  width: 100%;
-  min-height: 55px;
-
-  margin-top: 5px;
-  padding: 15px;
-
-  border: 1px solid #286e80;
   border-radius: 10px;
 
   background:
-    linear-gradient(#102b37, #07151c);
+    #030b10;
 
-  color: #d9faff;
+  color:
+    #d9faff;
 
-  font-size: 18px;
-  font-weight: bold;
+  font-size:
+    20px;
 
-  cursor: pointer;
+  text-align:
+    center;
 
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s,
-    transform 0.1s;
+  outline:
+    none;
+}
+
+.loginInput:focus {
+  border-color:
+    #70ddf5;
+
+  box-shadow:
+    0 0 10px
+    rgba(112, 221, 245, 0.15);
+}
+
+#pinInput {
+  letter-spacing:
+    0.3em;
+}
+
+
+/* ==================================================
+   UNLOCK BUTTON
+   ================================================== */
+
+#unlockButton {
+  width: 100%;
+
+  min-height:
+    55px;
+
+  margin-top:
+    5px;
+
+  padding:
+    15px;
+
+  border:
+    1px solid #286e80;
+
+  border-radius:
+    10px;
+
+  background:
+    linear-gradient(
+      #102b37,
+      #07151c
+    );
+
+  color:
+    #d9faff;
+
+  font-size:
+    18px;
+
+  font-weight:
+    bold;
+
+  cursor:
+    pointer;
 }
 
 #unlockButton:hover {
-  border-color: #70ddf5;
+  border-color:
+    #70ddf5;
 
   box-shadow:
-    0 0 15px rgba(70, 210, 240, 0.25);
+    0 0 15px
+    rgba(70, 210, 240, 0.25);
 }
 
-#unlockButton:active {
-  transform: scale(0.98);
+#unlockButton:disabled {
+  opacity:
+    0.45;
+
+  cursor:
+    not-allowed;
 }
+
+
+/* ==================================================
+   ERROR
+   ================================================== */
 
 #pinError {
-  min-height: 20px;
+  min-height:
+    20px;
 
-  margin-top: 15px;
+  margin-top:
+    15px;
 
-  color: #ff6b6b;
-  font-family: monospace;
+  color:
+    #ff6b6b;
+
+  font-family:
+    monospace;
 }
 
 
-/* =========================
-   HAUPTSEITE
-   ========================= */
+/* ==================================================
+   LOCKDOWN
+   ================================================== */
+
+#lockoutBox {
+  display:
+    none;
+
+  margin-top:
+    15px;
+
+  padding:
+    15px;
+
+  border:
+    1px solid #ff3333;
+
+  border-radius:
+    10px;
+
+  background:
+    rgba(100, 0, 0, 0.18);
+
+  color:
+    #ff5c5c;
+
+  font-family:
+    monospace;
+
+  line-height:
+    1.5;
+}
+
+#lockoutBox.active {
+  display:
+    block;
+}
+
+
+/* ==================================================
+   LOCKDOWN COUNTDOWN
+   ================================================== */
+
+#lockoutTimer {
+  font-size:
+    24px;
+
+  color:
+    #ff6b6b;
+}
+
+
+/* ==================================================
+   MAIN PANEL
+   ================================================== */
 
 .panel {
-  width: min(720px, 92vw);
-  padding: 30px;
+  width:
+    min(720px, 92vw);
 
-  border: 1px solid #277b91;
-  border-radius: 20px;
+  padding:
+    30px;
 
-  background: rgba(7, 20, 28, 0.95);
+  border:
+    1px solid #277b91;
+
+  border-radius:
+    20px;
+
+  background:
+    rgba(7, 20, 28, 0.96);
 
   box-shadow:
-    0 0 30px rgba(39, 123, 145, 0.25),
-    inset 0 0 30px rgba(39, 123, 145, 0.05);
+    0 0 30px
+    rgba(39, 123, 145, 0.25),
 
-  transition:
-    box-shadow 0.2s,
-    border-color 0.2s;
+    inset 0 0 30px
+    rgba(39, 123, 145, 0.05);
 }
 
+
+/* ==================================================
+   HEADER
+   ================================================== */
+
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
+  display:
+    flex;
+
+  justify-content:
+    space-between;
+
+  align-items:
+    center;
+
+  gap:
+    15px;
 }
 
 h1 {
-  margin: 0;
+  margin:
+    0;
 
-  font-size: clamp(26px, 5vw, 44px);
-  letter-spacing: 0.15em;
+  font-size:
+    clamp(26px, 5vw, 44px);
+
+  letter-spacing:
+    0.15em;
 }
 
 .online {
-  color: #67ff9b;
+  color:
+    #67ff9b;
 
-  font-size: 13px;
-  letter-spacing: 0.12em;
+  font-size:
+    13px;
 
-  white-space: nowrap;
+  letter-spacing:
+    0.12em;
 }
 
 
-/* =========================
+/* ==================================================
    SCREEN
-   ========================= */
+   ================================================== */
 
 .screen {
-  margin: 25px 0;
-  padding: 22px;
+  margin:
+    25px 0;
 
-  min-height: 115px;
+  padding:
+    22px;
 
-  border: 1px solid #185266;
-  border-radius: 12px;
+  min-height:
+    115px;
 
-  background: #030b10;
+  border:
+    1px solid #185266;
 
-  font-family: monospace;
+  border-radius:
+    12px;
+
+  background:
+    #030b10;
+
+  font-family:
+    monospace;
 
   box-shadow:
-    inset 0 0 20px rgba(0, 180, 220, 0.08);
+    inset 0 0 20px
+    rgba(0, 180, 220, 0.08);
 }
 
 #message {
-  display: block;
+  display:
+    block;
 
-  font-size: 25px;
-  letter-spacing: 0.08em;
+  font-size:
+    25px;
+
+  letter-spacing:
+    0.08em;
 }
 
 #detail {
-  margin-top: 10px;
+  margin-top:
+    10px;
 
-  color: #6b9aa6;
-  line-height: 1.5;
+  color:
+    #6b9aa6;
+
+  line-height:
+    1.5;
 }
 
 
-/* =========================
+/* ==================================================
+   SECURITY PANEL
+   ================================================== */
+
+.securityPanel {
+  margin-bottom:
+    20px;
+
+  padding:
+    12px;
+
+  border:
+    1px solid #185266;
+
+  border-radius:
+    10px;
+
+  background:
+    #030b10;
+
+  font-family:
+    monospace;
+
+  font-size:
+    12px;
+}
+
+.securityRow {
+  display:
+    flex;
+
+  justify-content:
+    space-between;
+
+  margin:
+    5px 0;
+}
+
+.securityGood {
+  color:
+    #67ff9b;
+}
+
+.securityWarning {
+  color:
+    #ffd45c;
+}
+
+.securityDanger {
+  color:
+    #ff5c5c;
+}
+
+
+/* ==================================================
    BUTTONS
-   ========================= */
+   ================================================== */
 
 .buttons {
-  display: grid;
+  display:
+    grid;
 
   grid-template-columns:
     repeat(3, 1fr);
 
-  gap: 15px;
+  gap:
+    15px;
 }
 
 .controlButton {
-  min-height: 120px;
+  min-height:
+    120px;
 
-  border: 1px solid #286e80;
-  border-radius: 15px;
+  border:
+    1px solid #286e80;
+
+  border-radius:
+    15px;
 
   background:
-    linear-gradient(#102b37, #07151c);
+    linear-gradient(
+      #102b37,
+      #07151c
+    );
 
-  color: #d9faff;
+  color:
+    #d9faff;
 
-  font-size: 20px;
-  font-weight: bold;
+  font-size:
+    20px;
 
-  cursor: pointer;
+  font-weight:
+    bold;
 
-  transition: 0.12s;
+  cursor:
+    pointer;
+
+  transition:
+    0.12s;
 
   box-shadow:
-    inset 0 0 20px rgba(39, 123, 145, 0.08);
+    inset 0 0 20px
+    rgba(39, 123, 145, 0.08);
 }
 
 .controlButton:hover {
-  border-color: #70ddf5;
+  border-color:
+    #70ddf5;
 
   box-shadow:
-    0 0 15px rgba(70, 210, 240, 0.25),
-    inset 0 0 20px rgba(39, 123, 145, 0.15);
+    0 0 15px
+    rgba(70, 210, 240, 0.25),
+
+    inset 0 0 20px
+    rgba(39, 123, 145, 0.15);
 }
 
 .controlButton:active {
-  transform: scale(0.97);
+  transform:
+    scale(0.97);
 }
 
 .controlButton span {
-  display: block;
+  display:
+    block;
 
-  margin-bottom: 8px;
+  font-size:
+    42px;
 
-  font-size: 42px;
+  margin-bottom:
+    8px;
 }
 
 
-/* =========================
-   LAUTSTÄRKE
-   ========================= */
+/* ==================================================
+   VOLUME
+   ================================================== */
 
 .volume {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display:
+    flex;
 
-  margin-top: 22px;
+  align-items:
+    center;
 
-  color: #6b9aa6;
+  gap:
+    12px;
+
+  margin-top:
+    22px;
+
+  color:
+    #6b9aa6;
 }
 
 .volume input {
-  width: 100%;
-  cursor: pointer;
+  width:
+    100%;
 }
 
 
-/* =========================
-   ABMELDEN
-   ========================= */
+/* ==================================================
+   LOGOUT
+   ================================================== */
 
 .logout {
-  width: 100%;
-  min-height: 55px;
+  width:
+    100%;
 
-  margin-top: 22px;
+  min-height:
+    55px;
 
-  border: 1px solid #286e80;
-  border-radius: 10px;
+  margin-top:
+    22px;
+
+  border:
+    1px solid #286e80;
+
+  border-radius:
+    10px;
 
   background:
-    linear-gradient(#102b37, #07151c);
+    linear-gradient(
+      #102b37,
+      #07151c
+    );
 
-  color: #d9faff;
+  color:
+    #d9faff;
 
-  font-size: 17px;
-  font-weight: bold;
+  font-size:
+    17px;
 
-  cursor: pointer;
+  font-weight:
+    bold;
+
+  cursor:
+    pointer;
 
   box-shadow:
-    inset 0 0 15px rgba(39, 123, 145, 0.08);
-
-  transition:
-    border-color 0.15s,
-    box-shadow 0.15s,
-    transform 0.1s;
+    inset 0 0 15px
+    rgba(39, 123, 145, 0.08);
 }
 
 .logout:hover {
-  border-color: #70ddf5;
+  border-color:
+    #70ddf5;
 
   box-shadow:
-    0 0 15px rgba(70, 210, 240, 0.25);
-}
-
-.logout:active {
-  transform: scale(0.98);
+    0 0 15px
+    rgba(70, 210, 240, 0.25);
 }
 
 
-/* =========================
+/* ==================================================
    FOOTER
-   ========================= */
+   ================================================== */
 
 .footer {
-  margin-top: 18px;
+  margin-top:
+    18px;
 
-  text-align: center;
+  text-align:
+    center;
 
-  color: #456c76;
+  color:
+    #456c76;
 
-  font-size: 11px;
-  letter-spacing: 0.08em;
+  font-size:
+    11px;
+
+  letter-spacing:
+    0.08em;
 }
 
 
-/* =========================
-   FLASH EFFECT
-   ========================= */
+/* ==================================================
+   FLASH
+   ================================================== */
 
 .flash {
-  animation: flash 0.25s ease;
+  animation:
+    flash 0.25s;
 }
 
 @keyframes flash {
 
   50% {
     box-shadow:
-      0 0 35px rgba(80, 220, 255, 0.45),
-      inset 0 0 30px rgba(80, 220, 255, 0.15);
+      0 0 35px
+      rgba(80, 220, 255, 0.45),
+
+      inset 0 0 30px
+      rgba(80, 220, 255, 0.15);
   }
 
 }
 
 
-/* =========================
+/* ==================================================
    MOBILE
-   ========================= */
+   ================================================== */
 
 @media (max-width: 600px) {
 
   body {
-    padding: 12px;
+    padding:
+      12px;
   }
 
   .panel {
-    padding: 20px;
-  }
-
-  .header {
-    align-items: flex-start;
+    padding:
+      20px;
   }
 
   .buttons {
-    grid-template-columns: 1fr;
+    grid-template-columns:
+      1fr;
   }
 
   .controlButton {
-    min-height: 90px;
+    min-height:
+      90px;
   }
 
-  #message {
-    font-size: 20px;
-  }
-}
-
-
-@media (max-width: 380px) {
-
-  .panel {
-    padding: 15px;
-  }
-
-  #lockScreen {
-    padding: 20px;
-  }
-
-  h1 {
-    font-size: 24px;
-  }
 }
 </style>
 </head>
@@ -501,23 +766,41 @@ h1 {
 <body>
 
 
-<!-- =========================
+<!-- ==================================================
      LOGIN SCREEN
-     ========================= -->
+     ================================================== -->
 
 <div id="lockScreen">
 
-  <h1>ROOM CONTROL</h1>
+  <h1>
+    ROOM CONTROL
+  </h1>
 
   <div class="lockStatus">
     🔒 ACCESS LOCKED
   </div>
 
-  <div id="alarmMessage">
-    ⚠ MANIPULATION DETECTED ⚠<br><br>
-    Bitte geben Sie das richtige Passwort ein,
-    um den Alarm zu deaktivieren.
+
+  <div
+    id="securityStatus"
+    class="securityStatus"
+  >
+    SECURITY STATUS: PROTECTED
   </div>
+
+
+  <div id="alarmMessage">
+
+    ⚠ MANIPULATIONSALARM ⚠
+
+    <br><br>
+
+    Bitte geben Sie das richtige
+    Passwort ein, um den Alarm
+    zu deaktivieren.
+
+  </div>
+
 
   <input
     id="usernameInput"
@@ -527,6 +810,7 @@ h1 {
     placeholder="USERNAME"
     spellcheck="false"
   >
+
 
   <input
     id="pinInput"
@@ -538,6 +822,7 @@ h1 {
     placeholder="PIN"
   >
 
+
   <button
     id="unlockButton"
     type="button"
@@ -545,30 +830,104 @@ h1 {
     UNLOCK
   </button>
 
+
   <div id="pinError"></div>
+
+
+  <div id="lockoutBox">
+
+    🔒 SECURITY LOCKDOWN
+
+    <br><br>
+
+    Zu viele fehlgeschlagene
+    Anmeldeversuche.
+
+    <br><br>
+
+    Neuer Versuch möglich in:
+
+    <br>
+
+    <strong id="lockoutTimer">
+      0
+    </strong>
+
+    Sekunden
+
+  </div>
 
 </div>
 
 
-<!-- =========================
+<!-- ==================================================
      ROOM CONTROL
-     ========================= -->
+     ================================================== -->
 
 <main
   class="panel"
   id="panel"
-  style="display: none;"
+  style="display:none;"
 >
+
 
   <div class="header">
 
-    <h1>ROOM CONTROL</h1>
+    <h1>
+      ROOM CONTROL
+    </h1>
 
     <div class="online">
       ● ONLINE
     </div>
 
   </div>
+
+
+  <section class="securityPanel">
+
+    <div class="securityRow">
+
+      <span>
+        SECURITY
+      </span>
+
+      <span
+        id="securityPanelStatus"
+        class="securityGood"
+      >
+        PROTECTED
+      </span>
+
+    </div>
+
+
+    <div class="securityRow">
+
+      <span>
+        SESSION
+      </span>
+
+      <span id="sessionStatus">
+        ACTIVE
+      </span>
+
+    </div>
+
+
+    <div class="securityRow">
+
+      <span>
+        FAILED ATTEMPTS
+      </span>
+
+      <span id="attemptDisplay">
+        0
+      </span>
+
+    </div>
+
+  </section>
 
 
   <section class="screen">
@@ -586,13 +945,19 @@ h1 {
 
   <section class="buttons">
 
+
     <button
       id="power"
       class="controlButton"
       type="button"
     >
-      <span>⏻</span>
+
+      <span>
+        ⏻
+      </span>
+
       POWER
+
     </button>
 
 
@@ -601,8 +966,13 @@ h1 {
       class="controlButton"
       type="button"
     >
-      <span>＋</span>
+
+      <span>
+        ＋
+      </span>
+
       BIOHAZARD
+
     </button>
 
 
@@ -611,8 +981,13 @@ h1 {
       class="controlButton"
       type="button"
     >
-      <span>−</span>
+
+      <span>
+        −
+      </span>
+
       ERROR
+
     </button>
 
   </section>
@@ -629,7 +1004,6 @@ h1 {
       max="1"
       step="0.01"
       value="0.8"
-      aria-label="Lautstärke"
     >
 
   </div>
@@ -640,20 +1014,26 @@ h1 {
     class="logout"
     type="button"
   >
+
     🔒 ABMELDEN
+
   </button>
 
 
   <div class="footer">
-    ROOM ACCESS CONTROL • LOCAL INTERFACE
+
+    ROOM ACCESS CONTROL
+    •
+    LOCAL INTERFACE
+
   </div>
 
 </main>
 
 
-<!-- =========================
+<!-- ==================================================
      AUDIO
-     ========================= -->
+     ================================================== -->
 
 <audio
   id="accessGranted"
@@ -673,86 +1053,201 @@ h1 {
 "use strict";
 
 
-/* =========================
-   LOGIN DATEN
-   ========================= */
-
-const correctUsername = "admin";
-const correctPIN = "7392";
+/* ==================================================
+   LOGIN
+   ================================================== */
 
 
-/* =========================
+/*
+ * GitHub-Pages-Version:
+ *
+ * Die Zugangsdaten werden hier lokal geprüft.
+ *
+ * WICHTIG:
+ * Das ist KEINE echte serverseitige Sicherheit.
+ *
+ * Für einen echten Schutz müsste die Prüfung
+ * später über ein Backend erfolgen.
+ */
+
+const correctUsername =
+  "admin";
+
+const correctPIN =
+  "7392";
+
+
+/* ==================================================
    ELEMENTE
-   ========================= */
+   ================================================== */
 
 const lockScreen =
-  document.getElementById("lockScreen");
+  document.getElementById(
+    "lockScreen"
+  );
 
 const usernameInput =
-  document.getElementById("usernameInput");
+  document.getElementById(
+    "usernameInput"
+  );
 
 const pinInput =
-  document.getElementById("pinInput");
+  document.getElementById(
+    "pinInput"
+  );
 
 const unlockButton =
-  document.getElementById("unlockButton");
+  document.getElementById(
+    "unlockButton"
+  );
 
 const pinError =
-  document.getElementById("pinError");
+  document.getElementById(
+    "pinError"
+  );
+
+const securityStatus =
+  document.getElementById(
+    "securityStatus"
+  );
 
 const alarmMessage =
-  document.getElementById("alarmMessage");
+  document.getElementById(
+    "alarmMessage"
+  );
+
+const lockoutBox =
+  document.getElementById(
+    "lockoutBox"
+  );
+
+const lockoutTimer =
+  document.getElementById(
+    "lockoutTimer"
+  );
 
 const panel =
-  document.getElementById("panel");
-
-const accessGranted =
-  document.getElementById("accessGranted");
-
-const biohazard =
-  document.getElementById("biohazard");
-
-const volume =
-  document.getElementById("volume");
+  document.getElementById(
+    "panel"
+  );
 
 const message =
-  document.getElementById("message");
+  document.getElementById(
+    "message"
+  );
 
 const detail =
-  document.getElementById("detail");
+  document.getElementById(
+    "detail"
+  );
+
+const securityPanelStatus =
+  document.getElementById(
+    "securityPanelStatus"
+  );
+
+const sessionStatus =
+  document.getElementById(
+    "sessionStatus"
+  );
+
+const attemptDisplay =
+  document.getElementById(
+    "attemptDisplay"
+  );
+
+const accessGranted =
+  document.getElementById(
+    "accessGranted"
+  );
+
+const biohazard =
+  document.getElementById(
+    "biohazard"
+  );
+
+const volume =
+  document.getElementById(
+    "volume"
+  );
 
 const powerButton =
-  document.getElementById("power");
+  document.getElementById(
+    "power"
+  );
 
 const biohazardButton =
-  document.getElementById("plus");
+  document.getElementById(
+    "plus"
+  );
 
 const errorButton =
-  document.getElementById("minus");
+  document.getElementById(
+    "minus"
+  );
 
 const logoutButton =
-  document.getElementById("logoutButton");
+  document.getElementById(
+    "logoutButton"
+  );
 
 
-/* =========================
-   ALARM STATUS
-   ========================= */
+/* ==================================================
+   SECURITY VARIABLEN
+   ================================================== */
 
-let manipulationAlarmActive = false;
+let failedAttempts =
+  0;
 
-let alarmInterval = null;
+let alarmActive =
+  false;
+
+let lockedUntil =
+  0;
+
+let lockoutInterval =
+  null;
+
+let alarmInterval =
+  null;
+
+let sessionTimer =
+  null;
+
+let audioContext =
+  null;
 
 
-/* =========================
+/*
+ * Automatische Abmeldung
+ * nach 10 Minuten ohne Aktivität.
+ */
+
+const SESSION_TIMEOUT =
+  10 * 60 * 1000;
+
+
+/*
+ * Ab 3 Fehlversuchen
+ * beginnt die Sperre.
+ */
+
+const LOCKOUT_AFTER =
+  3;
+
+
+/*
+ * Erste Sperre:
+ * 30 Sekunden.
+ */
+
+const BASE_LOCKOUT =
+  30;
+
+
+/* ==================================================
    AUDIO CONTEXT
-   ========================= */
-
-let audioContext = null;
-
-
-/* =========================
-   AUDIO CONTEXT
-   ========================= */
+   ================================================== */
 
 function getAudioContext() {
 
@@ -760,9 +1255,11 @@ function getAudioContext() {
     window.AudioContext ||
     window.webkitAudioContext;
 
+
   if (!AudioContextClass) {
     return null;
   }
+
 
   if (!audioContext) {
 
@@ -771,34 +1268,45 @@ function getAudioContext() {
 
   }
 
+
   if (
-    audioContext.state === "suspended"
+    audioContext.state ===
+    "suspended"
   ) {
 
-    audioContext.resume().catch(() => {});
+    audioContext
+      .resume()
+      .catch(() => {});
 
   }
+
 
   return audioContext;
 }
 
 
-/* =========================
+/* ==================================================
    LAUTSTÄRKE
-   ========================= */
+   ================================================== */
 
 function getVolume() {
 
   const value =
-    Number(volume.value);
+    Number(
+      volume.value
+    );
+
 
   if (
     Number.isFinite(value) &&
     value >= 0 &&
     value <= 1
   ) {
+
     return value;
+
   }
+
 
   return 0.8;
 }
@@ -809,6 +1317,7 @@ function updateAudioVolume() {
   const currentVolume =
     getVolume();
 
+
   accessGranted.volume =
     currentVolume;
 
@@ -817,75 +1326,83 @@ function updateAudioVolume() {
 }
 
 
-/* =========================
-   NORMALE AUDIO STOPPEN
-   ========================= */
+/* ==================================================
+   AUDIO STOPPEN
+   ================================================== */
 
 function stopAllAudio() {
 
   [
     accessGranted,
     biohazard
-  ].forEach(sound => {
+  ].forEach(
+    sound => {
 
-    try {
+      try {
 
-      sound.pause();
-      sound.currentTime = 0;
+        sound.pause();
 
-    } catch (error) {
+        sound.currentTime =
+          0;
 
-      console.warn(
-        "Audio konnte nicht zurückgesetzt werden:",
-        error
-      );
+      }
+
+      catch (_) {}
 
     }
-
-  });
+  );
 }
 
 
-/* =========================
+/* ==================================================
    MANIPULATIONSALARM
-   ========================= */
+   ================================================== */
 
-function playManipulationAlarmTone() {
+function playAlarmTone() {
 
   const ctx =
     getAudioContext();
+
 
   if (!ctx) {
     return;
   }
 
+
   const now =
     ctx.currentTime;
+
 
   const master =
     ctx.createGain();
 
+
   master.gain.value =
-    getVolume() * 0.32;
+    getVolume() * 0.3;
+
 
   master.connect(
     ctx.destination
   );
 
 
-  /*
-   * Kurzer zweistufiger Alarmton.
-   * Er wird regelmäßig wiederholt.
-   */
+  const notes = [
+    {
+      frequency: 880,
+      start: 0,
+      duration: 0.13
+    },
 
-  const frequencies = [
-    880,
-    660
+    {
+      frequency: 660,
+      start: 0.18,
+      duration: 0.13
+    }
   ];
 
 
-  frequencies.forEach(
-    (frequency, index) => {
+  notes.forEach(
+    note => {
 
       const oscillator =
         ctx.createOscillator();
@@ -893,60 +1410,75 @@ function playManipulationAlarmTone() {
       const gain =
         ctx.createGain();
 
+
       const start =
-        now + index * 0.18;
+        now + note.start;
 
       const end =
-        start + 0.14;
+        start + note.duration;
 
 
       oscillator.type =
         "square";
 
-      oscillator.frequency.setValueAtTime(
-        frequency,
+
+      oscillator.frequency
+        .setValueAtTime(
+          note.frequency,
+          start
+        );
+
+
+      gain.gain
+        .setValueAtTime(
+          0.001,
+          start
+        );
+
+
+      gain.gain
+        .exponentialRampToValueAtTime(
+          0.8,
+          start + 0.01
+        );
+
+
+      gain.gain
+        .exponentialRampToValueAtTime(
+          0.001,
+          end
+        );
+
+
+      oscillator.connect(
+        gain
+      );
+
+      gain.connect(
+        master
+      );
+
+
+      oscillator.start(
         start
       );
 
-
-      gain.gain.setValueAtTime(
-        0.001,
-        start
-      );
-
-      gain.gain.exponentialRampToValueAtTime(
-        0.8,
-        start + 0.01
-      );
-
-      gain.gain.exponentialRampToValueAtTime(
-        0.001,
+      oscillator.stop(
         end
       );
-
-
-      oscillator.connect(gain);
-      gain.connect(master);
-
-
-      oscillator.start(start);
-      oscillator.stop(end);
 
     }
   );
 }
 
 
-/* =========================
-   ALARM STARTEN
-   ========================= */
+/* ==================================================
+   MANIPULATIONSALARM STARTEN
+   ================================================== */
 
-function startManipulationAlarm() {
+function startAlarm() {
 
-  getAudioContext();
-
-
-  manipulationAlarmActive =
+  alarmActive =
     true;
 
 
@@ -955,59 +1487,15 @@ function startManipulationAlarm() {
   );
 
 
+  securityStatus.textContent =
+    "SECURITY STATUS: ALERT";
+
+
   pinError.textContent =
-    "MANIPULATION ALARM AKTIV";
+    "⚠ MANIPULATIONSALARM AKTIV";
 
 
-  usernameInput.value = "";
-  pinInput.value = "";
-
-
-  message.textContent =
-    "MANIPULATION DETECTED";
-
-
-  detail.textContent =
-    "Bitte geben Sie das richtige Passwort ein, um den Alarm zu deaktivieren.";
-
-
-  playManipulationAlarmTone();
-
-
-  if (alarmInterval !== null) {
-    clearInterval(alarmInterval);
-  }
-
-
-  alarmInterval =
-    window.setInterval(
-      () => {
-
-        if (
-          manipulationAlarmActive
-        ) {
-
-          playManipulationAlarmTone();
-
-        }
-
-      },
-      900
-    );
-
-
-  pinInput.focus();
-}
-
-
-/* =========================
-   ALARM STOPPEN
-   ========================= */
-
-function stopManipulationAlarm() {
-
-  manipulationAlarmActive =
-    false;
+  playAlarmTone();
 
 
   if (alarmInterval !== null) {
@@ -1016,8 +1504,47 @@ function stopManipulationAlarm() {
       alarmInterval
     );
 
+  }
+
+
+  alarmInterval =
+    setInterval(
+      () => {
+
+        if (alarmActive) {
+
+          playAlarmTone();
+
+        }
+
+      },
+      1000
+    );
+}
+
+
+/* ==================================================
+   ALARM DEAKTIVIEREN
+   ================================================== */
+
+function stopAlarm() {
+
+  alarmActive =
+    false;
+
+
+  if (
+    alarmInterval !==
+    null
+  ) {
+
+    clearInterval(
+      alarmInterval
+    );
+
     alarmInterval =
       null;
+
   }
 
 
@@ -1026,8 +1553,247 @@ function stopManipulationAlarm() {
   );
 
 
+  securityStatus.textContent =
+    "SECURITY STATUS: PROTECTED";
+
+
   pinError.textContent =
     "";
+}
+
+
+/* ==================================================
+   LOCKDOWN STARTEN
+   ================================================== */
+
+function startLockout() {
+
+  /*
+   * Die Sperre wird mit jedem
+   * weiteren Fehlversuch länger.
+   *
+   * 3 Versuche = 30 Sekunden
+   * 4 Versuche = 60 Sekunden
+   * 5 Versuche = 90 Sekunden
+   */
+
+  const seconds =
+    BASE_LOCKOUT *
+    Math.max(
+      1,
+      failedAttempts -
+      2
+    );
+
+
+  lockedUntil =
+    Date.now() +
+    seconds * 1000;
+
+
+  unlockButton.disabled =
+    true;
+
+
+  lockoutBox.classList.add(
+    "active"
+  );
+
+
+  updateLockoutDisplay();
+
+
+  if (
+    lockoutInterval !==
+    null
+  ) {
+
+    clearInterval(
+      lockoutInterval
+    );
+
+  }
+
+
+  lockoutInterval =
+    setInterval(
+      updateLockoutDisplay,
+      250
+    );
+}
+
+
+/* ==================================================
+   LOCKDOWN ANZEIGE
+   ================================================== */
+
+function updateLockoutDisplay() {
+
+  const remaining =
+    Math.max(
+      0,
+      lockedUntil -
+      Date.now()
+    );
+
+
+  const seconds =
+    Math.ceil(
+      remaining / 1000
+    );
+
+
+  lockoutTimer.textContent =
+    seconds;
+
+
+  if (
+    remaining <= 0
+  ) {
+
+    clearInterval(
+      lockoutInterval
+    );
+
+
+    lockoutInterval =
+      null;
+
+
+    lockoutBox.classList.remove(
+      "active"
+    );
+
+
+    unlockButton.disabled =
+      false;
+
+
+    pinError.textContent =
+      "LOCKDOWN BEENDET – LOGIN WIEDER MÖGLICH";
+
+  }
+}
+
+
+/* ==================================================
+   LOGIN
+   ================================================== */
+
+function unlock() {
+
+  /*
+   * Audio-Kontext durch
+   * Benutzeraktion freischalten.
+   */
+
+  getAudioContext();
+
+
+  /*
+   * Prüfen, ob gerade
+   * eine Sperrzeit läuft.
+   */
+
+  if (
+    Date.now() <
+    lockedUntil
+  ) {
+
+    updateLockoutDisplay();
+
+    return;
+
+  }
+
+
+  const username =
+    usernameInput.value.trim();
+
+  const pin =
+    pinInput.value;
+
+
+  /*
+   * KORREKTER LOGIN
+   */
+
+  if (
+    username ===
+      correctUsername &&
+
+    pin ===
+      correctPIN
+  ) {
+
+    stopAlarm();
+
+
+    failedAttempts =
+      0;
+
+
+    attemptDisplay.textContent =
+      "0";
+
+
+    lockScreen.style.display =
+      "none";
+
+
+    panel.style.display =
+      "block";
+
+
+    sessionStatus.textContent =
+      "ACTIVE";
+
+
+    securityPanelStatus.textContent =
+      "PROTECTED";
+
+    securityPanelStatus.className =
+      "securityGood";
+
+
+    updateAudioVolume();
+
+
+    message.textContent =
+      "ACCESS GRANTED";
+
+
+    detail.textContent =
+      "Authentication successful.";
+
+
+    accessGranted.currentTime =
+      0;
+
+
+    accessGranted
+      .play()
+      .catch(
+        () => {}
+      );
+
+
+    resetSessionTimer();
+
+    return;
+
+  }
+
+
+  /*
+   * FALSCHER LOGIN
+   */
+
+  failedAttempts++;
+
+
+  attemptDisplay.textContent =
+    failedAttempts;
 
 
   usernameInput.value =
@@ -1035,220 +1801,138 @@ function stopManipulationAlarm() {
 
   pinInput.value =
     "";
-}
 
 
-/* =========================
-   FEHLERTON
-   ========================= */
+  pinError.textContent =
+    "ACCESS DENIED";
 
-function playErrorSound() {
 
-  const ctx =
-    getAudioContext();
+  startAlarm();
 
-  if (!ctx) {
-    return;
+
+  /*
+   * Nach mehreren Fehlversuchen
+   * zusätzlich sperren.
+   */
+
+  if (
+    failedAttempts >=
+    LOCKOUT_AFTER
+  ) {
+
+    startLockout();
+
   }
 
-  const now =
-    ctx.currentTime;
 
-  const masterGain =
-    ctx.createGain();
-
-  masterGain.gain.value =
-    getVolume() * 0.25;
-
-  masterGain.connect(
-    ctx.destination
-  );
-
-
-  const notes = [
-    {
-      frequency: 700,
-      start: 0.00,
-      duration: 0.10
-    },
-
-    {
-      frequency: 700,
-      start: 0.13,
-      duration: 0.10
-    },
-
-    {
-      frequency: 350,
-      start: 0.26,
-      duration: 0.22
-    }
-  ];
-
-
-  notes.forEach(note => {
-
-    const oscillator =
-      ctx.createOscillator();
-
-    const gain =
-      ctx.createGain();
-
-    const start =
-      now + note.start;
-
-    const end =
-      start + note.duration;
-
-
-    oscillator.type =
-      "square";
-
-    oscillator.frequency.setValueAtTime(
-      note.frequency,
-      start
-    );
-
-
-    gain.gain.setValueAtTime(
-      0.8,
-      start
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.001,
-      end
-    );
-
-
-    oscillator.connect(gain);
-    gain.connect(masterGain);
-
-
-    oscillator.start(start);
-    oscillator.stop(end);
-
-  });
+  pinInput.focus();
 }
 
 
-/* =========================
-   ABMELDETON
-   ========================= */
+/* ==================================================
+   SESSION TIMER
+   ================================================== */
 
-function playLogoutSound() {
+function resetSessionTimer() {
 
-  const ctx =
-    getAudioContext();
+  if (
+    sessionTimer !==
+    null
+  ) {
 
-  if (!ctx) {
-    return;
+    clearTimeout(
+      sessionTimer
+    );
+
   }
 
-  const now =
-    ctx.currentTime;
 
-  const masterGain =
-    ctx.createGain();
+  if (
+    panel.style.display !==
+    "none"
+  ) {
 
-  masterGain.gain.value =
-    getVolume() * 0.22;
+    sessionTimer =
+      setTimeout(
+        automaticLogout,
+        SESSION_TIMEOUT
+      );
 
-  masterGain.connect(
-    ctx.destination
-  );
-
-
-  const notes = [
-    {
-      frequency: 880,
-      start: 0.00,
-      duration: 0.10
-    },
-
-    {
-      frequency: 660,
-      start: 0.13,
-      duration: 0.10
-    },
-
-    {
-      frequency: 440,
-      start: 0.26,
-      duration: 0.22
-    }
-  ];
-
-
-  notes.forEach(note => {
-
-    const oscillator =
-      ctx.createOscillator();
-
-    const gain =
-      ctx.createGain();
-
-    const start =
-      now + note.start;
-
-    const end =
-      start + note.duration;
-
-
-    oscillator.type =
-      "square";
-
-    oscillator.frequency.setValueAtTime(
-      note.frequency,
-      start
-    );
-
-
-    gain.gain.setValueAtTime(
-      0.8,
-      start
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.001,
-      end
-    );
-
-
-    oscillator.connect(gain);
-    gain.connect(masterGain);
-
-
-    oscillator.start(start);
-    oscillator.stop(end);
-
-  });
+  }
 }
 
 
-/* =========================
-   PANEL FLASH
-   ========================= */
+/* ==================================================
+   AUTOMATISCHE ABMELDUNG
+   ================================================== */
 
-function flashPanel() {
+function automaticLogout() {
 
-  panel.classList.remove(
-    "flash"
-  );
+  stopAllAudio();
 
-  void panel.offsetWidth;
 
-  panel.classList.add(
-    "flash"
-  );
+  panel.style.display =
+    "none";
+
+
+  lockScreen.style.display =
+    "block";
+
+
+  sessionStatus.textContent =
+    "EXPIRED";
+
+
+  securityStatus.textContent =
+    "SECURITY STATUS: PROTECTED";
+
+
+  usernameInput.value =
+    "";
+
+  pinInput.value =
+    "";
+
+
+  pinError.textContent =
+    "SESSION TIMEOUT – ERNEUTE ANMELDUNG ERFORDERLICH";
+
+
+  message.textContent =
+    "SESSION EXPIRED";
+
+
+  detail.textContent =
+    "Automatische Abmeldung wegen Inaktivität.";
+
+
+  usernameInput.focus();
 }
 
 
-/* =========================
-   NORMALES AUDIO
-   ========================= */
+/* ==================================================
+   POWER
+   ================================================== */
 
-async function playSound(
+powerButton.addEventListener(
+  "click",
+  () => {
+
+    playNormalSound(
+      accessGranted,
+      "ACCESS GRANTED",
+      "Door control command accepted."
+    );
+
+  }
+);
+
+
+/* ==================================================
+   NORMALE AUDIOFUNKTION
+   ================================================== */
+
+function playNormalSound(
   sound,
   title,
   description
@@ -1262,221 +1946,62 @@ async function playSound(
   message.textContent =
     title;
 
+
   detail.textContent =
     description;
 
 
-  flashPanel();
+  panel.classList.remove(
+    "flash"
+  );
 
 
-  try {
+  void panel.offsetWidth;
 
-    await sound.play();
 
-  } catch (error) {
+  panel.classList.add(
+    "flash"
+  );
 
-    console.warn(
-      "Audio konnte nicht abgespielt werden:",
-      error
+
+  sound.currentTime =
+    0;
+
+
+  sound.play()
+    .catch(
+      () => {
+
+        detail.textContent =
+          "Audio konnte nicht abgespielt werden.";
+
+      }
     );
-
-    detail.textContent =
-      "Audio konnte nicht abgespielt werden.";
-  }
 }
 
 
-/* =========================
-   LOGIN
-   ========================= */
-
-function unlock() {
-
-  getAudioContext();
-
-
-  const username =
-    usernameInput.value.trim();
-
-  const pin =
-    pinInput.value;
-
-
-  /*
-   * RICHTIGE DATEN
-   */
-
-  if (
-    username === correctUsername &&
-    pin === correctPIN
-  ) {
-
-    /*
-     * Alarm sofort deaktivieren.
-     */
-
-    stopManipulationAlarm();
-
-
-    /*
-     * Login öffnen.
-     */
-
-    lockScreen.style.display =
-      "none";
-
-    panel.style.display =
-      "block";
-
-
-    updateAudioVolume();
-
-
-    message.textContent =
-      "ACCESS GRANTED";
-
-    detail.textContent =
-      "Authentication successful.";
-
-
-    accessGranted.currentTime =
-      0;
-
-
-    accessGranted.play()
-      .catch(error => {
-
-        console.warn(
-          "Access-Sound konnte nicht abgespielt werden:",
-          error
-        );
-
-      });
-
-
-    return;
-  }
-
-
-  /*
-   * FALSCHE DATEN
-   */
-
-  pinError.textContent =
-    "ACCESS DENIED";
-
-
-  startManipulationAlarm();
-
-}
-
-
-/* =========================
-   UNLOCK BUTTON
-   ========================= */
-
-unlockButton.addEventListener(
-  "click",
-  unlock
-);
-
-
-/* =========================
-   ENTER IM PIN
-   ========================= */
-
-pinInput.addEventListener(
-  "keydown",
-  event => {
-
-    if (event.key === "Enter") {
-
-      event.preventDefault();
-
-      unlock();
-
-    }
-
-  }
-);
-
-
-/* =========================
-   ENTER IM USERNAME
-   ========================= */
-
-usernameInput.addEventListener(
-  "keydown",
-  event => {
-
-    if (event.key === "Enter") {
-
-      event.preventDefault();
-
-      pinInput.focus();
-
-    }
-
-  }
-);
-
-
-/* =========================
-   POWER
-   ========================= */
-
-powerButton.addEventListener(
-  "click",
-  () => {
-
-    getAudioContext();
-
-    playSound(
-      accessGranted,
-      "ACCESS GRANTED",
-      "Door control command accepted."
-    );
-
-  }
-);
-
-
-/* =========================
+/* ==================================================
    BIOHAZARD
-   ========================= */
+   ================================================== */
 
 biohazardButton.addEventListener(
   "click",
-  async () => {
+  () => {
 
-    getAudioContext();
-
-
-    await playSound(
+    playNormalSound(
       biohazard,
       "WARNING",
       "WARNING: Biological hazard detected."
     );
 
 
-    window.setTimeout(
+    setTimeout(
       () => {
 
-        try {
+        biohazard.pause();
 
-          biohazard.pause();
-
-          biohazard.currentTime =
-            0;
-
-        } catch (error) {
-
-          console.warn(
-            "Biohazard-Audio konnte nicht gestoppt werden:",
-            error
-          );
-
-        }
+        biohazard.currentTime =
+          0;
 
       },
       3000
@@ -1486,9 +2011,9 @@ biohazardButton.addEventListener(
 );
 
 
-/* =========================
+/* ==================================================
    ERROR BUTTON
-   ========================= */
+   ================================================== */
 
 errorButton.addEventListener(
   "click",
@@ -1496,41 +2021,64 @@ errorButton.addEventListener(
 
     getAudioContext();
 
-    stopAllAudio();
-
-    playErrorSound();
+    playAlarmTone();
 
 
     message.textContent =
       "ACCESS DENIED";
 
+
     detail.textContent =
       "Invalid control command.";
 
 
-    flashPanel();
+    panel.classList.remove(
+      "flash"
+    );
+
+
+    void panel.offsetWidth;
+
+
+    panel.classList.add(
+      "flash"
+    );
 
   }
 );
 
 
-/* =========================
-   ABMELDEN
-   ========================= */
+/* ==================================================
+   LOGOUT
+   ================================================== */
 
 logoutButton.addEventListener(
   "click",
   () => {
 
-    getAudioContext();
-
     stopAllAudio();
 
-    playLogoutSound();
+    stopAlarm();
+
+
+    if (
+      sessionTimer !==
+      null
+    ) {
+
+      clearTimeout(
+        sessionTimer
+      );
+
+      sessionTimer =
+        null;
+
+    }
 
 
     panel.style.display =
       "none";
+
 
     lockScreen.style.display =
       "block";
@@ -1542,33 +2090,32 @@ logoutButton.addEventListener(
     pinInput.value =
       "";
 
+
     pinError.textContent =
       "";
 
 
-    message.textContent =
-      "SYSTEM READY";
-
-    detail.textContent =
-      "Awaiting command...";
+    sessionStatus.textContent =
+      "INACTIVE";
 
 
-    window.setTimeout(
-      () => {
+    securityPanelStatus.textContent =
+      "PROTECTED";
 
-        usernameInput.focus();
 
-      },
-      50
-    );
+    securityPanelStatus.className =
+      "securityGood";
+
+
+    usernameInput.focus();
 
   }
 );
 
 
-/* =========================
+/* ==================================================
    LAUTSTÄRKE
-   ========================= */
+   ================================================== */
 
 volume.addEventListener(
   "input",
@@ -1576,37 +2123,90 @@ volume.addEventListener(
 );
 
 
-/* =========================
-   AUDIO FEHLER
-   ========================= */
+/* ==================================================
+   AKTIVITÄTSÜBERWACHUNG
+   ================================================== */
 
-accessGranted.addEventListener(
-  "error",
-  () => {
+[
+  "click",
+  "keydown",
+  "mousemove",
+  "touchstart"
+].forEach(
+  eventName => {
 
-    console.warn(
-      "Access-Granted-Audiodatei konnte nicht geladen werden."
+    document.addEventListener(
+      eventName,
+      () => {
+
+        if (
+          panel.style.display !==
+          "none"
+        ) {
+
+          resetSessionTimer();
+
+        }
+
+      },
+      {
+        passive: true
+      }
     );
 
   }
 );
 
 
-biohazard.addEventListener(
-  "error",
-  () => {
+/* ==================================================
+   ENTER USERNAME
+   ================================================== */
 
-    console.warn(
-      "Biohazard-Audiodatei konnte nicht geladen werden."
-    );
+usernameInput.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key ===
+      "Enter"
+    ) {
+
+      event.preventDefault();
+
+      pinInput.focus();
+
+    }
 
   }
 );
 
 
-/* =========================
-   START
-   ========================= */
+/* ==================================================
+   ENTER PIN
+   ================================================== */
+
+pinInput.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key ===
+      "Enter"
+    ) {
+
+      event.preventDefault();
+
+      unlock();
+
+    }
+
+  }
+);
+
+
+/* ==================================================
+   INITIALISIERUNG
+   ================================================== */
 
 updateAudioVolume();
 
