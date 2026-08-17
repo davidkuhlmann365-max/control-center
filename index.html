@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -11,18 +10,26 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
+  min-height: 100%;
+}
+
+body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 20px;
 
   background:
-    radial-gradient(circle at center,
+    radial-gradient(
+      circle at center,
       #12313d 0%,
       #071118 55%,
-      #02070a 100%);
+      #02070a 100%
+    );
 
   color: #d9faff;
   font-family: Arial, Helvetica, sans-serif;
@@ -47,18 +54,72 @@ body {
     inset 0 0 30px rgba(39, 123, 145, 0.05);
 
   text-align: center;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+#lockScreen.alarm {
+  border-color: #ff3b3b;
+
+  box-shadow:
+    0 0 35px rgba(255, 50, 50, 0.55),
+    inset 0 0 30px rgba(255, 50, 50, 0.12);
+
+  animation: alarmPulse 0.8s infinite;
+}
+
+@keyframes alarmPulse {
+  50% {
+    box-shadow:
+      0 0 55px rgba(255, 50, 50, 0.75),
+      inset 0 0 40px rgba(255, 50, 50, 0.2);
+  }
 }
 
 #lockScreen h1 {
   margin: 0 0 10px;
+
   font-size: 30px;
   letter-spacing: 0.12em;
 }
 
 .lockStatus {
+  margin-bottom: 20px;
+
   color: #6b9aa6;
   font-family: monospace;
-  margin-bottom: 20px;
+}
+
+#alarmMessage {
+  display: none;
+
+  margin: -5px 0 18px;
+  padding: 14px;
+
+  border: 1px solid #ff3b3b;
+  border-radius: 10px;
+
+  background: rgba(120, 0, 0, 0.18);
+
+  color: #ff5c5c;
+
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 1.5;
+
+  animation: alarmText 0.8s infinite;
+}
+
+#lockScreen.alarm #alarmMessage {
+  display: block;
+}
+
+@keyframes alarmText {
+  50% {
+    opacity: 0.55;
+  }
 }
 
 
@@ -69,7 +130,6 @@ body {
 .loginInput {
   width: 100%;
   padding: 15px;
-
   margin-bottom: 12px;
 
   border: 1px solid #286e80;
@@ -82,10 +142,17 @@ body {
   text-align: center;
 
   outline: none;
+
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
 
 .loginInput:focus {
   border-color: #70ddf5;
+
+  box-shadow:
+    0 0 10px rgba(112, 221, 245, 0.15);
 }
 
 #pinInput {
@@ -99,6 +166,8 @@ body {
 
 #unlockButton {
   width: 100%;
+  min-height: 55px;
+
   margin-top: 5px;
   padding: 15px;
 
@@ -114,14 +183,27 @@ body {
   font-weight: bold;
 
   cursor: pointer;
+
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.1s;
 }
 
 #unlockButton:hover {
   border-color: #70ddf5;
+
+  box-shadow:
+    0 0 15px rgba(70, 210, 240, 0.25);
+}
+
+#unlockButton:active {
+  transform: scale(0.98);
 }
 
 #pinError {
   min-height: 20px;
+
   margin-top: 15px;
 
   color: #ff6b6b;
@@ -146,25 +228,32 @@ body {
     0 0 30px rgba(39, 123, 145, 0.25),
     inset 0 0 30px rgba(39, 123, 145, 0.05);
 
-  transition: 0.2s;
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 15px;
 }
 
 h1 {
   margin: 0;
+
   font-size: clamp(26px, 5vw, 44px);
   letter-spacing: 0.15em;
 }
 
 .online {
   color: #67ff9b;
+
   font-size: 13px;
   letter-spacing: 0.12em;
+
+  white-space: nowrap;
 }
 
 
@@ -175,6 +264,7 @@ h1 {
 .screen {
   margin: 25px 0;
   padding: 22px;
+
   min-height: 115px;
 
   border: 1px solid #185266;
@@ -190,13 +280,16 @@ h1 {
 
 #message {
   display: block;
+
   font-size: 25px;
   letter-spacing: 0.08em;
 }
 
 #detail {
   margin-top: 10px;
+
   color: #6b9aa6;
+  line-height: 1.5;
 }
 
 
@@ -206,11 +299,14 @@ h1 {
 
 .buttons {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
   gap: 15px;
 }
 
-button {
+.controlButton {
   min-height: 120px;
 
   border: 1px solid #286e80;
@@ -232,7 +328,7 @@ button {
     inset 0 0 20px rgba(39, 123, 145, 0.08);
 }
 
-button:hover {
+.controlButton:hover {
   border-color: #70ddf5;
 
   box-shadow:
@@ -240,14 +336,16 @@ button:hover {
     inset 0 0 20px rgba(39, 123, 145, 0.15);
 }
 
-button:active {
+.controlButton:active {
   transform: scale(0.97);
 }
 
-button span {
+.controlButton span {
   display: block;
-  font-size: 42px;
+
   margin-bottom: 8px;
+
+  font-size: 42px;
 }
 
 
@@ -267,6 +365,7 @@ button span {
 
 .volume input {
   width: 100%;
+  cursor: pointer;
 }
 
 
@@ -295,6 +394,11 @@ button span {
 
   box-shadow:
     inset 0 0 15px rgba(39, 123, 145, 0.08);
+
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.1s;
 }
 
 .logout:hover {
@@ -302,6 +406,10 @@ button span {
 
   box-shadow:
     0 0 15px rgba(70, 210, 240, 0.25);
+}
+
+.logout:active {
+  transform: scale(0.98);
 }
 
 
@@ -326,7 +434,7 @@ button span {
    ========================= */
 
 .flash {
-  animation: flash 0.25s;
+  animation: flash 0.25s ease;
 }
 
 @keyframes flash {
@@ -346,14 +454,45 @@ button span {
 
 @media (max-width: 600px) {
 
+  body {
+    padding: 12px;
+  }
+
+  .panel {
+    padding: 20px;
+  }
+
+  .header {
+    align-items: flex-start;
+  }
+
   .buttons {
     grid-template-columns: 1fr;
   }
 
-  button {
+  .controlButton {
     min-height: 90px;
   }
 
+  #message {
+    font-size: 20px;
+  }
+}
+
+
+@media (max-width: 380px) {
+
+  .panel {
+    padding: 15px;
+  }
+
+  #lockScreen {
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
 }
 </style>
 </head>
@@ -374,6 +513,11 @@ button span {
     🔒 ACCESS LOCKED
   </div>
 
+  <div id="alarmMessage">
+    ⚠ MANIPULATION DETECTED ⚠<br><br>
+    Bitte geben Sie das richtige Passwort ein,
+    um den Alarm zu deaktivieren.
+  </div>
 
   <input
     id="usernameInput"
@@ -381,8 +525,8 @@ button span {
     type="text"
     autocomplete="username"
     placeholder="USERNAME"
+    spellcheck="false"
   >
-
 
   <input
     id="pinInput"
@@ -394,23 +538,27 @@ button span {
     placeholder="PIN"
   >
 
-
-  <button id="unlockButton">
+  <button
+    id="unlockButton"
+    type="button"
+  >
     UNLOCK
   </button>
-
 
   <div id="pinError"></div>
 
 </div>
 
 
-
 <!-- =========================
      ROOM CONTROL
      ========================= -->
 
-<main class="panel" id="panel" style="display:none;">
+<main
+  class="panel"
+  id="panel"
+  style="display: none;"
+>
 
   <div class="header">
 
@@ -438,33 +586,34 @@ button span {
 
   <section class="buttons">
 
-
-    <button id="power">
-
+    <button
+      id="power"
+      class="controlButton"
+      type="button"
+    >
       <span>⏻</span>
-
       POWER
-
     </button>
 
 
-    <button id="plus">
-
+    <button
+      id="plus"
+      class="controlButton"
+      type="button"
+    >
       <span>＋</span>
-
       BIOHAZARD
-
     </button>
 
 
-    <button id="minus">
-
+    <button
+      id="minus"
+      class="controlButton"
+      type="button"
+    >
       <span>−</span>
-
       ERROR
-
     </button>
-
 
   </section>
 
@@ -480,26 +629,26 @@ button span {
       max="1"
       step="0.01"
       value="0.8"
+      aria-label="Lautstärke"
     >
 
   </div>
 
 
-  <button id="logoutButton" class="logout">
-
+  <button
+    id="logoutButton"
+    class="logout"
+    type="button"
+  >
     🔒 ABMELDEN
-
   </button>
 
 
   <div class="footer">
-
     ROOM ACCESS CONTROL • LOCAL INTERFACE
-
   </div>
 
 </main>
-
 
 
 <!-- =========================
@@ -509,29 +658,32 @@ button span {
 <audio
   id="accessGranted"
   preload="auto"
-  src="https://cdn.pixabay.com/download/audio/2026/05/15/audio_f1f7fd4449.mp3?filename=soundshelfstudio-ui-system-access-granted-534603.mp3">
-</audio>
+  src="https://cdn.pixabay.com/download/audio/2026/05/15/audio_f1f7fd4449.mp3?filename=soundshelfstudio-ui-system-access-granted-534603.mp3"
+></audio>
 
 
 <audio
   id="biohazard"
   preload="auto"
-  src="https://cdn.pixabay.com/download/audio/2026/06/02/audio_26933dce5c.mp3?filename=tithuh-warning-545568.mp3">
-</audio>
-
+  src="https://cdn.pixabay.com/download/audio/2026/06/02/audio_26933dce5c.mp3?filename=tithuh-warning-545568.mp3"
+></audio>
 
 
 <script>
+"use strict";
 
 
 /* =========================
-   LOGIN-SYSTEM
+   LOGIN DATEN
    ========================= */
 
 const correctUsername = "admin";
-
 const correctPIN = "7392";
 
+
+/* =========================
+   ELEMENTE
+   ========================= */
 
 const lockScreen =
   document.getElementById("lockScreen");
@@ -548,13 +700,11 @@ const unlockButton =
 const pinError =
   document.getElementById("pinError");
 
+const alarmMessage =
+  document.getElementById("alarmMessage");
+
 const panel =
   document.getElementById("panel");
-
-
-/* =========================
-   AUDIO
-   ========================= */
 
 const accessGranted =
   document.getElementById("accessGranted");
@@ -571,6 +721,27 @@ const message =
 const detail =
   document.getElementById("detail");
 
+const powerButton =
+  document.getElementById("power");
+
+const biohazardButton =
+  document.getElementById("plus");
+
+const errorButton =
+  document.getElementById("minus");
+
+const logoutButton =
+  document.getElementById("logoutButton");
+
+
+/* =========================
+   ALARM STATUS
+   ========================= */
+
+let manipulationAlarmActive = false;
+
+let alarmInterval = null;
+
 
 /* =========================
    AUDIO CONTEXT
@@ -579,32 +750,291 @@ const detail =
 let audioContext = null;
 
 
+/* =========================
+   AUDIO CONTEXT
+   ========================= */
+
 function getAudioContext() {
 
-  const AudioContext =
+  const AudioContextClass =
     window.AudioContext ||
     window.webkitAudioContext;
 
-  if (!AudioContext) {
+  if (!AudioContextClass) {
     return null;
   }
 
   if (!audioContext) {
+
     audioContext =
-      new AudioContext();
+      new AudioContextClass();
+
   }
 
   if (
-    audioContext.state ===
-    "suspended"
+    audioContext.state === "suspended"
   ) {
 
-    audioContext.resume();
+    audioContext.resume().catch(() => {});
 
   }
 
   return audioContext;
+}
 
+
+/* =========================
+   LAUTSTÄRKE
+   ========================= */
+
+function getVolume() {
+
+  const value =
+    Number(volume.value);
+
+  if (
+    Number.isFinite(value) &&
+    value >= 0 &&
+    value <= 1
+  ) {
+    return value;
+  }
+
+  return 0.8;
+}
+
+
+function updateAudioVolume() {
+
+  const currentVolume =
+    getVolume();
+
+  accessGranted.volume =
+    currentVolume;
+
+  biohazard.volume =
+    currentVolume;
+}
+
+
+/* =========================
+   NORMALE AUDIO STOPPEN
+   ========================= */
+
+function stopAllAudio() {
+
+  [
+    accessGranted,
+    biohazard
+  ].forEach(sound => {
+
+    try {
+
+      sound.pause();
+      sound.currentTime = 0;
+
+    } catch (error) {
+
+      console.warn(
+        "Audio konnte nicht zurückgesetzt werden:",
+        error
+      );
+
+    }
+
+  });
+}
+
+
+/* =========================
+   MANIPULATIONSALARM
+   ========================= */
+
+function playManipulationAlarmTone() {
+
+  const ctx =
+    getAudioContext();
+
+  if (!ctx) {
+    return;
+  }
+
+  const now =
+    ctx.currentTime;
+
+  const master =
+    ctx.createGain();
+
+  master.gain.value =
+    getVolume() * 0.32;
+
+  master.connect(
+    ctx.destination
+  );
+
+
+  /*
+   * Kurzer zweistufiger Alarmton.
+   * Er wird regelmäßig wiederholt.
+   */
+
+  const frequencies = [
+    880,
+    660
+  ];
+
+
+  frequencies.forEach(
+    (frequency, index) => {
+
+      const oscillator =
+        ctx.createOscillator();
+
+      const gain =
+        ctx.createGain();
+
+      const start =
+        now + index * 0.18;
+
+      const end =
+        start + 0.14;
+
+
+      oscillator.type =
+        "square";
+
+      oscillator.frequency.setValueAtTime(
+        frequency,
+        start
+      );
+
+
+      gain.gain.setValueAtTime(
+        0.001,
+        start
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.8,
+        start + 0.01
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        end
+      );
+
+
+      oscillator.connect(gain);
+      gain.connect(master);
+
+
+      oscillator.start(start);
+      oscillator.stop(end);
+
+    }
+  );
+}
+
+
+/* =========================
+   ALARM STARTEN
+   ========================= */
+
+function startManipulationAlarm() {
+
+  getAudioContext();
+
+
+  manipulationAlarmActive =
+    true;
+
+
+  lockScreen.classList.add(
+    "alarm"
+  );
+
+
+  pinError.textContent =
+    "MANIPULATION ALARM AKTIV";
+
+
+  usernameInput.value = "";
+  pinInput.value = "";
+
+
+  message.textContent =
+    "MANIPULATION DETECTED";
+
+
+  detail.textContent =
+    "Bitte geben Sie das richtige Passwort ein, um den Alarm zu deaktivieren.";
+
+
+  playManipulationAlarmTone();
+
+
+  if (alarmInterval !== null) {
+    clearInterval(alarmInterval);
+  }
+
+
+  alarmInterval =
+    window.setInterval(
+      () => {
+
+        if (
+          manipulationAlarmActive
+        ) {
+
+          playManipulationAlarmTone();
+
+        }
+
+      },
+      900
+    );
+
+
+  pinInput.focus();
+}
+
+
+/* =========================
+   ALARM STOPPEN
+   ========================= */
+
+function stopManipulationAlarm() {
+
+  manipulationAlarmActive =
+    false;
+
+
+  if (alarmInterval !== null) {
+
+    clearInterval(
+      alarmInterval
+    );
+
+    alarmInterval =
+      null;
+  }
+
+
+  lockScreen.classList.remove(
+    "alarm"
+  );
+
+
+  pinError.textContent =
+    "";
+
+
+  usernameInput.value =
+    "";
+
+  pinInput.value =
+    "";
 }
 
 
@@ -621,13 +1051,21 @@ function playErrorSound() {
     return;
   }
 
-
   const now =
     ctx.currentTime;
 
+  const masterGain =
+    ctx.createGain();
+
+  masterGain.gain.value =
+    getVolume() * 0.25;
+
+  masterGain.connect(
+    ctx.destination
+  );
+
 
   const notes = [
-
     {
       frequency: 700,
       start: 0.00,
@@ -645,7 +1083,6 @@ function playErrorSound() {
       start: 0.26,
       duration: 0.22
     }
-
   ];
 
 
@@ -657,14 +1094,6 @@ function playErrorSound() {
     const gain =
       ctx.createGain();
 
-
-    oscillator.type =
-      "square";
-
-    oscillator.frequency.value =
-      note.frequency;
-
-
     const start =
       now + note.start;
 
@@ -672,11 +1101,19 @@ function playErrorSound() {
       start + note.duration;
 
 
-    gain.gain.setValueAtTime(
-      Number(volume.value) * 0.22,
+    oscillator.type =
+      "square";
+
+    oscillator.frequency.setValueAtTime(
+      note.frequency,
       start
     );
 
+
+    gain.gain.setValueAtTime(
+      0.8,
+      start
+    );
 
     gain.gain.exponentialRampToValueAtTime(
       0.001,
@@ -685,18 +1122,13 @@ function playErrorSound() {
 
 
     oscillator.connect(gain);
-
-    gain.connect(
-      ctx.destination
-    );
+    gain.connect(masterGain);
 
 
     oscillator.start(start);
-
     oscillator.stop(end);
 
   });
-
 }
 
 
@@ -713,13 +1145,21 @@ function playLogoutSound() {
     return;
   }
 
-
   const now =
     ctx.currentTime;
 
+  const masterGain =
+    ctx.createGain();
+
+  masterGain.gain.value =
+    getVolume() * 0.22;
+
+  masterGain.connect(
+    ctx.destination
+  );
+
 
   const notes = [
-
     {
       frequency: 880,
       start: 0.00,
@@ -737,7 +1177,6 @@ function playLogoutSound() {
       start: 0.26,
       duration: 0.22
     }
-
   ];
 
 
@@ -749,14 +1188,6 @@ function playLogoutSound() {
     const gain =
       ctx.createGain();
 
-
-    oscillator.type =
-      "square";
-
-    oscillator.frequency.value =
-      note.frequency;
-
-
     const start =
       now + note.start;
 
@@ -764,11 +1195,19 @@ function playLogoutSound() {
       start + note.duration;
 
 
-    gain.gain.setValueAtTime(
-      Number(volume.value) * 0.20,
+    oscillator.type =
+      "square";
+
+    oscillator.frequency.setValueAtTime(
+      note.frequency,
       start
     );
 
+
+    gain.gain.setValueAtTime(
+      0.8,
+      start
+    );
 
     gain.gain.exponentialRampToValueAtTime(
       0.001,
@@ -777,18 +1216,73 @@ function playLogoutSound() {
 
 
     oscillator.connect(gain);
-
-    gain.connect(
-      ctx.destination
-    );
+    gain.connect(masterGain);
 
 
     oscillator.start(start);
-
     oscillator.stop(end);
 
   });
+}
 
+
+/* =========================
+   PANEL FLASH
+   ========================= */
+
+function flashPanel() {
+
+  panel.classList.remove(
+    "flash"
+  );
+
+  void panel.offsetWidth;
+
+  panel.classList.add(
+    "flash"
+  );
+}
+
+
+/* =========================
+   NORMALES AUDIO
+   ========================= */
+
+async function playSound(
+  sound,
+  title,
+  description
+) {
+
+  stopAllAudio();
+
+  updateAudioVolume();
+
+
+  message.textContent =
+    title;
+
+  detail.textContent =
+    description;
+
+
+  flashPanel();
+
+
+  try {
+
+    await sound.play();
+
+  } catch (error) {
+
+    console.warn(
+      "Audio konnte nicht abgespielt werden:",
+      error
+    );
+
+    detail.textContent =
+      "Audio konnte nicht abgespielt werden.";
+  }
 }
 
 
@@ -798,6 +1292,9 @@ function playLogoutSound() {
 
 function unlock() {
 
+  getAudioContext();
+
+
   const username =
     usernameInput.value.trim();
 
@@ -805,10 +1302,25 @@ function unlock() {
     pinInput.value;
 
 
+  /*
+   * RICHTIGE DATEN
+   */
+
   if (
     username === correctUsername &&
     pin === correctPIN
   ) {
+
+    /*
+     * Alarm sofort deaktivieren.
+     */
+
+    stopManipulationAlarm();
+
+
+    /*
+     * Login öffnen.
+     */
 
     lockScreen.style.display =
       "none";
@@ -816,41 +1328,45 @@ function unlock() {
     panel.style.display =
       "block";
 
-    pinError.textContent =
-      "";
+
+    updateAudioVolume();
 
 
-    accessGranted.volume =
-      Number(volume.value);
+    message.textContent =
+      "ACCESS GRANTED";
+
+    detail.textContent =
+      "Authentication successful.";
+
 
     accessGranted.currentTime =
       0;
 
 
-    accessGranted.play().catch(() => {
+    accessGranted.play()
+      .catch(error => {
 
-      detail.textContent =
-        "ACCESS GRANTED";
+        console.warn(
+          "Access-Sound konnte nicht abgespielt werden:",
+          error
+        );
 
-    });
+      });
 
+
+    return;
   }
 
-  else {
 
-    pinError.textContent =
-      "ACCESS DENIED";
+  /*
+   * FALSCHE DATEN
+   */
+
+  pinError.textContent =
+    "ACCESS DENIED";
 
 
-    playErrorSound();
-
-
-    pinInput.value =
-      "";
-
-    pinInput.focus();
-
-  }
+  startManipulationAlarm();
 
 }
 
@@ -866,7 +1382,7 @@ unlockButton.addEventListener(
 
 
 /* =========================
-   ENTER IN PIN
+   ENTER IM PIN
    ========================= */
 
 pinInput.addEventListener(
@@ -874,6 +1390,8 @@ pinInput.addEventListener(
   event => {
 
     if (event.key === "Enter") {
+
+      event.preventDefault();
 
       unlock();
 
@@ -884,7 +1402,7 @@ pinInput.addEventListener(
 
 
 /* =========================
-   ENTER IN USERNAME
+   ENTER IM USERNAME
    ========================= */
 
 usernameInput.addEventListener(
@@ -892,6 +1410,8 @@ usernameInput.addEventListener(
   event => {
 
     if (event.key === "Enter") {
+
+      event.preventDefault();
 
       pinInput.focus();
 
@@ -902,69 +1422,14 @@ usernameInput.addEventListener(
 
 
 /* =========================
-   SOUND FUNCTION
-   ========================= */
-
-function playSound(
-  sound,
-  title,
-  description
-) {
-
-  accessGranted.pause();
-
-  biohazard.pause();
-
-
-  accessGranted.currentTime =
-    0;
-
-  biohazard.currentTime =
-    0;
-
-
-  sound.volume =
-    Number(volume.value);
-
-
-  sound.play().catch(() => {
-
-    detail.textContent =
-      "Audio konnte nicht abgespielt werden.";
-
-  });
-
-
-  message.textContent =
-    title;
-
-  detail.textContent =
-    description;
-
-
-  panel.classList.remove(
-    "flash"
-  );
-
-
-  void panel.offsetWidth;
-
-
-  panel.classList.add(
-    "flash"
-  );
-
-}
-
-
-/* =========================
    POWER
    ========================= */
 
-document.getElementById("power")
-.addEventListener(
+powerButton.addEventListener(
   "click",
   () => {
+
+    getAudioContext();
 
     playSound(
       accessGranted,
@@ -980,25 +1445,38 @@ document.getElementById("power")
    BIOHAZARD
    ========================= */
 
-document.getElementById("plus")
-.addEventListener(
+biohazardButton.addEventListener(
   "click",
-  () => {
+  async () => {
 
-    playSound(
+    getAudioContext();
+
+
+    await playSound(
       biohazard,
       "WARNING",
       "WARNING: Biological hazard detected."
     );
 
 
-    setTimeout(
+    window.setTimeout(
       () => {
 
-        biohazard.pause();
+        try {
 
-        biohazard.currentTime =
-          0;
+          biohazard.pause();
+
+          biohazard.currentTime =
+            0;
+
+        } catch (error) {
+
+          console.warn(
+            "Biohazard-Audio konnte nicht gestoppt werden:",
+            error
+          );
+
+        }
 
       },
       3000
@@ -1012,10 +1490,13 @@ document.getElementById("plus")
    ERROR BUTTON
    ========================= */
 
-document.getElementById("minus")
-.addEventListener(
+errorButton.addEventListener(
   "click",
   () => {
+
+    getAudioContext();
+
+    stopAllAudio();
 
     playErrorSound();
 
@@ -1023,22 +1504,11 @@ document.getElementById("minus")
     message.textContent =
       "ACCESS DENIED";
 
-
     detail.textContent =
       "Invalid control command.";
 
 
-    panel.classList.remove(
-      "flash"
-    );
-
-
-    void panel.offsetWidth;
-
-
-    panel.classList.add(
-      "flash"
-    );
+    flashPanel();
 
   }
 );
@@ -1048,20 +1518,19 @@ document.getElementById("minus")
    ABMELDEN
    ========================= */
 
-const logoutButton =
-  document.getElementById("logoutButton");
-
-
 logoutButton.addEventListener(
   "click",
   () => {
+
+    getAudioContext();
+
+    stopAllAudio();
 
     playLogoutSound();
 
 
     panel.style.display =
       "none";
-
 
     lockScreen.style.display =
       "block";
@@ -1077,7 +1546,21 @@ logoutButton.addEventListener(
       "";
 
 
-    usernameInput.focus();
+    message.textContent =
+      "SYSTEM READY";
+
+    detail.textContent =
+      "Awaiting command...";
+
+
+    window.setTimeout(
+      () => {
+
+        usernameInput.focus();
+
+      },
+      50
+    );
 
   }
 );
@@ -1089,24 +1572,43 @@ logoutButton.addEventListener(
 
 volume.addEventListener(
   "input",
+  updateAudioVolume
+);
+
+
+/* =========================
+   AUDIO FEHLER
+   ========================= */
+
+accessGranted.addEventListener(
+  "error",
   () => {
 
-    accessGranted.volume =
-      Number(volume.value);
-
-    biohazard.volume =
-      Number(volume.value);
+    console.warn(
+      "Access-Granted-Audiodatei konnte nicht geladen werden."
+    );
 
   }
 );
 
 
-accessGranted.volume =
-  0.8;
+biohazard.addEventListener(
+  "error",
+  () => {
 
-biohazard.volume =
-  0.8;
+    console.warn(
+      "Biohazard-Audiodatei konnte nicht geladen werden."
+    );
 
+  }
+);
+
+
+/* =========================
+   START
+   ========================= */
+
+updateAudioVolume();
 
 usernameInput.focus();
 
@@ -1114,4 +1616,3 @@ usernameInput.focus();
 
 </body>
 </html>
-```
