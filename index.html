@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -26,6 +27,7 @@ body {
   color: #d9faff;
   font-family: Arial, Helvetica, sans-serif;
 }
+
 
 /* =========================
    LOGIN
@@ -59,6 +61,7 @@ body {
   margin-bottom: 20px;
 }
 
+
 /* =========================
    LOGIN FELDER
    ========================= */
@@ -88,6 +91,7 @@ body {
 #pinInput {
   letter-spacing: 0.3em;
 }
+
 
 /* =========================
    UNLOCK
@@ -123,6 +127,7 @@ body {
   color: #ff6b6b;
   font-family: monospace;
 }
+
 
 /* =========================
    HAUPTSEITE
@@ -162,6 +167,7 @@ h1 {
   letter-spacing: 0.12em;
 }
 
+
 /* =========================
    SCREEN
    ========================= */
@@ -192,6 +198,7 @@ h1 {
   margin-top: 10px;
   color: #6b9aa6;
 }
+
 
 /* =========================
    BUTTONS
@@ -243,6 +250,7 @@ button span {
   margin-bottom: 8px;
 }
 
+
 /* =========================
    LAUTSTÄRKE
    ========================= */
@@ -260,6 +268,7 @@ button span {
 .volume input {
   width: 100%;
 }
+
 
 /* =========================
    ABMELDEN
@@ -295,6 +304,7 @@ button span {
     0 0 15px rgba(70, 210, 240, 0.25);
 }
 
+
 /* =========================
    FOOTER
    ========================= */
@@ -309,6 +319,7 @@ button span {
   font-size: 11px;
   letter-spacing: 0.08em;
 }
+
 
 /* =========================
    FLASH EFFECT
@@ -328,6 +339,7 @@ button span {
 
 }
 
+
 /* =========================
    MOBILE
    ========================= */
@@ -346,7 +358,9 @@ button span {
 </style>
 </head>
 
+
 <body>
+
 
 <!-- =========================
      LOGIN SCREEN
@@ -360,7 +374,6 @@ button span {
     🔒 ACCESS LOCKED
   </div>
 
-  <!-- BENUTZERNAME -->
 
   <input
     id="usernameInput"
@@ -370,7 +383,6 @@ button span {
     placeholder="USERNAME"
   >
 
-  <!-- PIN -->
 
   <input
     id="pinInput"
@@ -382,13 +394,16 @@ button span {
     placeholder="PIN"
   >
 
+
   <button id="unlockButton">
     UNLOCK
   </button>
 
+
   <div id="pinError"></div>
 
 </div>
+
 
 
 <!-- =========================
@@ -407,6 +422,7 @@ button span {
 
   </div>
 
+
   <section class="screen">
 
     <span id="message">
@@ -419,9 +435,9 @@ button span {
 
   </section>
 
+
   <section class="buttons">
 
-    <!-- POWER -->
 
     <button id="power">
 
@@ -432,8 +448,6 @@ button span {
     </button>
 
 
-    <!-- BIOHAZARD -->
-
     <button id="plus">
 
       <span>＋</span>
@@ -443,8 +457,6 @@ button span {
     </button>
 
 
-    <!-- ERROR -->
-
     <button id="minus">
 
       <span>−</span>
@@ -453,10 +465,9 @@ button span {
 
     </button>
 
+
   </section>
 
-
-  <!-- LAUTSTÄRKE -->
 
   <div class="volume">
 
@@ -474,8 +485,6 @@ button span {
   </div>
 
 
-  <!-- ABMELDEN -->
-
   <button id="logoutButton" class="logout">
 
     🔒 ABMELDEN
@@ -492,11 +501,10 @@ button span {
 </main>
 
 
+
 <!-- =========================
      AUDIO
      ========================= -->
-
-<!-- ACCESS GRANTED -->
 
 <audio
   id="accessGranted"
@@ -505,8 +513,6 @@ button span {
 </audio>
 
 
-<!-- BIOHAZARD -->
-
 <audio
   id="biohazard"
   preload="auto"
@@ -514,16 +520,9 @@ button span {
 </audio>
 
 
-<!-- ERROR: DEINE DATEI -->
-
-<audio
-  id="errorAlert"
-  preload="auto"
-  src="Error.mp3">
-</audio>
-
 
 <script>
+
 
 /* =========================
    LOGIN-SYSTEM
@@ -563,9 +562,6 @@ const accessGranted =
 const biohazard =
   document.getElementById("biohazard");
 
-const errorAlert =
-  document.getElementById("errorAlert");
-
 const volume =
   document.getElementById("volume");
 
@@ -574,6 +570,226 @@ const message =
 
 const detail =
   document.getElementById("detail");
+
+
+/* =========================
+   AUDIO CONTEXT
+   ========================= */
+
+let audioContext = null;
+
+
+function getAudioContext() {
+
+  const AudioContext =
+    window.AudioContext ||
+    window.webkitAudioContext;
+
+  if (!AudioContext) {
+    return null;
+  }
+
+  if (!audioContext) {
+    audioContext =
+      new AudioContext();
+  }
+
+  if (
+    audioContext.state ===
+    "suspended"
+  ) {
+
+    audioContext.resume();
+
+  }
+
+  return audioContext;
+
+}
+
+
+/* =========================
+   FEHLERTON
+   ========================= */
+
+function playErrorSound() {
+
+  const ctx =
+    getAudioContext();
+
+  if (!ctx) {
+    return;
+  }
+
+
+  const now =
+    ctx.currentTime;
+
+
+  const notes = [
+
+    {
+      frequency: 700,
+      start: 0.00,
+      duration: 0.10
+    },
+
+    {
+      frequency: 700,
+      start: 0.13,
+      duration: 0.10
+    },
+
+    {
+      frequency: 350,
+      start: 0.26,
+      duration: 0.22
+    }
+
+  ];
+
+
+  notes.forEach(note => {
+
+    const oscillator =
+      ctx.createOscillator();
+
+    const gain =
+      ctx.createGain();
+
+
+    oscillator.type =
+      "square";
+
+    oscillator.frequency.value =
+      note.frequency;
+
+
+    const start =
+      now + note.start;
+
+    const end =
+      start + note.duration;
+
+
+    gain.gain.setValueAtTime(
+      Number(volume.value) * 0.22,
+      start
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.001,
+      end
+    );
+
+
+    oscillator.connect(gain);
+
+    gain.connect(
+      ctx.destination
+    );
+
+
+    oscillator.start(start);
+
+    oscillator.stop(end);
+
+  });
+
+}
+
+
+/* =========================
+   ABMELDETON
+   ========================= */
+
+function playLogoutSound() {
+
+  const ctx =
+    getAudioContext();
+
+  if (!ctx) {
+    return;
+  }
+
+
+  const now =
+    ctx.currentTime;
+
+
+  const notes = [
+
+    {
+      frequency: 880,
+      start: 0.00,
+      duration: 0.10
+    },
+
+    {
+      frequency: 660,
+      start: 0.13,
+      duration: 0.10
+    },
+
+    {
+      frequency: 440,
+      start: 0.26,
+      duration: 0.22
+    }
+
+  ];
+
+
+  notes.forEach(note => {
+
+    const oscillator =
+      ctx.createOscillator();
+
+    const gain =
+      ctx.createGain();
+
+
+    oscillator.type =
+      "square";
+
+    oscillator.frequency.value =
+      note.frequency;
+
+
+    const start =
+      now + note.start;
+
+    const end =
+      start + note.duration;
+
+
+    gain.gain.setValueAtTime(
+      Number(volume.value) * 0.20,
+      start
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.001,
+      end
+    );
+
+
+    oscillator.connect(gain);
+
+    gain.connect(
+      ctx.destination
+    );
+
+
+    oscillator.start(start);
+
+    oscillator.stop(end);
+
+  });
+
+}
 
 
 /* =========================
@@ -589,10 +805,6 @@ function unlock() {
     pinInput.value;
 
 
-  /* =========================
-     RICHTIGER LOGIN
-     ========================= */
-
   if (
     username === correctUsername &&
     pin === correctPIN
@@ -607,20 +819,22 @@ function unlock() {
     pinError.textContent =
       "";
 
+
     accessGranted.volume =
       Number(volume.value);
 
     accessGranted.currentTime =
       0;
 
-    accessGranted.play().catch(() => {});
+
+    accessGranted.play().catch(() => {
+
+      detail.textContent =
+        "ACCESS GRANTED";
+
+    });
 
   }
-
-
-  /* =========================
-     FALSCHER LOGIN
-     ========================= */
 
   else {
 
@@ -628,21 +842,7 @@ function unlock() {
       "ACCESS DENIED";
 
 
-    errorAlert.pause();
-
-    errorAlert.currentTime =
-      0;
-
-    errorAlert.volume =
-      Number(volume.value);
-
-
-    errorAlert.play().catch(() => {
-
-      detail.textContent =
-        "Error.mp3 konnte nicht abgespielt werden.";
-
-    });
+    playErrorSound();
 
 
     pinInput.value =
@@ -671,7 +871,7 @@ unlockButton.addEventListener(
 
 pinInput.addEventListener(
   "keydown",
-  (event) => {
+  event => {
 
     if (event.key === "Enter") {
 
@@ -689,7 +889,7 @@ pinInput.addEventListener(
 
 usernameInput.addEventListener(
   "keydown",
-  (event) => {
+  event => {
 
     if (event.key === "Enter") {
 
@@ -715,16 +915,11 @@ function playSound(
 
   biohazard.pause();
 
-  errorAlert.pause();
-
 
   accessGranted.currentTime =
     0;
 
   biohazard.currentTime =
-    0;
-
-  errorAlert.currentTime =
     0;
 
 
@@ -735,7 +930,7 @@ function playSound(
   sound.play().catch(() => {
 
     detail.textContent =
-      "Audio wurde vom Browser blockiert. Noch einmal drücken.";
+      "Audio konnte nicht abgespielt werden.";
 
   });
 
@@ -751,108 +946,12 @@ function playSound(
     "flash"
   );
 
+
   void panel.offsetWidth;
+
 
   panel.classList.add(
     "flash"
-  );
-
-}
-
-
-/* =========================
-   ABMELDETON
-   ========================= */
-
-function playLogoutSound() {
-
-  const AudioContext =
-    window.AudioContext ||
-    window.webkitAudioContext;
-
-
-  if (!AudioContext) {
-    return;
-  }
-
-
-  const audioContext =
-    new AudioContext();
-
-
-  const now =
-    audioContext.currentTime;
-
-
-  const oscillator =
-    audioContext.createOscillator();
-
-
-  const gain =
-    audioContext.createGain();
-
-
-  oscillator.type =
-    "square";
-
-
-  /* =========================
-     DÜ - DÜ - DÜT
-     ========================= */
-
-  oscillator.frequency.setValueAtTime(
-    880,
-    now
-  );
-
-  oscillator.frequency.setValueAtTime(
-    660,
-    now + 0.12
-  );
-
-  oscillator.frequency.setValueAtTime(
-    440,
-    now + 0.24
-  );
-
-
-  gain.gain.setValueAtTime(
-    Number(volume.value) * 0.25,
-    now
-  );
-
-
-  gain.gain.exponentialRampToValueAtTime(
-    0.001,
-    now + 0.4
-  );
-
-
-  oscillator.connect(
-    gain
-  );
-
-  gain.connect(
-    audioContext.destination
-  );
-
-
-  oscillator.start(
-    now
-  );
-
-  oscillator.stop(
-    now + 0.4
-  );
-
-
-  setTimeout(
-    () => {
-
-      audioContext.close();
-
-    },
-    600
   );
 
 }
@@ -910,7 +1009,7 @@ document.getElementById("plus")
 
 
 /* =========================
-   ERROR
+   ERROR BUTTON
    ========================= */
 
 document.getElementById("minus")
@@ -918,10 +1017,27 @@ document.getElementById("minus")
   "click",
   () => {
 
-    playSound(
-      errorAlert,
-      "ACCESS DENIED",
-      "Invalid control command."
+    playErrorSound();
+
+
+    message.textContent =
+      "ACCESS DENIED";
+
+
+    detail.textContent =
+      "Invalid control command.";
+
+
+    panel.classList.remove(
+      "flash"
+    );
+
+
+    void panel.offsetWidth;
+
+
+    panel.classList.add(
+      "flash"
     );
 
   }
@@ -940,24 +1056,16 @@ logoutButton.addEventListener(
   "click",
   () => {
 
-    /* Abmeldeton */
-
     playLogoutSound();
 
-
-    /* Hauptseite ausblenden */
 
     panel.style.display =
       "none";
 
 
-    /* Login wieder anzeigen */
-
     lockScreen.style.display =
       "block";
 
-
-    /* Eingaben löschen */
 
     usernameInput.value =
       "";
@@ -968,8 +1076,6 @@ logoutButton.addEventListener(
     pinError.textContent =
       "";
 
-
-    /* Cursor */
 
     usernameInput.focus();
 
@@ -991,9 +1097,6 @@ volume.addEventListener(
     biohazard.volume =
       Number(volume.value);
 
-    errorAlert.volume =
-      Number(volume.value);
-
   }
 );
 
@@ -1004,13 +1107,6 @@ accessGranted.volume =
 biohazard.volume =
   0.8;
 
-errorAlert.volume =
-  0.8;
-
-
-/* =========================
-   START
-   ========================= */
 
 usernameInput.focus();
 
@@ -1018,3 +1114,4 @@ usernameInput.focus();
 
 </body>
 </html>
+```
